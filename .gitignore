@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+*.log
+monaco-editor/src/monaco-web-component.d.ts
+monaco-editor/src/monaco-web-component.js

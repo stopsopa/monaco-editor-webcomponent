@@ -1,0 +1,26 @@
+{
+  "name": "monaco-editor-webcomponent",
+  "version": "1.0.0",
+  "description": "Comprehensive learning path for Web Components, culminating in an monaco Editor web component",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "dev": "node --env-file=.env server.js",
+    "ln": "/bin/bash link.sh"
+  },
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "monaco-editor",
+    "learning",
+    "tutorial"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cookie-parser": "^1.4.6",
+    "serve-index": "^1.9.1"
+  }
+}
