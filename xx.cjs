@@ -38,10 +38,19 @@ EEE
       source: false,
       confirm: false,
     },
-    [`git monaco-editor`]: {
+    [`git monaco-editor & compile`]: {
       command: `
 set -e
-        
+
+
+cat <<EEE
+now git repository will be pulled and then observe the output and press enter to continue
+
+EEE
+
+echo -e "\n      Press enter to continue\n"
+read
+
 rm -rf git-monaco-editor
 git clone git@github.com:microsoft/monaco-editor.git git-monaco-editor
 cd git-monaco-editor
@@ -86,6 +95,34 @@ cat <<EEE
 --- this is expected ---  ^^^
 --- this is expected ---  ^^^
 EEE
+
+
+echo -e "\n      Press enter to continue\n"
+read
+
+npm install
+(
+  cd webpack-plugin  
+  cat <<EEE > tsconfig.json
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"outDir": "out",
+		"target": "es6",
+		"declaration": true,
+		"strict": true,
+		"skipLibCheck": true
+	},
+	"include": ["src"],
+	"exclude": ["node_modules"]
+}
+EEE
+  npm run compile
+)
+npm run package-for-smoketest-webpack
+npm run build-all
+
+
 
 `,
       description: `remove directory and clone fresh monaco repository and switching to particular tag`,
