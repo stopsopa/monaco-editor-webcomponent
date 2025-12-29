@@ -101,6 +101,7 @@ echo -e "\n      Press enter to continue\n"
 read
 
 npm install
+npm run deps-all-install
 (
   cd webpack-plugin  
   cat <<EEE > tsconfig.json
@@ -119,6 +120,8 @@ npm install
 EEE
   npm run compile
 )
+(cd samples/browser-esm-esbuild && npm run build)
+(cd samples/browser-esm-parcel && npm install)
 npm run package-for-smoketest-webpack
 npm run build-all
 
