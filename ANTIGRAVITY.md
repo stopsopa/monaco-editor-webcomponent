@@ -317,6 +317,20 @@ function MonacoEditorComponent() {
 }
 ```
 
+#### Loading language
+
+Since documentation https://github.com/microsoft/monaco-editor?tab=readme-ov-file#localization in Localization section of README.md
+says: 
+
+```md
+To load the editor in a specific language, make sure that the corresponding nls script file is loaded before the main monaco editor script. For example, to load the editor in German, include the following script tag:
+
+<script src="path/to/monaco-editor/esm/nls.messages.de.js"></script>
+Check the sources for available languages.
+```
+
+Let's add to our webcomponent another 'language' attribute with default value 'en'
+
 #### 2. Wrapper Component
 
 ```jsx

@@ -8,3 +8,9 @@ set -e
     ln -s ../../monaco-web-component.d.ts .
     ls -la
 )
+
+(
+    cd noprettier
+    rm -rf monaco-editor*
+    ln -s ../node_modules/monaco-editor ./monaco-editor
+)
