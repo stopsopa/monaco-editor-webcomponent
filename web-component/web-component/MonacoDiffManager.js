@@ -73,6 +73,7 @@ export class MonacoDiffManager {
   _resizeObserver = null;
   _readyPromise;
   _destroyed = false;
+  _layoutRaf = null;
   constructor(bindElement, options = {}) {
     this.propParentElement = bindElement;
     this.propOptions = {
@@ -202,6 +203,12 @@ export class MonacoDiffManager {
       readOnly,
       renderSideBySide,
       automaticLayout: false,
+      scrollbar: {
+        vertical: "auto",
+        // horizontal: "auto",
+        // verticalScrollbarSize: 10,
+        // horizontalScrollbarSize: 10,
+      },
       ...editorOptions,
     });
     this._setModels();

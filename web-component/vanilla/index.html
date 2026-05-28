@@ -3,18 +3,80 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MonacoDiffManager Demo</title>
-    <link rel="stylesheet" href="vanilla.css" />
+    <title>MonacoDiffManager demo</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
-    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="100px" style="padding: 12px">
-      space
-    </center-and-height-resizer>
+    <center-and-height-resizer left="100px" center="1200px" height="100px"> </center-and-height-resizer>
     <br />
-    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="500px" style="padding: 12px">
-      <div id="container" class="monaco-diff"></div>
+    <center-and-height-resizer left="100px" center="1200px" height="300px">
+      <div id="container"></div>
     </center-and-height-resizer>
-    <!-- <script type="module" src="../CenterAndHeightResizer.js"></script> -->
-    <script type="module" src="index.js"></script>
+    <script type="module" src="../CenterAndHeightResizer.js"></script>
+    <script type="module">
+      const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
+
+      const original = `
+function hello() {
+  console.log('before');
+  return 1;
+}
+      `.trim();
+
+      const modified = `
+function helloWorld() {
+  console.log('after');
+  return 2;
+}
+      `.trim();
+
+      const container = document.getElementById("container");
+      if (!container) {
+        throw new Error("Missing #container element");
+      }
+
+      container.style.height = "100%";
+      container.style.width = "100%";
+
+      const loadMonaco = (vsPath = VS_PATH) =>
+        new Promise((resolve, reject) => {
+          const win = window;
+
+          const finish = () => {
+            win.require.config({ paths: { vs: vsPath } });
+            win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+          };
+
+          if (win.require && win.monaco) return resolve(win.monaco);
+          if (win.require) return finish();
+
+          const script = document.createElement("script");
+          script.src = `${vsPath}/loader.js`;
+          script.async = true;
+          script.onload = () => finish();
+          script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
+          document.head.appendChild(script);
+        });
+
+      const monaco = await loadMonaco();
+
+      const editor = monaco.editor.createDiffEditor(container, { automaticLayout: false });
+      editor.setModel({
+        original: monaco.editor.createModel(original, "javascript"),
+        modified: monaco.editor.createModel(modified, "javascript"),
+      });
+
+      // Keep in sync with resizer (and avoid initial stale layout).
+      const scheduleLayout = () => requestAnimationFrame(() => editor.layout());
+      scheduleLayout();
+      new ResizeObserver(() => scheduleLayout()).observe(container);
+    </script>
   </body>
 </html>
