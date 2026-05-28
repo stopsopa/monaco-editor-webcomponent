@@ -363,7 +363,7 @@ const text1 = `
 				2) some sample data that is structured correctly with a few levels & a new store
 				3) new store
 			*/
-		`
+		`;
 const text2 = `
 			const buildTree = files => {
 				const arr = [];
@@ -703,20 +703,17 @@ const text2 = `
 				2) some sample data that is structured correctly with a few levels & a new store
 				3) new store
 			*/
-		`
+		`;
 
+require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs" } });
+require(["vs/editor/editor.main"], () => {
+  const editor = monaco.editor.createDiffEditor(document.getElementById("container"));
+  editor.setModel({
+    original: monaco.editor.createModel(text1, "javascript"),
+    modified: monaco.editor.createModel(text2, "javascript"),
+  });
 
-
-
-require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs' }});
-require(['vs/editor/editor.main'], () => {
-	const editor = monaco.editor.createDiffEditor(document.getElementById('container'));
-	editor.setModel({
-		original: monaco.editor.createModel(text1, 'javascript'),
-		modified: monaco.editor.createModel(text2, 'javascript'),
-	});
-	
-	document.querySelector('.inline-it').addEventListener('change', (e) => {
-		editor.updateOptions({ renderSideBySide: !e.target.checked });
-	});
+  document.querySelector(".inline-it").addEventListener("change", (e) => {
+    editor.updateOptions({ renderSideBySide: !e.target.checked });
+  });
 });

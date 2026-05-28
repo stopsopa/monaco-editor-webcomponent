@@ -31,17 +31,17 @@ The component should:
 
 ```html
 <monaco-diff>
-	<script type="text/left" lang="javascript">
-	function hello() {
-		console.log('before');
-	}
-	</script>
+  <script type="text/left" lang="javascript">
+    function hello() {
+      console.log("before");
+    }
+  </script>
 
-	<script type="text/right" lang="javascript">
-	function helloWorld() {
-		console.log('after');
-	}
-	</script>
+  <script type="text/right" lang="javascript">
+    function helloWorld() {
+      console.log("after");
+    }
+  </script>
 </monaco-diff>
 ```
 
@@ -91,7 +91,7 @@ The consumer owns:
 ## HTMLElement
 
 ```js
-const diff = document.querySelector('monaco-diff');
+const diff = document.querySelector("monaco-diff");
 ```
 
 ---
@@ -101,7 +101,7 @@ const diff = document.querySelector('monaco-diff');
 The component exposes:
 
 ```js
-diff.getManager()
+diff.getManager();
 ```
 
 The manager acts as a stable abstraction layer around Monaco internals.
@@ -119,14 +119,14 @@ Goal:
 ```js
 const manager = diff.getManager();
 
-manager.left.set('const a = 1;');
-manager.right.set('const a = 2;');
+manager.left.set("const a = 1;");
+manager.right.set("const a = 2;");
 
-manager.left.lang('javascript');
-manager.right.lang('typescript');
+manager.left.lang("javascript");
+manager.right.lang("typescript");
 
 manager.options({
-	renderSideBySide: false
+  renderSideBySide: false,
 });
 ```
 
@@ -139,7 +139,7 @@ This API intentionally encapsulates Monaco concepts.
 Avoid:
 
 ```js
-diff.editor.getModel()
+diff.editor.getModel();
 ```
 
 as the primary workflow.
@@ -216,13 +216,13 @@ Each side controller handles:
 # Example Internal Shape
 
 ```js
-manager.left.set(text)
-manager.left.get()
+manager.left.set(text);
+manager.left.get();
 
-manager.left.lang(language)
-manager.left.getLang()
+manager.left.lang(language);
+manager.left.getLang();
 
-manager.left.model()
+manager.left.model();
 ```
 
 ---
@@ -232,8 +232,8 @@ manager.left.model()
 Optional escape hatch:
 
 ```js
-manager.monaco()
-manager.editor()
+manager.monaco();
+manager.editor();
 ```
 
 This allows advanced consumers to access raw Monaco APIs.
@@ -261,11 +261,7 @@ On component connection:
 Initial proposed attributes:
 
 ```html
-<monaco-diff
-	theme="vs-dark"
-	inline
-	read-only
-></monaco-diff>
+<monaco-diff theme="vs-dark" inline read-only></monaco-diff>
 ```
 
 ---
@@ -275,7 +271,7 @@ Initial proposed attributes:
 ## `inline`
 
 ```js
-renderSideBySide = false
+renderSideBySide = false;
 ```
 
 ---
@@ -314,9 +310,9 @@ Example:
 
 ```html
 <shadow-root>
-	<style></style>
+  <style></style>
 
-	<div class="container"></div>
+  <div class="container"></div>
 </shadow-root>
 ```
 
@@ -331,7 +327,7 @@ Need automatic layout updates.
 Recommended:
 
 ```js
-ResizeObserver
+ResizeObserver;
 ```
 
 on component root.
@@ -339,7 +335,7 @@ on component root.
 Call:
 
 ```js
-editor.layout()
+editor.layout();
 ```
 
 when size changes.
@@ -355,7 +351,7 @@ Dispose Monaco models correctly.
 When replacing models:
 
 ```js
-oldModel.dispose()
+oldModel.dispose();
 ```
 
 Avoid memory leaks.
@@ -375,13 +371,13 @@ Example:
 Future support:
 
 ```js
-manager.left.lang('json');
+manager.left.lang("json");
 ```
 
 Implementation likely via:
 
 ```js
-monaco.editor.setModelLanguage()
+monaco.editor.setModelLanguage();
 ```
 
 ---
@@ -511,13 +507,13 @@ MonacoDiffSide
 
 ```html
 <monaco-diff theme="vs-dark">
-	<script type="text/left" lang="javascript">
-	const a = 1;
-	</script>
+  <script type="text/left" lang="javascript">
+    const a = 1;
+  </script>
 
-	<script type="text/right" lang="javascript">
-	const a = 2;
-	</script>
+  <script type="text/right" lang="javascript">
+    const a = 2;
+  </script>
 </monaco-diff>
 ```
 
@@ -526,18 +522,18 @@ MonacoDiffSide
 ## Imperative
 
 ```js
-const diff = document.querySelector('monaco-diff');
+const diff = document.querySelector("monaco-diff");
 
 const manager = diff.getManager();
 
-manager.left.set('const a = 10;');
+manager.left.set("const a = 10;");
 
-manager.right.set('const a = 20;');
+manager.right.set("const a = 20;");
 
-manager.left.lang('typescript');
+manager.left.lang("typescript");
 
 manager.options({
-	renderSideBySide: false
+  renderSideBySide: false,
 });
 ```
 
@@ -600,7 +596,7 @@ require(['vs/editor/editor.main'], () => {
 		original: monaco.editor.createModel(text1, 'javascript'),
 		modified: monaco.editor.createModel(text2, 'javascript'),
 	});
-	
+
 	document.querySelector('.inline-it').addEventListener('change', (e) => {
 		editor.updateOptions({ renderSideBySide: !e.target.checked });
 	});
@@ -610,4 +606,3 @@ require(['vs/editor/editor.main'], () => {
 ```
 
 design all using esm
-

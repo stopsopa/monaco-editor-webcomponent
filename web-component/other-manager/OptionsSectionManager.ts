@@ -2,7 +2,6 @@ import { markSearchWithSpan } from "../composite-select/helpers.js";
 import type { Item, InputChangeEvent } from "../types.js";
 import createSubscriber from "../createSubscriber.js";
 
-
 export type OptionsSectionManagerOptions<T extends Item> = {
   options?: T[];
   loading?: boolean;
@@ -326,11 +325,7 @@ export class OptionsSectionManager<T extends Item = Item> {
    * Internal helper to notify both the callback provided in options and the internal subscriber
    * when the input value changes.
    */
-  protected _triggerOnInputChange(
-    e: InputChangeEvent,
-    previousValue: string | undefined,
-    origin: string,
-  ) {
+  protected _triggerOnInputChange(e: InputChangeEvent, previousValue: string | undefined, origin: string) {
     if (this.propOptions.onInputChange) {
       this.propOptions.onInputChange.call(this, e, previousValue, origin);
     }

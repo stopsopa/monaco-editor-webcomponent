@@ -39,9 +39,7 @@ it("child", () => {
   {
     const cache = getCache();
 
-    const keys = Array.from(cache.keys()).map((p) =>
-      path.relative(templatesParent, p),
-    );
+    const keys = Array.from(cache.keys()).map((p) => path.relative(templatesParent, p));
 
     assert.deepStrictEqual(keys, []);
   }
@@ -68,8 +66,11 @@ it("escape", () => {
 
   const result = render("escape.html", { test: "test<br />" });
 
-  assert.strictEqual(result, `<abc class="escape.html">test&lt;br /&gt;</abc>
-`);
+  assert.strictEqual(
+    result,
+    `<abc class="escape.html">test&lt;br /&gt;</abc>
+`,
+  );
 });
 
 it("parent.dynamic", () => {
@@ -108,9 +109,7 @@ it("cache:on parent", () => {
   {
     const cache = getCache();
 
-    const keys = Array.from(cache.keys()).map((p) =>
-      path.relative(templatesParent, p),
-    );
+    const keys = Array.from(cache.keys()).map((p) => path.relative(templatesParent, p));
 
     assert.deepStrictEqual(keys, ["parent.html", "child.html"]);
   }
@@ -129,8 +128,11 @@ it("cache:on escape", () => {
 
   const result = render("escape.html", { test: "test<br />" });
 
-  assert.strictEqual(result, `<abc class="escape.html">test&lt;br /&gt;</abc>
-`);
+  assert.strictEqual(
+    result,
+    `<abc class="escape.html">test&lt;br /&gt;</abc>
+`,
+  );
 });
 
 it("cache:on parent.dynamic", () => {
@@ -157,11 +159,11 @@ it("cache:on relative", () => {
     test: "test <br />",
   });
 
-    console.log(`
+  console.log(`
       wtf
       >${result}<
       
-      `)
+      `);
 
   assert.strictEqual(
     result,
@@ -177,15 +179,9 @@ it("cache:on relative", () => {
   {
     const cache = getCache();
 
-    const keys = Array.from(cache.keys()).map((p) =>
-      path.relative(templatesParent, p),
-    );
+    const keys = Array.from(cache.keys()).map((p) => path.relative(templatesParent, p));
 
-    assert.deepStrictEqual(keys, [
-      "relative/parent.html",
-      "relative/child/child.html",
-      "escape.html",
-    ]);
+    assert.deepStrictEqual(keys, ["relative/parent.html", "relative/child/child.html", "escape.html"]);
   }
 });
 
@@ -214,9 +210,7 @@ it("cache:on relative + cache", () => {
   {
     const cache = getCache();
 
-    const keys = Array.from(cache.keys()).map((p) =>
-      path.relative(templatesParent, p),
-    );
+    const keys = Array.from(cache.keys()).map((p) => path.relative(templatesParent, p));
 
     console.log(`
     
@@ -224,11 +218,7 @@ it("cache:on relative + cache", () => {
     
     `);
 
-    assert.deepStrictEqual(keys, [
-      "relative/parent.html",
-      "relative/child/child.html",
-      "escape.html",
-    ]);
+    assert.deepStrictEqual(keys, ["relative/parent.html", "relative/child/child.html", "escape.html"]);
   }
 });
 
@@ -251,10 +241,7 @@ it("error: no parentFile", () => {
 
     throw new Error("should not get here");
   } catch (e) {
-    assert.strictEqual(
-      String(e),
-      "Error: cacheTemplate error: parentFile is required",
-    );
+    assert.strictEqual(String(e), "Error: cacheTemplate error: parentFile is required");
   }
 });
 
@@ -263,10 +250,7 @@ it("error: parentFile must be absolute path", () => {
     createCachePool()(path.join("relative", "_"));
     throw new Error("should not get here");
   } catch (e) {
-    assert.match(
-      String(e),
-      /parentFileAbsolute must be absolute path/,
-    );
+    assert.match(String(e), /parentFileAbsolute must be absolute path/);
   }
 });
 
@@ -284,10 +268,7 @@ it("error: render failure", () => {
     render("non-existent-file.html");
     throw new Error("should not get here");
   } catch (e) {
-    assert.match(
-      String(e),
-      /error/,
-    );
+    assert.match(String(e), /error/);
   }
 });
 

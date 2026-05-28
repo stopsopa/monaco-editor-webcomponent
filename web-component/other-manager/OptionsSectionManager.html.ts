@@ -168,7 +168,11 @@ const init = (initialOptions: OptionItem[] = [], states: Partial<DemoState> = {}
   };
 
   const updateDump = (options: OptionItem[]) => {
-    dump.textContent = JSON.stringify(options.filter((o) => o.selected), null, 2);
+    dump.textContent = JSON.stringify(
+      options.filter((o) => o.selected),
+      null,
+      2,
+    );
   };
 
   let mgr: OptionsSectionManager<OptionItem>;
@@ -326,7 +330,9 @@ const init = (initialOptions: OptionItem[] = [], states: Partial<DemoState> = {}
   });
 
   optStringRenderBtn.addEventListener("click", () => {
-    mgr.setRenderItem((item) => `<div class="element" data-id="${item.id}" style="color: blue;">STRING: ${item.label}</div>`);
+    mgr.setRenderItem(
+      (item) => `<div class="element" data-id="${item.id}" style="color: blue;">STRING: ${item.label}</div>`,
+    );
   });
 
   optDefaultRenderBtn.addEventListener("click", () => {
@@ -380,10 +386,13 @@ const loadFromUrl = () => {
   const allIds = urlStateConfig.getAllIds(urlParams);
 
   if (allIds.length === 0) {
-    init([
-      { id: 1, label: "Initial Option 1" },
-      { id: 2, label: "Initial Option 2" },
-    ], {});
+    init(
+      [
+        { id: 1, label: "Initial Option 1" },
+        { id: 2, label: "Initial Option 2" },
+      ],
+      {},
+    );
   } else {
     allIds.forEach((id) => {
       const state = urlStateConfig.fromUrl(urlParams, id);
@@ -402,4 +411,3 @@ const loadFromUrl = () => {
 
 window.addEventListener("popstate", loadFromUrl);
 loadFromUrl();
-

@@ -22,10 +22,7 @@ export type MonacoDiffManagerEvents = {
 
 export interface MonacoGlobal {
   editor: {
-    createDiffEditor(
-      container: HTMLElement,
-      options?: Record<string, unknown>,
-    ): IStandaloneDiffEditor;
+    createDiffEditor(container: HTMLElement, options?: Record<string, unknown>): IStandaloneDiffEditor;
     createModel(value: string, language: string): ITextModel;
     setModelLanguage(model: ITextModel, language: string): void;
     setTheme(theme: string): void;
@@ -122,9 +119,7 @@ export class MonacoDiffSide {
   }
 
   public getLang(): string {
-    return this.side === "original"
-      ? this.manager.getOriginalLanguage()
-      : this.manager.getModifiedLanguage();
+    return this.side === "original" ? this.manager.getOriginalLanguage() : this.manager.getModifiedLanguage();
   }
 }
 
@@ -289,8 +284,7 @@ export class MonacoDiffManager {
 
   private async _init() {
     const load =
-      this.propOptions.loadMonaco ??
-      (() => loadMonacoFromCdn(this.propOptions.monacoVsPath ?? DEFAULT_VS_PATH));
+      this.propOptions.loadMonaco ?? (() => loadMonacoFromCdn(this.propOptions.monacoVsPath ?? DEFAULT_VS_PATH));
 
     this._monaco = await load();
     if (this._destroyed) return;
@@ -323,14 +317,8 @@ export class MonacoDiffManager {
     const originalLang = this.getOriginalLanguage();
     const modifiedLang = this.getModifiedLanguage();
 
-    this._originalModel = this._monaco.editor.createModel(
-      this.propOptions.original ?? "",
-      originalLang,
-    );
-    this._modifiedModel = this._monaco.editor.createModel(
-      this.propOptions.modified ?? "",
-      modifiedLang,
-    );
+    this._originalModel = this._monaco.editor.createModel(this.propOptions.original ?? "", originalLang);
+    this._modifiedModel = this._monaco.editor.createModel(this.propOptions.modified ?? "", modifiedLang);
 
     this._editor.setModel({
       original: this._originalModel,
