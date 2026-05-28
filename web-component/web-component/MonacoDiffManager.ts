@@ -50,38 +50,40 @@ export class MonacoDiffManager {
   private _resizeObserver: ResizeObserver | null = null;
 
   constructor(container: HTMLElement, options: MonacoDiffManagerOptions) {
-    this._readyPromise = this._init(container, options);
+    this._readyPromise = (async () => {
+      const monaco = await loadMonaco();
+
+      this._editor = monaco.editor.createDiffEditor(container, {
+        automaticLayout: false,
+        scrollbar: {
+          vertical: "auto",
+        },
+        scrollBeyondLastLine: false,
+      });
+
+      const language = options.language || "javascript";
+
+      this._editor.setModel({
+        original: monaco.editor.createModel(options.original, language),
+        modified: monaco.editor.createModel(options.modified, language),
+      });
+
+      const scheduleLayout = () => requestAnimationFrame(() => this._editor?.layout());
+      scheduleLayout();
+
+      if (typeof ResizeObserver !== "undefined") {
+        this._resizeObserver = new ResizeObserver(() => scheduleLayout());
+        this._resizeObserver.observe(container);
+      }
+    })();
   }
 
   public whenReady(): Promise<void> {
     return this._readyPromise;
   }
 
-  private async _init(container: HTMLElement, options: MonacoDiffManagerOptions) {
-    const monaco = await loadMonaco();
-
-    this._editor = monaco.editor.createDiffEditor(container, {
-      automaticLayout: false,
-      scrollbar: {
-        vertical: "auto",
-      },
-      scrollBeyondLastLine: false,
-    });
-
-    const language = options.language || "javascript";
-
-    this._editor.setModel({
-      original: monaco.editor.createModel(options.original, language),
-      modified: monaco.editor.createModel(options.modified, language),
-    });
-
-    const scheduleLayout = () => requestAnimationFrame(() => this._editor?.layout());
-    scheduleLayout();
-
-    if (typeof ResizeObserver !== "undefined") {
-      this._resizeObserver = new ResizeObserver(() => scheduleLayout());
-      this._resizeObserver.observe(container);
-    }
+  public getEditor(): any {
+    return this._editor;
   }
 
   public destroy() {

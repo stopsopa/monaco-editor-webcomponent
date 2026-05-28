@@ -37,31 +37,33 @@ export class MonacoDiffManager {
   _editor = null;
   _resizeObserver = null;
   constructor(container, options) {
-    this._readyPromise = this._init(container, options);
+    this._readyPromise = (async () => {
+      const monaco = await loadMonaco();
+      this._editor = monaco.editor.createDiffEditor(container, {
+        automaticLayout: false,
+        scrollbar: {
+          vertical: "auto",
+        },
+        scrollBeyondLastLine: false,
+      });
+      const language = options.language || "javascript";
+      this._editor.setModel({
+        original: monaco.editor.createModel(options.original, language),
+        modified: monaco.editor.createModel(options.modified, language),
+      });
+      const scheduleLayout = () => requestAnimationFrame(() => this._editor?.layout());
+      scheduleLayout();
+      if (typeof ResizeObserver !== "undefined") {
+        this._resizeObserver = new ResizeObserver(() => scheduleLayout());
+        this._resizeObserver.observe(container);
+      }
+    })();
   }
   whenReady() {
     return this._readyPromise;
   }
-  async _init(container, options) {
-    const monaco = await loadMonaco();
-    this._editor = monaco.editor.createDiffEditor(container, {
-      automaticLayout: false,
-      scrollbar: {
-        vertical: "auto",
-      },
-      scrollBeyondLastLine: false,
-    });
-    const language = options.language || "javascript";
-    this._editor.setModel({
-      original: monaco.editor.createModel(options.original, language),
-      modified: monaco.editor.createModel(options.modified, language),
-    });
-    const scheduleLayout = () => requestAnimationFrame(() => this._editor?.layout());
-    scheduleLayout();
-    if (typeof ResizeObserver !== "undefined") {
-      this._resizeObserver = new ResizeObserver(() => scheduleLayout());
-      this._resizeObserver.observe(container);
-    }
+  getEditor() {
+    return this._editor;
   }
   destroy() {
     this._resizeObserver?.disconnect();
