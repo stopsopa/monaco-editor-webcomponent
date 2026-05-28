@@ -1,8 +1,12 @@
 /**
  * Demo page for vanilla `trackUrl` / `modURLSearchParams`.
  * Mirrors ModURLSearchParamsComponent.tsx: multiple indexed instances, each syncing UI ↔ URL.
+ *
+ * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`
+ * (see `toolsURLSearchParams.test.ts` for behaviour).
  */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
+import { cloneSearchParams, compareNormalizedSearchParams, syncURLSearchParams } from "./toolsURLSearchParams.js";
 
 const radioOptions = ["radio1", "radio2", "radio3"] as const;
 type RadioOptionType = (typeof radioOptions)[number];
@@ -52,10 +56,9 @@ const urlParamConfig = {
   },
 } as const;
 
-const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(
-  urlParamConfig,
-  (key, i?: number) => `${key}-${i}`,
-);
+const instanceKeyFn = (key: string, i?: number) => `${key}-${i}`;
+
+const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(urlParamConfig, instanceKeyFn);
 
 type UrlParams = Parameters<Parameters<typeof trackUrl>[0]>[0];
 
@@ -88,28 +91,31 @@ function parseInstanceIds(params: URLSearchParams): number[] {
 
 /** Reads the current page URL and returns which instance indexes should be rendered. */
 function getInstanceList(): number[] {
-  return parseInstanceIds(new URLSearchParams(window.location.search));
+  return parseInstanceIds(cloneSearchParams(new URLSearchParams(window.location.search)));
 }
 
 /**
- * Updates or removes the parent-only `ids` query key.
- * Lets us add an empty instance without writing default-valued tracked params (`t-1`, `r-1`, …).
+ * Returns a patch for `ids` only. Apply with `syncURLSearchParams` so an empty list removes the key.
  */
-function writeInstanceIds(params: URLSearchParams, ids: number[]) {
-  if (ids.length === 0) {
-    params.delete(INSTANCE_IDS_KEY);
-  } else {
-    params.set(INSTANCE_IDS_KEY, ids.join(","));
+function instanceIdsPatch(ids: number[]): URLSearchParams {
+  const patch = new URLSearchParams();
+  if (ids.length > 0) {
+    patch.set(INSTANCE_IDS_KEY, ids.join(","));
   }
+  return patch;
+}
+
+/** All indexed query keys for one instance (`t-1`, `r-1`, …) — used when removing an instance from the URL. */
+function governedKeysForInstance(i: number): string[] {
+  return Object.values(urlParamConfig).map((def) => instanceKeyFn(def.getParam, i));
 }
 
 /**
- * Applies a new query string via `history.replaceState` (no full page reload).
- * Used by the parent when adding/removing instances; children use `trackUrl` setters instead.
+ * Commits a full query string to the address bar when it differs from the current location (normalized).
  */
-function replaceSearch(next: URLSearchParams) {
-  const current = new URLSearchParams(window.location.search);
-  if (next.toString() === current.toString()) return;
+function commitSearch(next: URLSearchParams) {
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
+  if (compareNormalizedSearchParams(next, current)) return;
 
   const search = next.toString();
   const url = search
@@ -118,14 +124,23 @@ function replaceSearch(next: URLSearchParams) {
   history.replaceState(history.state, "", url);
 }
 
+/**
+ * Syncs only `governed` keys from `patch` onto `base` (defaults to current location) and commits.
+ * Keys absent from `patch` are removed — required for default elision and instance teardown.
+ */
+function replaceSearchSynced(governed: string[], patch: URLSearchParams, base?: URLSearchParams) {
+  commitSearch(
+    syncURLSearchParams(base ?? cloneSearchParams(new URLSearchParams(window.location.search)), governed, patch),
+  );
+}
+
 /** "Add Text Param" — registers the next instance index in `ids` and mounts a new section. */
 function addComponent() {
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
   const list = getInstanceList();
   const nextIndex = list.length > 0 ? Math.max(...list) + 1 : 1;
-  const currentParams = new URLSearchParams(window.location.search);
-  writeInstanceIds(currentParams, [...list, nextIndex]);
 
-  replaceSearch(currentParams);
+  replaceSearchSynced([INSTANCE_IDS_KEY], instanceIdsPatch([...list, nextIndex]), current);
   updateUrlDisplay();
   reconcileSections();
 }
@@ -135,19 +150,12 @@ function addComponent() {
  * Called from each section's Delete button.
  */
 function deleteItem(i: number) {
-  const nextSearchParams = new URLSearchParams(window.location.search);
-  const childParams = separateIndexedSearchParams(nextSearchParams, i);
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
+  const childSlice = separateIndexedSearchParams(current, i);
+  const withoutChild = syncURLSearchParams(current, governedKeysForInstance(i), childSlice);
+  const ids = parseInstanceIds(withoutChild).filter((id) => id !== i);
 
-  childParams.forEach((_, key) => {
-    nextSearchParams.delete(key);
-  });
-
-  writeInstanceIds(
-    nextSearchParams,
-    parseInstanceIds(nextSearchParams).filter((id) => id !== i),
-  );
-
-  replaceSearch(nextSearchParams);
+  replaceSearchSynced([INSTANCE_IDS_KEY], instanceIdsPatch(ids), withoutChild);
   updateUrlDisplay();
   reconcileSections();
 }

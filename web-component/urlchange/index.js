@@ -1,8 +1,12 @@
 /**
  * Demo page for vanilla `trackUrl` / `modURLSearchParams`.
  * Mirrors ModURLSearchParamsComponent.tsx: multiple indexed instances, each syncing UI ↔ URL.
+ *
+ * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`
+ * (see `toolsURLSearchParams.test.ts` for behaviour).
  */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
+import { cloneSearchParams, compareNormalizedSearchParams, syncURLSearchParams } from "./toolsURLSearchParams.js";
 const radioOptions = ["radio1", "radio2", "radio3"];
 const defaultRadioOption = radioOptions[1];
 const selectOptions = ["item1", "item2", "item3", "item4"];
@@ -45,7 +49,8 @@ const urlParamConfig = {
     decode: (value) => value === "1",
   },
 };
-const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(urlParamConfig, (key, i) => `${key}-${i}`);
+const instanceKeyFn = (key, i) => `${key}-${i}`;
+const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(urlParamConfig, instanceKeyFn);
 /** Parent-only key: lists instance indexes without writing default-valued tracked params. */
 const INSTANCE_IDS_KEY = "ids";
 /**
@@ -53,7 +58,7 @@ const INSTANCE_IDS_KEY = "ids";
  * Uses the parent `ids=1,2` list plus any key ending in `-{n}` (e.g. `t-3` from deep links).
  */
 function parseInstanceIds(params) {
-  const indexes = new Set();
+  const indexes = /* @__PURE__ */ new Set();
   const raw = params.get(INSTANCE_IDS_KEY);
   if (raw) {
     for (const part of raw.split(",")) {
@@ -70,39 +75,49 @@ function parseInstanceIds(params) {
 }
 /** Reads the current page URL and returns which instance indexes should be rendered. */
 function getInstanceList() {
-  return parseInstanceIds(new URLSearchParams(window.location.search));
+  return parseInstanceIds(cloneSearchParams(new URLSearchParams(window.location.search)));
 }
 /**
- * Updates or removes the parent-only `ids` query key.
- * Lets us add an empty instance without writing default-valued tracked params (`t-1`, `r-1`, …).
+ * Returns a patch for `ids` only. Apply with `syncURLSearchParams` so an empty list removes the key.
  */
-function writeInstanceIds(params, ids) {
-  if (ids.length === 0) {
-    params.delete(INSTANCE_IDS_KEY);
-  } else {
-    params.set(INSTANCE_IDS_KEY, ids.join(","));
+function instanceIdsPatch(ids) {
+  const patch = new URLSearchParams();
+  if (ids.length > 0) {
+    patch.set(INSTANCE_IDS_KEY, ids.join(","));
   }
+  return patch;
+}
+/** All indexed query keys for one instance (`t-1`, `r-1`, …) — used when removing an instance from the URL. */
+function governedKeysForInstance(i) {
+  return Object.values(urlParamConfig).map((def) => instanceKeyFn(def.getParam, i));
 }
 /**
- * Applies a new query string via `history.replaceState` (no full page reload).
- * Used by the parent when adding/removing instances; children use `trackUrl` setters instead.
+ * Commits a full query string to the address bar when it differs from the current location (normalized).
  */
-function replaceSearch(next) {
-  const current = new URLSearchParams(window.location.search);
-  if (next.toString() === current.toString()) return;
+function commitSearch(next) {
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
+  if (compareNormalizedSearchParams(next, current)) return;
   const search = next.toString();
   const url = search
     ? `${window.location.pathname}?${search}${window.location.hash}`
     : `${window.location.pathname}${window.location.hash}`;
   history.replaceState(history.state, "", url);
 }
+/**
+ * Syncs only `governed` keys from `patch` onto `base` (defaults to current location) and commits.
+ * Keys absent from `patch` are removed — required for default elision and instance teardown.
+ */
+function replaceSearchSynced(governed, patch, base) {
+  commitSearch(
+    syncURLSearchParams(base ?? cloneSearchParams(new URLSearchParams(window.location.search)), governed, patch),
+  );
+}
 /** "Add Text Param" — registers the next instance index in `ids` and mounts a new section. */
 function addComponent() {
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
   const list = getInstanceList();
   const nextIndex = list.length > 0 ? Math.max(...list) + 1 : 1;
-  const currentParams = new URLSearchParams(window.location.search);
-  writeInstanceIds(currentParams, [...list, nextIndex]);
-  replaceSearch(currentParams);
+  replaceSearchSynced([INSTANCE_IDS_KEY], instanceIdsPatch([...list, nextIndex]), current);
   updateUrlDisplay();
   reconcileSections();
 }
@@ -111,16 +126,11 @@ function addComponent() {
  * Called from each section's Delete button.
  */
 function deleteItem(i) {
-  const nextSearchParams = new URLSearchParams(window.location.search);
-  const childParams = separateIndexedSearchParams(nextSearchParams, i);
-  childParams.forEach((_, key) => {
-    nextSearchParams.delete(key);
-  });
-  writeInstanceIds(
-    nextSearchParams,
-    parseInstanceIds(nextSearchParams).filter((id) => id !== i),
-  );
-  replaceSearch(nextSearchParams);
+  const current = cloneSearchParams(new URLSearchParams(window.location.search));
+  const childSlice = separateIndexedSearchParams(current, i);
+  const withoutChild = syncURLSearchParams(current, governedKeysForInstance(i), childSlice);
+  const ids = parseInstanceIds(withoutChild).filter((id) => id !== i);
+  replaceSearchSynced([INSTANCE_IDS_KEY], instanceIdsPatch(ids), withoutChild);
   updateUrlDisplay();
   reconcileSections();
 }
@@ -196,16 +206,6 @@ function childSectionHtml(index) {
  * Wires `trackUrl` for instance `index`, binds inputs to `setParam` / `setParams`, and mirrors URL → UI.
  */
 class ChildSection {
-  index;
-  root;
-  textInput;
-  multiSelect;
-  checkboxA;
-  checkboxB;
-  dumpPre;
-  radioInputs;
-  handle;
-  syncing = false;
   /**
    * Builds DOM from template, starts `trackUrl` for this index, and hooks user events to URL updates.
    * `onDelete` is shared from the parent so every section calls the same delete handler.
@@ -282,6 +282,16 @@ class ChildSection {
       });
     });
   }
+  index;
+  root;
+  textInput;
+  multiSelect;
+  checkboxA;
+  checkboxB;
+  dumpPre;
+  radioInputs;
+  handle;
+  syncing = false;
   /**
    * Applies decoded URL params to form controls and the debug `<pre>`.
    * `syncing` prevents input handlers from writing back to the URL while we push values in.
@@ -311,7 +321,7 @@ const instanceListEl = document.getElementById("instance-list");
 const addBtn = document.getElementById("add-btn");
 const linkOff = document.getElementById("link-off");
 linkOff.href = window.location.href.split("?")[0];
-const sections = new Map();
+const sections = /* @__PURE__ */ new Map();
 /**
  * Syncs mounted sections with `getInstanceList()`: create missing, destroy removed, reorder DOM.
  * Runs on load, on URL changes (back/forward, links), and after add/delete.

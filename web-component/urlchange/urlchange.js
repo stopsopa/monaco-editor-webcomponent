@@ -1,4 +1,9 @@
-import { mergeURLSearchParams } from "./toolsURLSearchParams.js";
+import {
+  cloneSearchParams,
+  compareNormalizedSearchParams,
+  mergeURLSearchParams,
+  syncURLSearchParams,
+} from "./toolsURLSearchParams.js";
 // ─── Types ───────────────────────────────────────────────────────────────────
 /** Param value types inferred from a config object's `default` fields. */
 // ─── History helpers ─────────────────────────────────────────────────────────
@@ -76,8 +81,8 @@ function createURLParamTracker(config, keyFn) {
       emitCurrentState(next);
     };
     const writeSearch = (next) => {
-      const currentSearchParams = new URLSearchParams(window.location.search);
-      if (next.toString() === currentSearchParams.toString()) return;
+      const current = cloneSearchParams(new URLSearchParams(window.location.search));
+      if (compareNormalizedSearchParams(next, current)) return;
       ensureHistoryPatched();
       const search = next.toString();
       const url = search
@@ -90,28 +95,28 @@ function createURLParamTracker(config, keyFn) {
     const setParam = (key, value) => {
       const def = config[key];
       const finalKey = applyKey(def.getParam, ctx);
-      const next = new URLSearchParams(window.location.search);
-      if (JSON.stringify(value) === JSON.stringify(def.default)) {
-        next.delete(finalKey);
-      } else {
-        next.set(finalKey, def.encode(value));
+      const current = cloneSearchParams(new URLSearchParams(window.location.search));
+      const patch = new URLSearchParams();
+      if (JSON.stringify(value) !== JSON.stringify(def.default)) {
+        patch.set(finalKey, def.encode(value));
       }
-      writeSearch(next);
+      writeSearch(syncURLSearchParams(current, [finalKey], patch));
     };
     const setParams = (updates) => {
-      const next = new URLSearchParams(window.location.search);
+      const current = cloneSearchParams(new URLSearchParams(window.location.search));
+      const governed = [];
+      const patch = new URLSearchParams();
       for (const [key, value] of Object.entries(updates)) {
         const def = config[key];
         if (def && value !== void 0) {
           const finalKey = applyKey(def.getParam, ctx);
-          if (JSON.stringify(value) === JSON.stringify(def.default)) {
-            next.delete(finalKey);
-          } else {
-            next.set(finalKey, def.encode(value));
+          governed.push(finalKey);
+          if (JSON.stringify(value) !== JSON.stringify(def.default)) {
+            patch.set(finalKey, def.encode(value));
           }
         }
       }
-      writeSearch(next);
+      writeSearch(syncURLSearchParams(current, governed, patch));
     };
     if (fireOnMount) {
       emitCurrentState();
@@ -162,4 +167,11 @@ function trackUrl(config, onChange, options) {
 function onUrlChange(listener) {
   return subscribeUrlChange(listener);
 }
-export { createURLParamTracker, modURLSearchParams as default, mergeURLSearchParams, onUrlChange, trackUrl };
+export {
+  compareNormalizedSearchParams,
+  createURLParamTracker,
+  modURLSearchParams as default,
+  mergeURLSearchParams,
+  onUrlChange,
+  trackUrl,
+};
