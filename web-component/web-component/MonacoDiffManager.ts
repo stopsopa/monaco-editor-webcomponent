@@ -1,64 +1,123 @@
-const DEFAULT_VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
+/**
+ * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco:sync
+ */
+import type * as Monaco from "monaco-editor";
 
-let sharedMonacoPromise: Promise<any> | null = null;
-
-function loadMonaco(vsPath: string = DEFAULT_VS_PATH): Promise<any> {
-  if (!sharedMonacoPromise) {
-    sharedMonacoPromise = new Promise<any>((resolve, reject) => {
-      const win = window as any;
-      if (win.monaco) {
-        resolve(win.monaco);
-        return;
-      }
-
-      const finish = () => {
-        win.require.config({ paths: { vs: vsPath } });
-        win.require(["vs/editor/editor.main"], () => {
-          if (win.monaco) {
-            resolve(win.monaco);
-          } else {
-            reject(new Error("Monaco failed to initialize"));
-          }
-        });
-      };
-
-      if (win.require) {
-        finish();
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = `${vsPath}/loader.js`;
-      script.async = true;
-      script.onload = () => finish();
-      script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
-      document.head.appendChild(script);
-    });
+// autogenerate v
+export const MONACO_GENERATED = {
+  "version": "0.53.0",
+  "cdn": {
+    "jsdelivr": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
+    "unpkg": "https://unpkg.com/monaco-editor@0.53.0/min/vs",
+    "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs"
+  },
+  "self": "/monaco/vs",
+  "cdnProbe": {
+    "jsdelivr": {
+      "ok": true,
+      "status": 200,
+      "url": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs/loader.js",
+      "vsBase": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs"
+    },
+    "unpkg": {
+      "ok": true,
+      "status": 200,
+      "url": "https://unpkg.com/monaco-editor@0.53.0/min/vs/loader.js",
+      "vsBase": "https://unpkg.com/monaco-editor@0.53.0/min/vs"
+    },
+    "cdnjs": {
+      "ok": true,
+      "status": 200,
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs/loader.js",
+      "vsBase": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs"
+    }
   }
-  return sharedMonacoPromise;
+} as const;
+// autogenerate ^
+
+export type MonacoGenerated = typeof MONACO_GENERATED;
+
+type MonacoWindow = Window & {
+  require?: {
+    config: (cfg: { paths: Record<string, string> }) => void;
+    (deps: string[], cb: () => void): void;
+  };
+  monaco?: typeof Monaco;
+};
+
+let loadPromise: Promise<typeof Monaco> | null = null;
+
+/**
+ * Load Monaco once. `vsBase` is the `/min/vs` folder URL from MONACO_GENERATED
+ * (e.g. generated.cdn.jsdelivr or generated.self).
+ */
+export function loadMonaco(
+  generated: MonacoGenerated = MONACO_GENERATED,
+  vsBase: string = generated.cdn.jsdelivr,
+): Promise<typeof Monaco> {
+  if (loadPromise) {
+    return loadPromise;
+  }
+
+  loadPromise = new Promise<typeof Monaco>((resolve, reject) => {
+    const win = window as unknown as MonacoWindow;
+
+    const finish = () => {
+      win.require?.config({ paths: { vs: vsBase } });
+      win.require?.(["vs/editor/editor.main"], () => {
+        if (win.monaco) {
+          resolve(win.monaco);
+        } else {
+          reject(new Error("Monaco failed to initialize"));
+        }
+      });
+    };
+
+    if (win.monaco) {
+      resolve(win.monaco);
+      return;
+    }
+
+    if (win.require) {
+      finish();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = `${vsBase}/loader.js`;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsBase}`));
+    document.head.appendChild(script);
+  });
+
+  return loadPromise;
 }
 
 export interface MonacoDiffManagerOptions {
   original: string;
   modified: string;
   language?: string;
+  /** `/min/vs` base URL; defaults to MONACO_GENERATED.cdn.jsdelivr */
+  vsBase?: string;
+  editorOptions?: Monaco.editor.IStandaloneDiffEditorConstructionOptions;
 }
 
 export class MonacoDiffManager {
   private _readyPromise: Promise<void>;
-  private _editor: any = null;
+  private _editor: Monaco.editor.IStandaloneDiffEditor | null = null;
   private _resizeObserver: ResizeObserver | null = null;
+  private _layoutRaf: number | null = null;
 
   constructor(container: HTMLElement, options: MonacoDiffManagerOptions) {
     this._readyPromise = (async () => {
-      const monaco = await loadMonaco();
+      const monaco = await loadMonaco(MONACO_GENERATED, options.vsBase);
 
       this._editor = monaco.editor.createDiffEditor(container, {
         automaticLayout: false,
-        scrollbar: {
-          vertical: "auto",
-        },
+        scrollbar: { vertical: "auto" },
         scrollBeyondLastLine: false,
+        ...options.editorOptions,
       });
 
       const language = options.language || "javascript";
@@ -68,11 +127,10 @@ export class MonacoDiffManager {
         modified: monaco.editor.createModel(options.modified, language),
       });
 
-      const scheduleLayout = () => requestAnimationFrame(() => this._editor?.layout());
-      scheduleLayout();
+      this._scheduleLayout();
 
       if (typeof ResizeObserver !== "undefined") {
-        this._resizeObserver = new ResizeObserver(() => scheduleLayout());
+        this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
         this._resizeObserver.observe(container);
       }
     })();
@@ -82,14 +140,31 @@ export class MonacoDiffManager {
     return this._readyPromise;
   }
 
-  public getEditor(): any {
+  public getEditor(): Monaco.editor.IStandaloneDiffEditor | null {
     return this._editor;
   }
 
   public destroy() {
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+
+    if (this._layoutRaf !== null) {
+      cancelAnimationFrame(this._layoutRaf);
+      this._layoutRaf = null;
+    }
+
+    const model = this._editor?.getModel();
+    model?.original.dispose();
+    model?.modified.dispose();
     this._editor?.dispose();
     this._editor = null;
+  }
+
+  private _scheduleLayout() {
+    if (this._layoutRaf !== null) return;
+    this._layoutRaf = requestAnimationFrame(() => {
+      this._layoutRaf = null;
+      this._editor?.layout();
+    });
   }
 }

@@ -1,4 +1,5 @@
 node_modules/
+public/monaco/
 .DS_Store
 *.log
 noprettier/monaco-editor/
