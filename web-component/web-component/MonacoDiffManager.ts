@@ -305,6 +305,7 @@ export class MonacoDiffManager {
         // verticalScrollbarSize: 10,
         // horizontalScrollbarSize: 10,
       },
+
       ...editorOptions,
     });
 
