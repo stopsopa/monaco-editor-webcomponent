@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trackUrl demo — indexed URL params</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 12px 20px;
+      }
+      .gcp-css {
+        color: #1a73e8;
+        text-decoration: none;
+      }
+      .gcp-css:hover {
+        text-decoration: underline;
+      }
+      .url-ser-container {
+        padding: 20px;
+      }
+      .url-ser-container:not(:last-child) {
+        border-bottom: 1px solid gray;
+      }
+      .url-ser-flex {
+        display: flex;
+        gap: 40px;
+      }
+      .url-ser-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+        max-width: 400px;
+      }
+      .url-ser-input {
+        width: 100%;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+      .url-ser-select {
+        width: 100%;
+        padding: 5px;
+        height: 100px;
+        box-sizing: border-box;
+      }
+      .url-ser-label-margin {
+        margin-right: 10px;
+      }
+      .url-ser-dump-container {
+        flex: 1;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+      .url-ser-pre {
+        white-space: pre-wrap;
+        margin: 0;
+      }
+      .buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .url-ser-delete-btn {
+        padding: 8px 12px;
+        background-color: #4d6eff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .url-ser-delete-btn.red {
+        background-color: #ff4d4f;
+      }
+      .url-ser-delete-btn:hover {
+        background-color: #ff7875;
+      }
+      #url-display {
+        white-space: pre-wrap;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        background: #f0f4ff;
+        border: 1px solid #c5d4ff;
+        border-radius: 6px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      #toolbar {
+        margin-bottom: 8px;
+      }
+      #instance-list {
+        margin-left: 8px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <pre id="url-display"></pre>
+    <div id="toolbar">
+      <a href="" id="link-off" class="gcp-css">off</a>
+      <span style="padding: 0 10px">|</span>
+      <a href="./" class="gcp-css">up ..</a>
+      <span style="padding: 0 10px">|</span>
+      <a href="?t-1=aaa&amp;t-3=cccc" class="gcp-css">1, 3 example</a>
+    </div>
+    <hr />
+    <button type="button" id="add-btn">Add Text Param</button>
+    <span id="instance-list"></span>
+    <div id="sections"></div>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
