@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./",
+    "rootDir": "./",
+    "target": "ESNext",
+    "module": "ESNext",
+    "declaration": false,
+    "sourceMap": false,
+    "noEmit": false,
+    "allowJs": false
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "es.ts", "tsc.ignore.ts", "web-component/other-manager", "monaco-editor"]
+}

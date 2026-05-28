@@ -19,9 +19,19 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/lodash": "^4.17.24",
     "cookie-parser": "^1.4.6",
-    "express": "^4.18.2",
+    "esbuild": "^0.28.0",
+    "express": "^4.22.2",
+    "lodash": "^4.18.1",
     "monaco-editor": "^0.55.1",
-    "serve-index": "^1.9.1"
+    "serve-index": "^1.9.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "@types/serve-index": "^1.9.4",
+    "typescript": "^6.0.3"
   }
 }

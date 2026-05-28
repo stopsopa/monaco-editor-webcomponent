@@ -38,6 +38,85 @@ EEE
       source: false,
       confirm: false,
     },
+    server: {
+      command: `
+set -e
+export DISABLE_CACHE_TEMPLATE=true
+node --env-file .env --watch server.ts
+      `,
+      description: "Status of all things",
+      source: false,
+      confirm: false,
+    },
+    [`type`]: {
+      command: `
+set -e  
+export NODE_OPTIONS=
+cat <<EEE
+
+$ /bin/bash tsc.sh
+
+EEE
+NODE_OPTIONS= /bin/bash tsc.sh
+`,
+      description: `launch esbuild - will NOT launch browser nor IDE`,
+      confirm: false,
+      source: false,
+    },
+    [`transpile`]: {
+      command: `
+
+cat <<EEE
+
+  Alternatively use:
+
+      npx tsc -p tsconfig.watch.json --watch
+
+      or:
+
+      /bin/bash tsc-watch.sh
+         that will run prettier after each change
+
+      this will have faster fetch but will not have bundling
+
+EEE
+
+/bin/bash tsc-watch.sh
+
+echo "-------------- old method ---------- vvvv"
+
+echo -e "\n      Press enter to continue\n"
+read
+
+S="\\\\"      
+cat <<EEE
+
+/bin/bash transpile.sh select.ts
+
+/bin/bash transpile.sh composition/SelectedSectionManager.ts
+
+/bin/bash transpile.sh \${S}
+  select.ts \${S}
+  composition/selected-section/SelectedSectionManager.ts \${S}
+  composition/options-section/OptionsSectionManager.ts \${S}
+  composition/selected-section/selected-section.ts \${S}
+  composition/options-section/options-section.ts \${S}
+  js/CenterResizer.ts \${S}
+  composition/list-up-down-navi/ListManager.ts \${S}
+  composition/composite-select/CompositeManager.ts \${S}
+  composition/container/ContainerManager.ts \${S}
+  composition/unbind/clickOutside.ts \${S}
+  composition/composite-select/helpers.ts \${S}
+  composition/composite-select/demo.ts \${S}
+  composition/Module.ts \${S}
+  js/CenterAndHeightResizer.ts
+
+EEE
+      `,
+      description: "Transpile choice.js/select.ts to choice.js/select.js",
+      source: false,
+      confirm: false,
+    },
     [`git monaco-editor & compile`]: {
       command: `
 set -e
