@@ -21,12 +21,26 @@ function printCdnInspectHint(name, inspectUrls, log = console.log) {
   }
 }
 
-/** HEAD request; probes loader.js under the vs base URL. */
-async function probeCdn(name, vsBase) {
-  const url = `${vsBase}/loader.js`;
+/** Probe loader.js — HTTP HEAD for CDNs, filesystem for /monaco/vs (self). */
+async function probeVsSource(name, vsBase, projectRoot) {
+  const loaderUrl = `${vsBase}/loader.js`;
+
+  if (vsBase.startsWith("/")) {
+    const localFile = join(projectRoot, "public", vsBase.replace(/^\//, ""), "loader.js");
+    const ok = existsSync(localFile);
+    return {
+      name,
+      vsBase,
+      url: loaderUrl,
+      ok,
+      status: ok ? 200 : null,
+      error: ok ? null : `Not found: ${localFile}`,
+      local: true,
+    };
+  }
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(loaderUrl, {
       method: "HEAD",
       redirect: "follow",
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
@@ -35,14 +49,15 @@ async function probeCdn(name, vsBase) {
     return {
       name,
       vsBase,
-      url,
+      url: loaderUrl,
       ok: res.ok,
       status: res.status,
       error: res.ok ? null : res.statusText || `HTTP ${res.status}`,
+      local: false,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { name, vsBase, url, ok: false, status: null, error: message };
+    return { name, vsBase, url: loaderUrl, ok: false, status: null, error: message, local: false };
   }
 }
 
@@ -81,30 +96,42 @@ const CDN_INSPECT_URLS = {
   cdnjs: "https://cdnjs.com/libraries/monaco-editor",
 };
 
-const config = {
-  version,
-  cdn: {
-    jsdelivr: `https://cdn.jsdelivr.net/npm/monaco-editor@${version}/min/vs`,
-    unpkg: `https://unpkg.com/monaco-editor@${version}/min/vs`,
-    cdnjs: `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${version}/min/vs`,
-  },
-  self: "/monaco/vs",
-};
+const vsSrc = join(dirname(monacoPkgPath), "min/vs");
+const vsDest = join(root, "public/monaco/vs");
 
-console.log(`\nCDN probe (HEAD ${config.version} → …/min/vs/loader.js):\n`);
+if (existsSync(vsSrc)) {
+  mkdirSync(join(root, "public/monaco"), { recursive: true });
+  cpSync(vsSrc, vsDest, { recursive: true });
+  console.log(`Copied min/vs → public/monaco/vs (${version})\n`);
+} else {
+  console.warn(`Warning: ${vsSrc} not found — skipped copy to public/monaco/vs\n`);
+}
+
+const vsCandidates = [
+  { name: "jsdelivr", vsBase: `https://cdn.jsdelivr.net/npm/monaco-editor@${version}/min/vs` },
+  { name: "unpkg", vsBase: `https://unpkg.com/monaco-editor@${version}/min/vs` },
+  { name: "cdnjs", vsBase: `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${version}/min/vs` },
+  { name: "self", vsBase: "/monaco/vs" },
+];
+
+console.log(`CDN probe (monaco-editor@${version} → …/min/vs/loader.js):\n`);
 
 const cdnProbes = await Promise.all(
-  Object.entries(config.cdn).map(([name, vsBase]) => probeCdn(name, vsBase)),
+  vsCandidates.map(({ name, vsBase }) => probeVsSource(name, vsBase, root)),
 );
 
 for (const probe of cdnProbes) {
   const label = probe.ok ? "OK" : "MISSING";
-  const status = probe.status ?? "—";
-  console.log(`  [${label}] ${probe.name} HTTP ${status}`);
+  const statusLabel = probe.local ? "local" : `HTTP ${probe.status ?? "—"}`;
+  console.log(`  [${label}] ${probe.name} ${statusLabel}`);
   console.log(`         ${probe.url}`);
   if (probe.error) {
     console.log(`         ${probe.error}`);
-    printCdnInspectHint(probe.name, CDN_INSPECT_URLS);
+    if (probe.name === "self") {
+      console.log(`         (served from public/monaco/vs after monaco:sync copy)`);
+    } else {
+      printCdnInspectHint(probe.name, CDN_INSPECT_URLS);
+    }
   }
 }
 
@@ -114,33 +141,25 @@ if (failedProbes.length > 0) {
   for (const probe of failedProbes) {
     console.error(`  ${probe.name}: ${probe.error ?? "unreachable"}`);
     console.error(`    ${probe.url}`);
-    printCdnInspectHint(probe.name, CDN_INSPECT_URLS, console.error);
+    if (probe.name !== "self") {
+      printCdnInspectHint(probe.name, CDN_INSPECT_URLS, console.error);
+    }
   }
   console.error(
-    "\nFix: bump/downgrade monaco-editor, run pnpm run monaco:sync after install, or use data-wc-monaco=self.\n",
+    "\nFix: bump/downgrade monaco-editor, run pnpm install, then pnpm run monaco:sync again.\n",
   );
   process.exit(1);
 }
 
-config.cdnProbe = Object.fromEntries(
-  cdnProbes.map((p) => [p.name, { ok: p.ok, status: p.status, url: p.url, vsBase: p.vsBase }]),
-);
+const config = {
+  version,
+  vs: cdnProbes.filter((p) => p.ok).map((p) => p.vsBase),
+};
 
-console.log("");
+console.log(`\nvs load order: ${config.vs.join(" → ")}\n`);
 
 const managerPath = join(root, MANAGER_REL);
 patchAutogenerateBlock(managerPath, config);
 console.log(`Patched autogenerate block in ${MANAGER_REL}`);
-
-const vsSrc = join(dirname(monacoPkgPath), "min/vs");
-const vsDest = join(root, "public/monaco/vs");
-
-if (existsSync(vsSrc)) {
-  mkdirSync(join(root, "public/monaco"), { recursive: true });
-  cpSync(vsSrc, vsDest, { recursive: true });
-  console.log(`Copied min/vs → public/monaco/vs (${version})`);
-} else {
-  console.warn(`Warning: ${vsSrc} not found — skipped copy to public/monaco/vs`);
-}
 
 console.log(`\nmonaco-editor@${version} — done.\n`);

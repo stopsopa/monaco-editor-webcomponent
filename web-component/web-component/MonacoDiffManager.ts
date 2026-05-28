@@ -6,32 +6,12 @@ import type * as Monaco from "monaco-editor";
 // autogenerate v
 export const MONACO_GENERATED = {
   "version": "0.53.0",
-  "cdn": {
-    "jsdelivr": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
-    "unpkg": "https://unpkg.com/monaco-editor@0.53.0/min/vs",
-    "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs"
-  },
-  "self": "/monaco/vs",
-  "cdnProbe": {
-    "jsdelivr": {
-      "ok": true,
-      "status": 200,
-      "url": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs/loader.js",
-      "vsBase": "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs"
-    },
-    "unpkg": {
-      "ok": true,
-      "status": 200,
-      "url": "https://unpkg.com/monaco-editor@0.53.0/min/vs/loader.js",
-      "vsBase": "https://unpkg.com/monaco-editor@0.53.0/min/vs"
-    },
-    "cdnjs": {
-      "ok": true,
-      "status": 200,
-      "url": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs/loader.js",
-      "vsBase": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs"
-    }
-  }
+  "vs": [
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
+    "https://unpkg.com/monaco-editor@0.53.0/min/vs",
+    "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
+    "/monaco/vs"
+  ]
 } as const;
 // autogenerate ^
 
@@ -40,37 +20,32 @@ export type MonacoGenerated = typeof MONACO_GENERATED;
 type MonacoWindow = Window & {
   require?: {
     config: (cfg: { paths: Record<string, string> }) => void;
-    (deps: string[], cb: () => void): void;
+    (deps: string[], cb: () => void, errCb?: (err: unknown) => void): void;
   };
   monaco?: typeof Monaco;
 };
 
-let loadPromise: Promise<typeof Monaco> | null = null;
+let cachedMonaco: typeof Monaco | null = null;
 
-/**
- * Load Monaco once. `vsBase` is the `/min/vs` folder URL from MONACO_GENERATED
- * (e.g. generated.cdn.jsdelivr or generated.self).
- */
-export function loadMonaco(
-  generated: MonacoGenerated = MONACO_GENERATED,
-  vsBase: string = generated.cdn.jsdelivr,
-): Promise<typeof Monaco> {
-  if (loadPromise) {
-    return loadPromise;
-  }
-
-  loadPromise = new Promise<typeof Monaco>((resolve, reject) => {
+function loadMonacoFromVs(vsBase: string): Promise<typeof Monaco> {
+  return new Promise<typeof Monaco>((resolve, reject) => {
     const win = window as unknown as MonacoWindow;
 
     const finish = () => {
       win.require?.config({ paths: { vs: vsBase } });
-      win.require?.(["vs/editor/editor.main"], () => {
-        if (win.monaco) {
-          resolve(win.monaco);
-        } else {
-          reject(new Error("Monaco failed to initialize"));
-        }
-      });
+      win.require?.(
+        ["vs/editor/editor.main"],
+        () => {
+          if (win.monaco) {
+            resolve(win.monaco);
+          } else {
+            reject(new Error(`Monaco did not initialize from ${vsBase}`));
+          }
+        },
+        (err) => {
+          reject(err instanceof Error ? err : new Error(String(err)));
+        },
+      );
     };
 
     if (win.monaco) {
@@ -90,16 +65,35 @@ export function loadMonaco(
     script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsBase}`));
     document.head.appendChild(script);
   });
+}
 
-  return loadPromise;
+/** Try each `/min/vs` URL in order until Monaco loads. */
+export async function loadMonaco(generated: MonacoGenerated = MONACO_GENERATED): Promise<typeof Monaco> {
+  if (cachedMonaco) {
+    return cachedMonaco;
+  }
+
+  const errors: Error[] = [];
+
+  for (const vsBase of generated.vs) {
+    try {
+      cachedMonaco = await loadMonacoFromVs(vsBase);
+      return cachedMonaco;
+    } catch (err) {
+      errors.push(err instanceof Error ? err : new Error(String(err)));
+    }
+  }
+
+  throw new AggregateError(
+    errors,
+    `Failed to load monaco-editor@${generated.version} from all sources`,
+  );
 }
 
 export interface MonacoDiffManagerOptions {
   original: string;
   modified: string;
   language?: string;
-  /** `/min/vs` base URL; defaults to MONACO_GENERATED.cdn.jsdelivr */
-  vsBase?: string;
   editorOptions?: Monaco.editor.IStandaloneDiffEditorConstructionOptions;
 }
 
@@ -111,7 +105,7 @@ export class MonacoDiffManager {
 
   constructor(container: HTMLElement, options: MonacoDiffManagerOptions) {
     this._readyPromise = (async () => {
-      const monaco = await loadMonaco(MONACO_GENERATED, options.vsBase);
+      const monaco = await loadMonaco(MONACO_GENERATED);
 
       this._editor = monaco.editor.createDiffEditor(container, {
         automaticLayout: false,
