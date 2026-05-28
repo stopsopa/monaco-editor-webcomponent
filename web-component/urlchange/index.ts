@@ -1,3 +1,7 @@
+/**
+ * Demo page for vanilla `trackUrl` / `modURLSearchParams`.
+ * Mirrors ModURLSearchParamsComponent.tsx: multiple indexed instances, each syncing UI ↔ URL.
+ */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
 
 const radioOptions = ["radio1", "radio2", "radio3"] as const;
@@ -8,6 +12,7 @@ const selectOptions = ["item1", "item2", "item3", "item4"] as const;
 type SingleOptionType = (typeof selectOptions)[number];
 type MultiSelectOptionsArray = SingleOptionType[];
 
+/** Schema for one instance: local names, short URL keys (`t`, `r`, …), defaults, encode/decode. */
 const urlParamConfig = {
   text: {
     default: "default text",
@@ -57,6 +62,10 @@ type UrlParams = Parameters<Parameters<typeof trackUrl>[0]>[0];
 /** Parent-only key: lists instance indexes without writing default-valued tracked params. */
 const INSTANCE_IDS_KEY = "ids";
 
+/**
+ * Collects all instance indexes present in the query string.
+ * Uses the parent `ids=1,2` list plus any key ending in `-{n}` (e.g. `t-3` from deep links).
+ */
 function parseInstanceIds(params: URLSearchParams): number[] {
   const indexes = new Set<number>();
 
@@ -77,10 +86,15 @@ function parseInstanceIds(params: URLSearchParams): number[] {
   return Array.from(indexes).sort((a, b) => a - b);
 }
 
+/** Reads the current page URL and returns which instance indexes should be rendered. */
 function getInstanceList(): number[] {
   return parseInstanceIds(new URLSearchParams(window.location.search));
 }
 
+/**
+ * Updates or removes the parent-only `ids` query key.
+ * Lets us add an empty instance without writing default-valued tracked params (`t-1`, `r-1`, …).
+ */
 function writeInstanceIds(params: URLSearchParams, ids: number[]) {
   if (ids.length === 0) {
     params.delete(INSTANCE_IDS_KEY);
@@ -89,6 +103,10 @@ function writeInstanceIds(params: URLSearchParams, ids: number[]) {
   }
 }
 
+/**
+ * Applies a new query string via `history.replaceState` (no full page reload).
+ * Used by the parent when adding/removing instances; children use `trackUrl` setters instead.
+ */
 function replaceSearch(next: URLSearchParams) {
   const current = new URLSearchParams(window.location.search);
   if (next.toString() === current.toString()) return;
@@ -100,12 +118,11 @@ function replaceSearch(next: URLSearchParams) {
   history.replaceState(history.state, "", url);
 }
 
+/** "Add Text Param" — registers the next instance index in `ids` and mounts a new section. */
 function addComponent() {
   const list = getInstanceList();
   const nextIndex = list.length > 0 ? Math.max(...list) + 1 : 1;
   const currentParams = new URLSearchParams(window.location.search);
-
-  // Register the instance only — do not seed tracked params at their defaults.
   writeInstanceIds(currentParams, [...list, nextIndex]);
 
   replaceSearch(currentParams);
@@ -113,6 +130,10 @@ function addComponent() {
   reconcileSections();
 }
 
+/**
+ * Removes one instance: drops all of its indexed tracked keys and removes `i` from `ids`.
+ * Called from each section's Delete button.
+ */
 function deleteItem(i: number) {
   const nextSearchParams = new URLSearchParams(window.location.search);
   const childParams = separateIndexedSearchParams(nextSearchParams, i);
@@ -133,10 +154,12 @@ function deleteItem(i: number) {
 
 const urlDisplayEl = document.getElementById("url-display");
 
+/** Keeps the top `<pre id="url-display">` in sync with the full browser URL after every change. */
 const updateUrlDisplay = (url: string = window.location.href) => {
   if (urlDisplayEl) urlDisplayEl.textContent = url;
 };
 
+/** HTML template for one demo instance (form controls + JSON dump). Injected via `innerHTML`. */
 function childSectionHtml(index: number): string {
   const radioOptionsHtml = radioOptions
     .map(
@@ -201,6 +224,10 @@ function childSectionHtml(index: number): string {
   `;
 }
 
+/**
+ * One indexed param block in the page.
+ * Wires `trackUrl` for instance `index`, binds inputs to `setParam` / `setParams`, and mirrors URL → UI.
+ */
 class ChildSection {
   readonly root: HTMLElement;
   private readonly textInput: HTMLInputElement;
@@ -212,6 +239,10 @@ class ChildSection {
   private readonly handle: ReturnType<typeof trackUrl>;
   private syncing = false;
 
+  /**
+   * Builds DOM from template, starts `trackUrl` for this index, and hooks user events to URL updates.
+   * `onDelete` is shared from the parent so every section calls the same delete handler.
+   */
   constructor(
     container: HTMLElement,
     readonly index: number,
@@ -299,6 +330,10 @@ class ChildSection {
     });
   }
 
+  /**
+   * Applies decoded URL params to form controls and the debug `<pre>`.
+   * `syncing` prevents input handlers from writing back to the URL while we push values in.
+   */
   private syncUi(params: UrlParams, path: string) {
     this.syncing = true;
     this.textInput.value = params.text;
@@ -314,6 +349,7 @@ class ChildSection {
     this.syncing = false;
   }
 
+  /** Stops URL listener and removes this section from the DOM. */
   destroy() {
     this.handle.disconnect();
     this.root.remove();
@@ -329,6 +365,10 @@ linkOff.href = window.location.href.split("?")[0];
 
 const sections = new Map<number, ChildSection>();
 
+/**
+ * Syncs mounted sections with `getInstanceList()`: create missing, destroy removed, reorder DOM.
+ * Runs on load, on URL changes (back/forward, links), and after add/delete.
+ */
 function reconcileSections() {
   const list = getInstanceList();
   instanceListEl.textContent = list.length > 0 ? list.join(", ") : "(none)";
@@ -354,6 +394,7 @@ function reconcileSections() {
 
 addBtn.addEventListener("click", addComponent);
 
+// Initial paint + react to back/forward and any URL change that affects instance list or params.
 onUrlChange(() => {
   updateUrlDisplay();
   reconcileSections();
