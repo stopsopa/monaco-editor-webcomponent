@@ -1,3 +1,4 @@
+import "../CenterAndHeightResizer.js";
 import { MonacoDiffManager } from "./MonacoDiffManager.js";
 const original = `
 function hello() {
