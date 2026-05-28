@@ -75,7 +75,6 @@ export class MonacoDiffManager {
   _destroyed = false;
   constructor(bindElement, options = {}) {
     this.propParentElement = bindElement;
-    this.propParentElement.classList.add("monaco-diff-manager");
     this.propOptions = {
       original: "",
       modified: "",
@@ -184,13 +183,11 @@ export class MonacoDiffManager {
     this._modifiedModel?.dispose();
     this._modifiedModel = null;
     this._monaco = null;
-    this.propParentElement.replaceChildren();
-    this.propParentElement.classList.remove("monaco-diff-manager");
   }
   render() {
-    this.propEditorContainer = document.createElement("div");
-    this.propEditorContainer.className = "monaco-diff-manager__editor";
-    this.propParentElement.replaceChildren(this.propEditorContainer);
+    // Mount Monaco directly in the provided element.
+    // The consumer owns sizing (height/width) via parent layout.
+    this.propEditorContainer = this.propParentElement;
   }
   async _init() {
     const load =

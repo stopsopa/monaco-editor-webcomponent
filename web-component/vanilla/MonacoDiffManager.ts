@@ -45,6 +45,7 @@ export interface IStandaloneDiffEditor {
 }
 
 const DEFAULT_VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
+// const DEFAULT_VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.2/min/vs";
 
 type MonacoWindow = Window & {
   require?: {
@@ -140,7 +141,6 @@ export class MonacoDiffManager {
 
   constructor(bindElement: HTMLElement, options: MonacoDiffManagerOptions = {}) {
     this.propParentElement = bindElement;
-    this.propParentElement.classList.add("monaco-diff-manager");
     this.propOptions = {
       original: "",
       modified: "",
@@ -272,14 +272,12 @@ export class MonacoDiffManager {
     this._modifiedModel = null;
 
     this._monaco = null;
-    this.propParentElement.replaceChildren();
-    this.propParentElement.classList.remove("monaco-diff-manager");
   }
 
   protected render() {
-    this.propEditorContainer = document.createElement("div");
-    this.propEditorContainer.className = "monaco-diff-manager__editor";
-    this.propParentElement.replaceChildren(this.propEditorContainer);
+    // Mount Monaco directly in the provided element.
+    // The consumer owns sizing (height/width) via parent layout.
+    this.propEditorContainer = this.propParentElement;
   }
 
   private async _init() {

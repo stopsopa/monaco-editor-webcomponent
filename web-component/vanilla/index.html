@@ -5,28 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MonacoDiffManager Demo</title>
     <link rel="stylesheet" href="vanilla.css" />
-    <style>
-      body,
-      html {
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-    </style>
   </head>
   <body>
-    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="500px" style="padding: 12px">
-      <div class="monaco-diff-demo">
-        <div id="container" class="monaco-diff-demo__editor-host"></div>
-        <section class="monaco-diff-demo__actions">
-          <label for="inline-it">Inline</label>
-          <input type="checkbox" id="inline-it" class="inline-it" />
-          <button type="button" id="swap-btn">Swap sides</button>
-        </section>
-      </div>
+    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="100px" style="padding: 12px">
+      space
     </center-and-height-resizer>
-    <script type="module" src="../CenterAndHeightResizer.js"></script>
-    <!-- <script type="module" src="index.js"></script> -->
+    <br />
+    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="500px" style="padding: 12px">
+      <div id="container" class="monaco-diff"></div>
+    </center-and-height-resizer>
+    <!-- <script type="module" src="../CenterAndHeightResizer.js"></script> -->
+    <script type="module" src="index.js"></script>
   </body>
 </html>
