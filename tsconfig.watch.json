@@ -11,5 +11,15 @@
     "allowJs": false
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "es.ts", "tsc.ignore.ts", "web-component/other-manager", "monaco-editor"]
+  "exclude": [
+    "node_modules",
+    "es.ts",
+    "tsc.ignore.ts",
+    "web-component/other-manager",
+    "monaco-editor",
+    "prettier.config.ts",
+    "pnpm-lock.yaml",
+    "server.ts",
+    "lib/utils.js"
+  ]
 }

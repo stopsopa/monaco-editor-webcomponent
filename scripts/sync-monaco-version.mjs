@@ -67,17 +67,14 @@ function patchAutogenerateBlock(filePath, config) {
   const end = content.indexOf(AUTOGEN_END);
 
   if (start === -1 || end === -1 || end <= start) {
-    throw new Error(
-      `${filePath} must contain "${AUTOGEN_START}" and "${AUTOGEN_END}" (end after start)`,
-    );
+    throw new Error(`${filePath} must contain "${AUTOGEN_START}" and "${AUTOGEN_END}" (end after start)`);
   }
 
   const block = `${AUTOGEN_START}
 export const MONACO_GENERATED = ${JSON.stringify(config, null, 2)} as const;
 ${AUTOGEN_END}`;
 
-  const next =
-    content.slice(0, start) + block + content.slice(end + AUTOGEN_END.length);
+  const next = content.slice(0, start) + block + content.slice(end + AUTOGEN_END.length);
 
   writeFileSync(filePath, next);
 }
@@ -116,9 +113,7 @@ const vsCandidates = [
 
 console.log(`CDN probe (monaco-editor@${version} → …/min/vs/loader.js):\n`);
 
-const cdnProbes = await Promise.all(
-  vsCandidates.map(({ name, vsBase }) => probeVsSource(name, vsBase, root)),
-);
+const cdnProbes = await Promise.all(vsCandidates.map(({ name, vsBase }) => probeVsSource(name, vsBase, root)));
 
 for (const probe of cdnProbes) {
   const label = probe.ok ? "OK" : "MISSING";
@@ -145,9 +140,7 @@ if (failedProbes.length > 0) {
       printCdnInspectHint(probe.name, CDN_INSPECT_URLS, console.error);
     }
   }
-  console.error(
-    "\nFix: bump/downgrade monaco-editor, run pnpm install, then pnpm run monaco:sync again.\n",
-  );
+  console.error("\nFix: bump/downgrade monaco-editor, run pnpm install, then pnpm run monaco:sync again.\n");
   process.exit(1);
 }
 

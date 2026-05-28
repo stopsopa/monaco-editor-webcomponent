@@ -1,11 +1,90 @@
-import { loadMonaco } from "../monaco/loadMonaco.js";
+// autogenerate v
+export const MONACO_GENERATED = {
+  version: "0.53.0",
+  vs: [
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
+    "https://unpkg.com/monaco-editor@0.53.0/min/vs",
+    "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
+    "/monaco/vs",
+  ],
+};
+let cachedMonaco = null;
+function loadMonacoFromVs(vsBase) {
+  return new Promise((resolve, reject) => {
+    const win = window;
+    const finish = () => {
+      win.require?.config({ paths: { vs: vsBase } });
+      win.require?.(
+        ["vs/editor/editor.main"],
+        () => {
+          if (win.monaco) {
+            resolve(win.monaco);
+          } else {
+            reject(new Error(`Monaco did not initialize from ${vsBase}`));
+          }
+        },
+        (err) => {
+          reject(err instanceof Error ? err : new Error(String(err)));
+        },
+      );
+    };
+    if (win.monaco) {
+      resolve(win.monaco);
+      return;
+    }
+    if (win.require) {
+      finish();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = `${vsBase}/loader.js`;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsBase}`));
+    document.head.appendChild(script);
+  });
+}
+/** Try each `/min/vs` URL in order until Monaco loads. */
+export async function loadMonaco(generated = MONACO_GENERATED) {
+  if (cachedMonaco) {
+    return cachedMonaco;
+  }
+  const errors = [];
+  for (const vsBase of generated.vs) {
+    try {
+      cachedMonaco = await loadMonacoFromVs(vsBase);
+      return cachedMonaco;
+    } catch (err) {
+      errors.push(err instanceof Error ? err : new Error(String(err)));
+    }
+  }
+  throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
+}
 export class MonacoDiffManager {
   _readyPromise;
   _editor = null;
   _resizeObserver = null;
   _layoutRaf = null;
   constructor(container, options) {
-    this._readyPromise = this._init(container, options);
+    this._readyPromise = (async () => {
+      const monaco = await loadMonaco(MONACO_GENERATED);
+      this._editor = monaco.editor.createDiffEditor(container, {
+        automaticLayout: false,
+        scrollbar: { vertical: "auto" },
+        scrollBeyondLastLine: false,
+        ...options.editorOptions,
+      });
+      const language = options.language || "javascript";
+      this._editor.setModel({
+        original: monaco.editor.createModel(options.original, language),
+        modified: monaco.editor.createModel(options.modified, language),
+      });
+      this._scheduleLayout();
+      if (typeof ResizeObserver !== "undefined") {
+        this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
+        this._resizeObserver.observe(container);
+      }
+    })();
   }
   whenReady() {
     return this._readyPromise;
@@ -25,25 +104,6 @@ export class MonacoDiffManager {
     model?.modified.dispose();
     this._editor?.dispose();
     this._editor = null;
-  }
-  async _init(container, options) {
-    const monaco = await loadMonaco(options.monaco ?? {});
-    this._editor = monaco.editor.createDiffEditor(container, {
-      automaticLayout: false,
-      scrollbar: { vertical: "auto" },
-      scrollBeyondLastLine: false,
-      ...options.editorOptions,
-    });
-    const language = options.language || "javascript";
-    this._editor.setModel({
-      original: monaco.editor.createModel(options.original, language),
-      modified: monaco.editor.createModel(options.modified, language),
-    });
-    this._scheduleLayout();
-    if (typeof ResizeObserver !== "undefined") {
-      this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-      this._resizeObserver.observe(container);
-    }
   }
   _scheduleLayout() {
     if (this._layoutRaf !== null) return;

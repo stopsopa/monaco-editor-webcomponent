@@ -26,8 +26,11 @@ cat <<EEE
 
   🐙 GitHub: $(git ls-remote --get-url origin | awk '{\$1=\$1};1' | tr -d '\\n' | sed -E 's/git@github\\.com:([^/]+)\\/(.+)\\.git/https:\\/\\/github.com\\/\\1\\/\\2/g')
 
-  arango admin:
-    http://localhost:\${PORT}
+After clonning this repository run:
+pnpm install
+pnpm run monaco:sync
+
+that will recreate /public/monaco/ directory
 
 -- DEV NOTES --
 

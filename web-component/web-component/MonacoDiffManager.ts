@@ -5,13 +5,13 @@ import type * as Monaco from "monaco-editor";
 
 // autogenerate v
 export const MONACO_GENERATED = {
-  "version": "0.53.0",
-  "vs": [
+  version: "0.53.0",
+  vs: [
     "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
     "https://unpkg.com/monaco-editor@0.53.0/min/vs",
     "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
-    "/monaco/vs"
-  ]
+    "/monaco/vs",
+  ],
 } as const;
 // autogenerate ^
 
@@ -84,10 +84,7 @@ export async function loadMonaco(generated: MonacoGenerated = MONACO_GENERATED):
     }
   }
 
-  throw new AggregateError(
-    errors,
-    `Failed to load monaco-editor@${generated.version} from all sources`,
-  );
+  throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
 }
 
 export interface MonacoDiffManagerOptions {

@@ -22,9 +22,7 @@ export function determineMode(importMetaUrl: string) {
   const extract = importMetaUrl.match(regex);
 
   if (extract?.length !== 3) {
-    throw th(
-      `importMetaUrl didn't extract parts ${regex}, it is ${importMetaUrl}`,
-    );
+    throw th(`importMetaUrl didn't extract parts ${regex}, it is ${importMetaUrl}`);
   }
 
   mode = extract[1] as "serial" | "parallel";
@@ -32,9 +30,7 @@ export function determineMode(importMetaUrl: string) {
 
 function check() {
   if (!modeAllowedValues.includes(mode)) {
-    throw th(
-      `mode ${mode} is not allowed. Allowed values are ${modeAllowedValues.join(", ")}`,
-    );
+    throw th(`mode ${mode} is not allowed. Allowed values are ${modeAllowedValues.join(", ")}`);
   }
 
   if (typeof process?.env?.CONCURRENCY !== "string") {
@@ -47,9 +43,7 @@ function check() {
 
   if (mode === "serial") {
     if (process.env.CONCURRENCY !== "1") {
-      throw th(
-        `CONCURRENCY environment variable must be 1 for serial mode, it is ${process.env.CONCURRENCY}`,
-      );
+      throw th(`CONCURRENCY environment variable must be 1 for serial mode, it is ${process.env.CONCURRENCY}`);
     }
 
     return;
@@ -57,9 +51,7 @@ function check() {
 
   if (mode === "parallel") {
     if (process.env.CONCURRENCY === "1") {
-      throw th(
-        "CONCURRENCY environment variable must be > 1 for parallel mode, it is 1",
-      );
+      throw th("CONCURRENCY environment variable must be > 1 for parallel mode, it is 1");
     }
 
     return;
