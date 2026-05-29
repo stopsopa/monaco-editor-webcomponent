@@ -62,6 +62,77 @@ export async function hydrateCache(generated = MONACO_GENERATED) {
   }
   throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
 }
+export const SCRIPT_TYPE_ORIGINAL = "text/original";
+export const SCRIPT_TYPE_MODIFIED = "text/modified";
+/**
+ * Reads optional `<script type="text/original">` and `<script type="text/modified">`
+ * from direct children of `host`. Returns `null` when none are present.
+ */
+export function readDeclarativeDiffScripts(host) {
+  const scripts = Array.from(host.querySelectorAll(":scope > script"));
+  if (scripts.length === 0) {
+    return null;
+  }
+  if (scripts.length !== 2) {
+    throw new Error(
+      `<monaco-diff>: expected exactly two <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
+    );
+  }
+  let originalScript;
+  let modifiedScript;
+  for (const script of scripts) {
+    const type = script.getAttribute("type");
+    if (type === SCRIPT_TYPE_ORIGINAL) {
+      if (originalScript) {
+        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
+      }
+      originalScript = script;
+    } else if (type === SCRIPT_TYPE_MODIFIED) {
+      if (modifiedScript) {
+        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
+      }
+      modifiedScript = script;
+    } else {
+      throw new Error(
+        `<monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`,
+      );
+    }
+  }
+  if (!originalScript || !modifiedScript) {
+    const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
+    throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
+  }
+  const original = originalScript.textContent ?? "";
+  const modified = modifiedScript.textContent ?? "";
+  const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
+  const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
+  originalScript.remove();
+  modifiedScript.remove();
+  return { original, modified, originalLanguage, modifiedLanguage };
+}
+const DEFAULT_LANGUAGE = "javascript";
+function resolveDiffContent(options) {
+  let original = options.original ?? "";
+  let modified = options.modified ?? "";
+  let originalLanguage = options.originalLanguage;
+  let modifiedLanguage = options.modifiedLanguage;
+  if (options.host) {
+    const declarative = readDeclarativeDiffScripts(options.host);
+    if (declarative) {
+      original = declarative.original;
+      modified = declarative.modified;
+      originalLanguage = originalLanguage ?? declarative.originalLanguage;
+      modifiedLanguage = modifiedLanguage ?? declarative.modifiedLanguage;
+    }
+  }
+  const sharedLanguage = options.language;
+  return {
+    original,
+    modified,
+    originalLanguage: originalLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+    modifiedLanguage: modifiedLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+  };
+}
 export class MonacoDiffManager {
   _container;
   _readyPromise;
@@ -72,6 +143,7 @@ export class MonacoDiffManager {
     this._container = _container;
     _container.style.height = "100%";
     _container.style.width = "100%";
+    const { original, modified, originalLanguage, modifiedLanguage } = resolveDiffContent(options);
     this._readyPromise = (async () => {
       const monaco = await hydrateCache(MONACO_GENERATED);
       this._editor = monaco.editor.createDiffEditor(this._container, {
@@ -82,10 +154,9 @@ export class MonacoDiffManager {
         scrollBeyondLastLine: false,
         ...options.editorOptions,
       });
-      const language = options.language || "javascript";
       this._editor.setModel({
-        original: monaco.editor.createModel(options.original, language),
-        modified: monaco.editor.createModel(options.modified, language),
+        original: monaco.editor.createModel(original, originalLanguage),
+        modified: monaco.editor.createModel(modified, modifiedLanguage),
       });
       this._scheduleLayout();
       this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());

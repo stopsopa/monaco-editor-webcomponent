@@ -87,10 +87,114 @@ export async function hydrateCache(generated: MonacoGenerated = MONACO_GENERATED
   throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
 }
 
-export interface MonacoDiffManagerOptions {
+export const SCRIPT_TYPE_ORIGINAL = "text/original" as const;
+export const SCRIPT_TYPE_MODIFIED = "text/modified" as const;
+
+export interface DeclarativeDiffContent {
   original: string;
   modified: string;
+  originalLanguage?: string;
+  modifiedLanguage?: string;
+}
+
+/**
+ * Reads optional `<script type="text/original">` and `<script type="text/modified">`
+ * from direct children of `host`. Returns `null` when none are present.
+ */
+export function readDeclarativeDiffScripts(host: HTMLElement): DeclarativeDiffContent | null {
+  const scripts = Array.from(host.querySelectorAll<HTMLScriptElement>(":scope > script"));
+
+  if (scripts.length === 0) {
+    return null;
+  }
+
+  if (scripts.length !== 2) {
+    throw new Error(
+      `<monaco-diff>: expected exactly two <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
+    );
+  }
+
+  let originalScript: HTMLScriptElement | undefined;
+  let modifiedScript: HTMLScriptElement | undefined;
+
+  for (const script of scripts) {
+    const type = script.getAttribute("type");
+
+    if (type === SCRIPT_TYPE_ORIGINAL) {
+      if (originalScript) {
+        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
+      }
+      originalScript = script;
+    } else if (type === SCRIPT_TYPE_MODIFIED) {
+      if (modifiedScript) {
+        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
+      }
+      modifiedScript = script;
+    } else {
+      throw new Error(
+        `<monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`,
+      );
+    }
+  }
+
+  if (!originalScript || !modifiedScript) {
+    const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
+    throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
+  }
+
+  const original = originalScript.textContent ?? "";
+  const modified = modifiedScript.textContent ?? "";
+  const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
+  const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
+
+  originalScript.remove();
+  modifiedScript.remove();
+
+  return { original, modified, originalLanguage, modifiedLanguage };
+}
+
+const DEFAULT_LANGUAGE = "javascript";
+
+function resolveDiffContent(options: MonacoDiffManagerOptions): {
+  original: string;
+  modified: string;
+  originalLanguage: string;
+  modifiedLanguage: string;
+} {
+  let original = options.original ?? "";
+  let modified = options.modified ?? "";
+  let originalLanguage = options.originalLanguage;
+  let modifiedLanguage = options.modifiedLanguage;
+
+  if (options.host) {
+    const declarative = readDeclarativeDiffScripts(options.host);
+    if (declarative) {
+      original = declarative.original;
+      modified = declarative.modified;
+      originalLanguage = originalLanguage ?? declarative.originalLanguage;
+      modifiedLanguage = modifiedLanguage ?? declarative.modifiedLanguage;
+    }
+  }
+
+  const sharedLanguage = options.language;
+
+  return {
+    original,
+    modified,
+    originalLanguage: originalLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+    modifiedLanguage: modifiedLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+  };
+}
+
+export interface MonacoDiffManagerOptions {
+  /** When set, reads optional declarative `<script>` children before creating models. */
+  host?: HTMLElement;
+  original?: string;
+  modified?: string;
+  /** Applies to both sides when `originalLanguage` / `modifiedLanguage` are not set. */
   language?: string;
+  originalLanguage?: string;
+  modifiedLanguage?: string;
   editorOptions?: Monaco.editor.IStandaloneDiffEditorConstructionOptions;
 }
 
@@ -107,6 +211,8 @@ export class MonacoDiffManager {
     _container.style.height = "100%";
     _container.style.width = "100%";
 
+    const { original, modified, originalLanguage, modifiedLanguage } = resolveDiffContent(options);
+
     this._readyPromise = (async () => {
       const monaco = await hydrateCache(MONACO_GENERATED);
 
@@ -119,11 +225,9 @@ export class MonacoDiffManager {
         ...options.editorOptions,
       });
 
-      const language = options.language || "javascript";
-
       this._editor.setModel({
-        original: monaco.editor.createModel(options.original, language),
-        modified: monaco.editor.createModel(options.modified, language),
+        original: monaco.editor.createModel(original, originalLanguage),
+        modified: monaco.editor.createModel(modified, modifiedLanguage),
       });
 
       this._scheduleLayout();
