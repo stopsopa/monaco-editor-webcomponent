@@ -1,4 +1,4 @@
-import "../CenterAndHeightResizer.js";
+import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
 import { MonacoDiffManager } from "./MonacoDiffManager.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
@@ -45,7 +45,8 @@ function wireResizerUrlSync(resizer, index) {
   resizer.addEventListener("onCenter", syncToUrl);
   resizer.addEventListener("onHeight", syncToUrl);
 }
-document.querySelectorAll("center-and-height-resizer").forEach((el, index) => {
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
+document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
 const original = `

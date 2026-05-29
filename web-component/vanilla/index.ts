@@ -1,11 +1,12 @@
-import "../CenterAndHeightResizer.js";
+import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
 import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
 import type * as Monaco from "monaco-editor";
 
 // const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
-const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs";
+// const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs";
+const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs";
 
 type MonacoWindow = Window & {
   require?: {
@@ -148,22 +149,9 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-type CenterAndHeightResizerEl = HTMLElement & {
-  getContentRoot(): HTMLElement;
-};
-
-/** Slotted `#container` may not resize when shadow `#center-div` does — observe that panel instead. */
-function resolveLayoutRoot(container: HTMLElement): HTMLElement {
-  // const resizer = container.closest("center-and-height-resizer") as CenterAndHeightResizerEl | null;
-  // return resizer?.getContentRoot?.() ?? container;
-  return container;
-}
-
-async function initMonacoDiffEditor(container: HTMLElement): Promise<void> {
+async function initMonacoDiffEditor(container: HTMLElement, layoutRoot: HTMLElement): Promise<void> {
   container.style.height = "100%";
   container.style.width = "100%";
-
-  const layoutRoot = resolveLayoutRoot(container);
 
   const monaco = await loadMonaco();
 
@@ -185,7 +173,7 @@ async function initMonacoDiffEditor(container: HTMLElement): Promise<void> {
     if (layoutRaf !== null) return;
     layoutRaf = requestAnimationFrame(() => {
       layoutRaf = null;
-      const { width, height } = layoutRoot.getBoundingClientRect();
+      const { width, height } = container.getBoundingClientRect();
       if (width === 0 || height === 0) return;
       editor.layout({ width, height });
     });
@@ -193,9 +181,9 @@ async function initMonacoDiffEditor(container: HTMLElement): Promise<void> {
 
   scheduleLayout();
 
-  new ResizeObserver(() => scheduleLayout()).observe(layoutRoot);
+  new ResizeObserver(() => scheduleLayout()).observe(container);
 
-  const resizer = container.closest("center-and-height-resizer");
+  const resizer = container.closest(CenterAndHeightResizer.tagName);
   if (resizer) {
     for (const eventName of ["onLeft", "onCenter", "onHeight"] as const) {
       resizer.addEventListener(eventName, scheduleLayout);
@@ -203,13 +191,18 @@ async function initMonacoDiffEditor(container: HTMLElement): Promise<void> {
   }
 }
 
-document.querySelectorAll("center-and-height-resizer").forEach((el, index) => {
-  wireResizerUrlSync(el as HTMLElement, index);
-});
-
 const container = document.getElementById("container");
 if (!container) {
   throw new Error("Missing #container element");
 }
 
-await initMonacoDiffEditor(container);
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
+
+document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
+  wireResizerUrlSync(el as HTMLElement, index);
+});
+
+// const layoutRoot = await CenterAndHeightResizer.whenHostReady(container);
+// await initMonacoDiffEditor(container, layoutRoot);
+
+await initMonacoDiffEditor(container, container);

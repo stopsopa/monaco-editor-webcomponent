@@ -1,4 +1,4 @@
-import "../CenterAndHeightResizer.js";
+import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
 import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
@@ -63,7 +63,9 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-document.querySelectorAll("center-and-height-resizer").forEach((el, index) => {
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
+
+document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el as HTMLElement, index);
 });
 

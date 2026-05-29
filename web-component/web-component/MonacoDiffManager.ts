@@ -1,16 +1,16 @@
 /**
  * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco:sync
  */
+import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
+
 import type * as Monaco from "monaco-editor";
 
 // autogenerate v
 export const MONACO_GENERATED = {
-  version: "0.53.0",
+  version: "0.55.1",
   vs: [
-    // "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs",
-    "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
-    "https://unpkg.com/monaco-editor@0.53.0/min/vs",
-    "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs",
+    "https://unpkg.com/monaco-editor@0.55.1/min/vs",
     "/monaco/vs",
   ],
 } as const;
@@ -95,16 +95,25 @@ export interface MonacoDiffManagerOptions {
   editorOptions?: Monaco.editor.IStandaloneDiffEditorConstructionOptions;
 }
 
+function resolveLayoutRoot(container: HTMLElement): HTMLElement {
+  const resizer = container.closest(CenterAndHeightResizer.tagName) as CenterAndHeightResizer | null;
+  return resizer?.getContentRoot() ?? container;
+}
+
 export class MonacoDiffManager {
   private _readyPromise: Promise<void>;
   private _editor: Monaco.editor.IStandaloneDiffEditor | null = null;
+  private _layoutRoot!: HTMLElement;
   private _resizeObserver: ResizeObserver | null = null;
   private _layoutRaf: number | null = null;
 
   constructor(container: HTMLElement, options: MonacoDiffManagerOptions) {
     container.style.height = "100%";
     container.style.width = "100%";
+    this._layoutRoot = resolveLayoutRoot(container);
     this._readyPromise = (async () => {
+      this._layoutRoot = await CenterAndHeightResizer.whenHostReady(container);
+
       const monaco = await loadMonaco(MONACO_GENERATED);
 
       this._editor = monaco.editor.createDiffEditor(container, {
@@ -118,8 +127,6 @@ export class MonacoDiffManager {
 
       const language = options.language || "javascript";
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       this._editor.setModel({
         original: monaco.editor.createModel(options.original, language),
         modified: monaco.editor.createModel(options.modified, language),
@@ -129,7 +136,14 @@ export class MonacoDiffManager {
 
       if (typeof ResizeObserver !== "undefined") {
         this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-        this._resizeObserver.observe(container);
+        this._resizeObserver.observe(this._layoutRoot);
+      }
+
+      const resizer = container.closest(CenterAndHeightResizer.tagName);
+      if (resizer) {
+        for (const eventName of ["onLeft", "onCenter", "onHeight"] as const) {
+          resizer.addEventListener(eventName, () => this._scheduleLayout());
+        }
       }
     })();
   }
@@ -165,17 +179,13 @@ export class MonacoDiffManager {
 
       if (!this._editor) return;
 
-      const container = this._editor.getContainerDomNode();
-      const rect = container.getBoundingClientRect();
+      const { width, height } = this._layoutRoot.getBoundingClientRect();
 
-      if (rect.width === 0 || rect.height === 0) {
+      if (width === 0 || height === 0) {
         return;
       }
 
-      this._editor.layout({
-        width: rect.width,
-        height: rect.height,
-      });
+      this._editor.layout({ width, height });
     });
   }
 }
