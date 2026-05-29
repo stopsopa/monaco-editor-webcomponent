@@ -27,14 +27,8 @@ const urlParamConfig = {
   multiSelect: {
     default: ["item1", "item2"],
     getParam: "m",
-    encode: (value) => JSON.stringify(value),
-    decode: (value) => {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return [];
-      }
-    },
+    encode: (value) => value.join("."),
+    decode: (value) => value.split("."),
   },
   checkboxA: {
     default: false,
@@ -58,7 +52,7 @@ const INSTANCE_IDS_KEY = "ids";
  * Uses the parent `ids=1,2` list plus any key ending in `-{n}` (e.g. `t-3` from deep links).
  */
 function parseInstanceIds(params) {
-  const indexes = /* @__PURE__ */ new Set();
+  const indexes = new Set();
   const raw = params.get(INSTANCE_IDS_KEY);
   if (raw) {
     for (const part of raw.split(",")) {
@@ -206,6 +200,16 @@ function childSectionHtml(index) {
  * Wires `trackUrl` for instance `index`, binds inputs to `setParam` / `setParams`, and mirrors URL → UI.
  */
 class ChildSection {
+  index;
+  root;
+  textInput;
+  multiSelect;
+  checkboxA;
+  checkboxB;
+  dumpPre;
+  radioInputs;
+  handle;
+  syncing = false;
   /**
    * Builds DOM from template, starts `trackUrl` for this index, and hooks user events to URL updates.
    * `onDelete` is shared from the parent so every section calls the same delete handler.
@@ -282,16 +286,6 @@ class ChildSection {
       });
     });
   }
-  index;
-  root;
-  textInput;
-  multiSelect;
-  checkboxA;
-  checkboxB;
-  dumpPre;
-  radioInputs;
-  handle;
-  syncing = false;
   /**
    * Applies decoded URL params to form controls and the debug `<pre>`.
    * `syncing` prevents input handlers from writing back to the URL while we push values in.
@@ -321,7 +315,7 @@ const instanceListEl = document.getElementById("instance-list");
 const addBtn = document.getElementById("add-btn");
 const linkOff = document.getElementById("link-off");
 linkOff.href = window.location.href.split("?")[0];
-const sections = /* @__PURE__ */ new Map();
+const sections = new Map();
 /**
  * Syncs mounted sections with `getInstanceList()`: create missing, destroy removed, reorder DOM.
  * Runs on load, on URL changes (back/forward, links), and after add/delete.

@@ -33,14 +33,8 @@ const urlParamConfig = {
   multiSelect: {
     default: ["item1", "item2"] as MultiSelectOptionsArray,
     getParam: "m",
-    encode: (value: MultiSelectOptionsArray) => JSON.stringify(value),
-    decode: (value: string) => {
-      try {
-        return JSON.parse(value) as MultiSelectOptionsArray;
-      } catch {
-        return [];
-      }
-    },
+    encode: (value: MultiSelectOptionsArray) => value.join("."),
+    decode: (value: string) => value.split(".") as MultiSelectOptionsArray,
   },
   checkboxA: {
     default: false,

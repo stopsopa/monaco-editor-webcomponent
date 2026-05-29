@@ -4,10 +4,7 @@ import {
   mergeURLSearchParams,
   syncURLSearchParams,
 } from "./toolsURLSearchParams.js";
-// ─── Types ───────────────────────────────────────────────────────────────────
-/** Param value types inferred from a config object's `default` fields. */
-// ─── History helpers ─────────────────────────────────────────────────────────
-const urlChangeListeners = /* @__PURE__ */ new Set();
+const urlChangeListeners = new Set();
 let historyPatched = false;
 let originalPushState = null;
 let originalReplaceState = null;
@@ -62,7 +59,7 @@ function createURLParamTracker(config, keyFn) {
   function trackedSignature(search, ctx) {
     return separateIndexedSearchParams(search, ctx).toString();
   }
-  function trackUrl2(onChange, options) {
+  function trackUrl(onChange, options) {
     const ctx = options?.ctx;
     const replace = options?.replace !== false;
     const fireOnMount = options?.fireOnMount !== false;
@@ -108,7 +105,7 @@ function createURLParamTracker(config, keyFn) {
       const patch = new URLSearchParams();
       for (const [key, value] of Object.entries(updates)) {
         const def = config[key];
-        if (def && value !== void 0) {
+        if (def && value !== undefined) {
           const finalKey = applyKey(def.getParam, ctx);
           governed.push(finalKey);
           if (JSON.stringify(value) !== JSON.stringify(def.default)) {
@@ -135,7 +132,7 @@ function createURLParamTracker(config, keyFn) {
   }
   return {
     separateIndexedSearchParams,
-    trackUrl: trackUrl2,
+    trackUrl,
     readState,
   };
 }
@@ -143,7 +140,7 @@ function createURLParamTracker(config, keyFn) {
  * Vanilla counterpart to React `modURLSearchParams`. Define params once, then call
  * `trackUrl(onChange)` or use the standalone `trackUrl(config, onChange)` helper.
  */
-function modURLSearchParams(config, keyFn) {
+export default function modURLSearchParams(config, keyFn) {
   return createURLParamTracker(config, keyFn);
 }
 /**
@@ -158,20 +155,13 @@ function modURLSearchParams(config, keyFn) {
  *   (params, updatedURLSearchParams) => { ... },
  * );
  */
-function trackUrl(config, onChange, options) {
+export function trackUrl(config, onChange, options) {
   const { keyFn, ...trackOptions } = options ?? {};
   const tracker = createURLParamTracker(config, keyFn);
   return tracker.trackUrl(onChange, trackOptions);
 }
 /** Subscribe to query-string updates (history push/replace/popstate). */
-function onUrlChange(listener) {
+export function onUrlChange(listener) {
   return subscribeUrlChange(listener);
 }
-export {
-  compareNormalizedSearchParams,
-  createURLParamTracker,
-  modURLSearchParams as default,
-  mergeURLSearchParams,
-  onUrlChange,
-  trackUrl,
-};
+export { mergeURLSearchParams, createURLParamTracker, compareNormalizedSearchParams };
