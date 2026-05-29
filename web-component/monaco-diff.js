@@ -13,7 +13,7 @@
  * </monaco-diff>
  * ```
  */
-import { MonacoDiffManager } from "./web-component/MonacoDiffManager.js";
+import { MonacoDiffManager } from "./MonacoDiffManager.js";
 export class MonacoDiffElement extends HTMLElement {
   static tagName = "monaco-diff";
   _container;

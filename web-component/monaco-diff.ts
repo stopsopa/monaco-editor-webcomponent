@@ -14,7 +14,7 @@
  * ```
  */
 
-import { MonacoDiffManager } from "./web-component/MonacoDiffManager.js";
+import { MonacoDiffManager } from "./MonacoDiffManager.js";
 
 export class MonacoDiffElement extends HTMLElement {
   static readonly tagName = "monaco-diff" as const;

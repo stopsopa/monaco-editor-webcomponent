@@ -1,6 +1,6 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-import { MonacoDiffElement } from "../monaco-diff.js";
+import { MonacoDiffManager } from "../MonacoDiffManager.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
 function createResizerParamConfig(resizer) {
   return {
@@ -45,13 +45,59 @@ function wireResizerUrlSync(resizer, index) {
   resizer.addEventListener("onCenter", syncToUrl);
   resizer.addEventListener("onHeight", syncToUrl);
 }
+const original = `
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.monaco) return resolve(win.monaco);
+    if (win.require) return finish();
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
+`.trim();
+const modified = `
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.moneco) return resolve(win.monaco);    
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.added = 'stuff'
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
+`.trim();
+const container = document.getElementById("container");
+if (!container) {
+  throw new Error("Missing #container element");
+}
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
-await customElements.whenDefined(MonacoDiffElement.tagName);
-const diff = document.querySelector(MonacoDiffElement.tagName);
-if (!diff) {
-  throw new Error("Missing <monaco-diff> element");
-}
-await diff.whenReady();
+const mgr = new MonacoDiffManager(container, {
+  original,
+  modified,
+  language: "javascript",
+});
+await mgr.whenReady();

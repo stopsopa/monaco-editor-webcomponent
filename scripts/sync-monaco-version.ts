@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 const PROBE_TIMEOUT_MS = 15_000;
 const AUTOGEN_START = "// autogenerate v";
 const AUTOGEN_END = "// autogenerate ^";
-const MANAGER_REL = "web-component/web-component/MonacoDiffManager.ts";
+const MANAGER_REL = "web-component/MonacoDiffManager.ts";
 
 export type MonacoGeneratedConfig = {
   version: string;

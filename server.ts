@@ -96,5 +96,9 @@ app.use(
 );
 
 app.listen(port, host, () => {
-  console.log(`\n 🌎  Server is running ` + `http://${host}:${port}/web-component/vanilla/index.html\n`);
+  console.log(
+    `\n 🌎  Server is running\n` +
+      `    <monaco-diff>  http://${host}:${port}/web-component/web-component/index.html\n` +
+      `    MonacoDiffManager  http://${host}:${port}/web-component/manager/index.html\n`,
+  );
 });
