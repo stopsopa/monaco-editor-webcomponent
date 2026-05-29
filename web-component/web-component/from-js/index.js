@@ -1,6 +1,6 @@
-import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
-import modURLSearchParams from "../urlchange/urlchange.js";
-import { isMonacoTheme, MonacoDiffElement, tagName } from "../monaco-diff.js";
+import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
+import modURLSearchParams from "../../urlchange/urlchange.js";
+import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
 const diffDemoParamConfig = {
   theme: {
@@ -10,6 +10,48 @@ const diffDemoParamConfig = {
     decode: (value) => (isMonacoTheme(value) ? value : ""),
   },
 };
+const original = `
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.monaco) return resolve(win.monaco);
+    if (win.require) return finish();
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
+`.trim();
+const modified = `
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.moneco) return resolve(win.monaco);
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.added = 'stuff'
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
+`.trim();
 function createResizerParamConfig(resizer) {
   return {
     left: {
@@ -32,7 +74,6 @@ function createResizerParamConfig(resizer) {
     },
   };
 }
-/** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
 function wireResizerUrlSync(resizer, index) {
   const config = createResizerParamConfig(resizer);
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
@@ -87,3 +128,13 @@ themeSelect.addEventListener("change", () => {
   setThemeParam("theme", theme);
 });
 await diffEl.whenReady();
+const editor = diffEl.getManager().getEditor();
+if (!editor) {
+  throw new Error("Diff editor not available");
+}
+const model = editor.getModel();
+if (!model) {
+  throw new Error("Diff editor has no model");
+}
+model.original.setValue(original);
+model.modified.setValue(modified);

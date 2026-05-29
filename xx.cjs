@@ -120,6 +120,34 @@ EEE
       source: false,
       confirm: false,
     },
+
+    [`style:check`]: {
+      command: `
+set -e
+/bin/bash node_modules/.bin/prettier --config prettier.config.ts --check .
+./node_modules/.bin/prettier --config prettier.config.ts --check .
+`,
+      description: `style_check`,
+      confirm: false,
+    },
+    [`style:fix`]: {
+      command: `
+set -e
+/bin/bash node_modules/.bin/prettier --config prettier.config.ts --write .
+./node_modules/.bin/prettier --config prettier.config.ts --write .
+`,
+      description: `style_list`,
+      confirm: false,
+    },
+    [`style:list`]: {
+      command: `
+set -e
+/bin/bash node_modules/.bin/prettier --config prettier.config.ts --list-different .
+./node_modules/.bin/prettier --config prettier.config.ts --list-different .
+`,
+      description: `style_list`,
+      confirm: false,
+    },
     [`git monaco-editor & compile`]: {
       command: `
 set -e
