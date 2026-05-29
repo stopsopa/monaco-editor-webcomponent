@@ -107,7 +107,7 @@ if (existsSync(vsSrc)) {
 const vsCandidates = [
   { name: "jsdelivr", vsBase: `https://cdn.jsdelivr.net/npm/monaco-editor@${version}/min/vs` },
   { name: "unpkg", vsBase: `https://unpkg.com/monaco-editor@${version}/min/vs` },
-  { name: "cdnjs", vsBase: `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${version}/min/vs` },
+  // { name: "cdnjs", vsBase: `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${version}/min/vs` }, // this one is not there for version 0.55.1
   { name: "self", vsBase: "/monaco/vs" },
 ];
 

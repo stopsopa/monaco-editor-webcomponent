@@ -1,29 +1,51 @@
 /**
- *   <center-and-height-resizer
- *      left="50px"
- *      center="350px"
- *      height="200px"
- *      style="padding: 12px;"
- *      data-test="idfortest"
- *   >
- *      <div>Content</div>
- *   </center-and-height-resizer>
+ * Resizable center panel with optional left gutter and bottom height handle.
  *
- *   const resizer = document.querySelector('center-and-height-resizer');
- *   resizer.addEventListener('onLeft', e => console.log(e.detail.width));
- *   resizer.addEventListener('onCenter', e => console.log(e.detail.width));
- *   resizer.addEventListener('onHeight', e => console.log(e.detail.height));
+ * Import this module to register the element (`customElements.define` at file bottom).
+ * Before calling instance APIs from other modules, wait for registration:
+ *
+ *   await customElements.whenDefined(CenterAndHeightResizer.tagName);
+ *
+ * Before mounting layout-sensitive UI (e.g. Monaco) in slotted content, prefer:
+ *
+ *   await CenterAndHeightResizer.whenHostReady(container);
+ *
+ * @example HTML
+ * ```html
+ * <center-and-height-resizer left="50px" center="350px" height="200px" style="padding: 12px" data-test="idfortest">
+ *   <div>Content</div>
+ * </center-and-height-resizer>
+ * ```
+ *
+ * @example JS
+ * ```js
+ * import { CenterAndHeightResizer } from "./CenterAndHeightResizer.js";
+ *
+ * await customElements.whenDefined(CenterAndHeightResizer.tagName);
+ *
+ * const resizer = document.querySelector(CenterAndHeightResizer.tagName);
+ * resizer.addEventListener("onLeft", (e) => console.log(e.detail.width));
+ * resizer.addEventListener("onCenter", (e) => console.log(e.detail.width));
+ * resizer.addEventListener("onHeight", (e) => console.log(e.detail.height));
+ * ```
  */
 const SKIP_ATTRIBUTES = ["id", "class", "left", "center", "height", "style"];
 export class CenterAndHeightResizer extends HTMLElement {
+  static tagName = "center-and-height-resizer";
   leftDiv;
   rightDiv;
   centerDiv;
   resizerLeft;
   resizerRight;
   resizerBottom;
+  _isReady = false;
+  _readyPromise;
+  _resolveReady;
   constructor() {
     super();
+    this._readyPromise = new Promise((resolve) => {
+      this._resolveReady = resolve;
+    });
     this.attachShadow({ mode: "open" });
     this.shadowRoot.innerHTML = `
       <style>
@@ -173,6 +195,41 @@ export class CenterAndHeightResizer extends HTMLElement {
     this.setupResizer(this.resizerRight, this.centerDiv, "center", false);
     this.setupHeightResizer(this.resizerBottom, this.centerDiv);
     this._initForwarding();
+    this._isReady = true;
+    this._resolveReady();
+  }
+  /** Resolves after the first `connectedCallback` (attributes applied to the layout panel). */
+  whenReady() {
+    return this._isReady ? Promise.resolve() : this._readyPromise;
+  }
+  static whenLayoutReady(el, maxFrames = 120) {
+    return new Promise((resolve, reject) => {
+      let frames = 0;
+      const tick = () => {
+        const { width, height } = el.getBoundingClientRect();
+        if (width > 0 && height > 0) {
+          resolve();
+          return;
+        }
+        if (++frames >= maxFrames) {
+          reject(new Error("Layout root did not obtain non-zero dimensions"));
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  }
+  /** Wait for custom element upgrade, `connectedCallback`, and a non-zero layout panel. */
+  static async whenHostReady(container) {
+    await customElements.whenDefined(CenterAndHeightResizer.tagName);
+    const resizer = container.closest(CenterAndHeightResizer.tagName);
+    if (resizer) {
+      await resizer.whenReady();
+    }
+    const layoutRoot = resizer?.getContentRoot() ?? container;
+    await CenterAndHeightResizer.whenLayoutReady(layoutRoot);
+    return layoutRoot;
   }
   _applyInternalStylesToCenterDiv() {
     const center = this.getAttribute("center");
@@ -258,4 +315,4 @@ export class CenterAndHeightResizer extends HTMLElement {
     });
   }
 }
-customElements.define("center-and-height-resizer", CenterAndHeightResizer);
+customElements.define(CenterAndHeightResizer.tagName, CenterAndHeightResizer);
