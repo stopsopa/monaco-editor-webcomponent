@@ -14,8 +14,21 @@
  * ```
  */
 import { MonacoDiffManager } from "./MonacoDiffManager.js";
+export const MONACO_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"];
+export function isMonacoTheme(value) {
+  return MONACO_THEMES.includes(value);
+}
+function parseThemeAttribute(value) {
+  if (value && isMonacoTheme(value)) {
+    return value;
+  }
+  return undefined;
+}
 export class MonacoDiffElement extends HTMLElement {
   static tagName = "monaco-diff";
+  static get observedAttributes() {
+    return ["theme"];
+  }
   _container;
   _manager = null;
   constructor() {
@@ -42,12 +55,19 @@ export class MonacoDiffElement extends HTMLElement {
     if (this._manager) {
       return;
     }
+    const theme = parseThemeAttribute(this.getAttribute("theme"));
     this._manager = new MonacoDiffManager(this._container, {
       host: this,
       editorOptions: {
-        theme: this.getAttribute("theme") ?? undefined,
+        theme,
       },
     });
+  }
+  attributeChangedCallback(name, _oldValue, newValue) {
+    if (name !== "theme") {
+      return;
+    }
+    void this._applyTheme(parseThemeAttribute(newValue));
   }
   disconnectedCallback() {
     this._manager?.destroy();
@@ -64,6 +84,12 @@ export class MonacoDiffElement extends HTMLElement {
       throw new Error("<monaco-diff>: not connected");
     }
     return this._manager;
+  }
+  async _applyTheme(theme) {
+    if (!this._manager) {
+      return;
+    }
+    await this._manager.setTheme(theme ?? "vs");
   }
 }
 customElements.define(MonacoDiffElement.tagName, MonacoDiffElement);

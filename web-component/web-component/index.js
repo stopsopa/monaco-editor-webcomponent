@@ -1,7 +1,15 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-import { MonacoDiffElement } from "../monaco-diff.js";
+import { isMonacoTheme, MonacoDiffElement } from "../monaco-diff.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
+const diffDemoParamConfig = {
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value) => value,
+    decode: (value) => (isMonacoTheme(value) ? value : ""),
+  },
+};
 function createResizerParamConfig(resizer) {
   return {
     left: {
@@ -45,13 +53,37 @@ function wireResizerUrlSync(resizer, index) {
   resizer.addEventListener("onCenter", syncToUrl);
   resizer.addEventListener("onHeight", syncToUrl);
 }
+function applyThemeAttribute(diffEl, theme) {
+  if (theme) {
+    diffEl.setAttribute("theme", theme);
+  } else {
+    diffEl.removeAttribute("theme");
+  }
+}
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
 await customElements.whenDefined(MonacoDiffElement.tagName);
-const diff = document.querySelector(MonacoDiffElement.tagName);
-if (!diff) {
+const diffEl = document.querySelector(MonacoDiffElement.tagName);
+if (!(diffEl instanceof MonacoDiffElement)) {
   throw new Error("Missing <monaco-diff> element");
 }
-await diff.whenReady();
+const themeSelect = document.getElementById("theme-select");
+if (!(themeSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #theme-select element");
+}
+const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
+const { setParam: setThemeParam } = trackDiffUrl(
+  (params) => {
+    themeSelect.value = params.theme;
+    applyThemeAttribute(diffEl, params.theme);
+  },
+  { fireOnMount: true },
+);
+themeSelect.addEventListener("change", () => {
+  const theme = themeSelect.value;
+  applyThemeAttribute(diffEl, theme);
+  setThemeParam("theme", theme);
+});
+await diffEl.whenReady();

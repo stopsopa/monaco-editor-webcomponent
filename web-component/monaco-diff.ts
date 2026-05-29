@@ -16,8 +16,27 @@
 
 import { MonacoDiffManager } from "./MonacoDiffManager.js";
 
+export const MONACO_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"] as const;
+
+export type MonacoTheme = (typeof MONACO_THEMES)[number];
+
+export function isMonacoTheme(value: string): value is MonacoTheme {
+  return (MONACO_THEMES as readonly string[]).includes(value);
+}
+
+function parseThemeAttribute(value: string | null): MonacoTheme | undefined {
+  if (value && isMonacoTheme(value)) {
+    return value;
+  }
+  return undefined;
+}
+
 export class MonacoDiffElement extends HTMLElement {
   static readonly tagName = "monaco-diff" as const;
+
+  static get observedAttributes(): string[] {
+    return ["theme"];
+  }
 
   private _container!: HTMLElement;
   private _manager: MonacoDiffManager | null = null;
@@ -48,12 +67,22 @@ export class MonacoDiffElement extends HTMLElement {
       return;
     }
 
+    const theme = parseThemeAttribute(this.getAttribute("theme"));
+
     this._manager = new MonacoDiffManager(this._container, {
       host: this,
       editorOptions: {
-        theme: this.getAttribute("theme") ?? undefined,
+        theme,
       },
     });
+  }
+
+  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void {
+    if (name !== "theme") {
+      return;
+    }
+
+    void this._applyTheme(parseThemeAttribute(newValue));
   }
 
   disconnectedCallback(): void {
@@ -73,6 +102,14 @@ export class MonacoDiffElement extends HTMLElement {
       throw new Error("<monaco-diff>: not connected");
     }
     return this._manager;
+  }
+
+  private async _applyTheme(theme: MonacoTheme | undefined): Promise<void> {
+    if (!this._manager) {
+      return;
+    }
+
+    await this._manager.setTheme(theme ?? "vs");
   }
 }
 

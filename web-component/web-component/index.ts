@@ -2,7 +2,7 @@ import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
 import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
-import { MonacoDiffElement } from "../monaco-diff.js";
+import { isMonacoTheme, MonacoDiffElement } from "../monaco-diff.js";
 
 type ResizerParams = {
   left: string;
@@ -10,7 +10,20 @@ type ResizerParams = {
   height: string;
 };
 
+type DiffDemoParams = {
+  theme: string;
+};
+
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
+
+const diffDemoParamConfig: { theme: ParamDef<string> } = {
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value: string) => value,
+    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+  },
+};
 
 function createResizerParamConfig(resizer: HTMLElement): {
   [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
@@ -63,6 +76,14 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
+function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
+  if (theme) {
+    diffEl.setAttribute("theme", theme);
+  } else {
+    diffEl.removeAttribute("theme");
+  }
+}
+
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
@@ -71,9 +92,30 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
 
 await customElements.whenDefined(MonacoDiffElement.tagName);
 
-const diff = document.querySelector(MonacoDiffElement.tagName);
-if (!diff) {
+const diffEl = document.querySelector(MonacoDiffElement.tagName);
+if (!(diffEl instanceof MonacoDiffElement)) {
   throw new Error("Missing <monaco-diff> element");
 }
 
-await (diff as MonacoDiffElement).whenReady();
+const themeSelect = document.getElementById("theme-select");
+if (!(themeSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #theme-select element");
+}
+
+const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
+
+const { setParam: setThemeParam } = trackDiffUrl(
+  (params: DiffDemoParams) => {
+    themeSelect.value = params.theme;
+    applyThemeAttribute(diffEl, params.theme);
+  },
+  { fireOnMount: true },
+);
+
+themeSelect.addEventListener("change", () => {
+  const theme = themeSelect.value;
+  applyThemeAttribute(diffEl, theme);
+  setThemeParam("theme", theme);
+});
+
+await diffEl.whenReady();

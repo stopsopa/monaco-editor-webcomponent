@@ -26,6 +26,65 @@ type MonacoWindow = Window & {
 };
 
 let cachedMonaco: typeof Monaco | null = null;
+let cachedVsBase: string | null = null;
+
+/** Monaco AMD injects editor CSS into `document`; shadow roots need their own copy. */
+const MONACO_VS_STYLESHEET = /\/vs\/(base|editor|platform)/;
+
+function loadStylesheetLink(link: HTMLLinkElement): Promise<void> {
+  if (link.sheet) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    link.addEventListener("load", () => resolve(), { once: true });
+    link.addEventListener("error", () => reject(new Error(`Failed to load Monaco stylesheet: ${link.href}`)), {
+      once: true,
+    });
+  });
+}
+
+/**
+ * Copies Monaco's global stylesheet links into a shadow root so editor layout and
+ * themes render correctly inside `<monaco-diff>`.
+ */
+async function ensureMonacoStylesInShadowRoot(container: HTMLElement): Promise<void> {
+  const root = container.getRootNode();
+  if (!(root instanceof ShadowRoot)) {
+    return;
+  }
+
+  if (root.querySelector("[data-monaco-shadow-styles]")) {
+    return;
+  }
+
+  const documentLinks = Array.from(document.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']")).filter(
+    (link) => {
+      const href = link.getAttribute("href") ?? "";
+      return MONACO_VS_STYLESHEET.test(href);
+    },
+  );
+
+  const loads: Promise<void>[] = [];
+
+  for (const documentLink of documentLinks) {
+    const clone = documentLink.cloneNode(true) as HTMLLinkElement;
+    clone.setAttribute("data-monaco-shadow-styles", "");
+    loads.push(loadStylesheetLink(clone));
+    root.insertBefore(clone, root.firstChild);
+  }
+
+  if (documentLinks.length === 0 && cachedVsBase) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `${cachedVsBase}/editor/editor.main.css`;
+    link.setAttribute("data-monaco-shadow-styles", "");
+    loads.push(loadStylesheetLink(link));
+    root.insertBefore(link, root.firstChild);
+  }
+
+  await Promise.all(loads);
+}
 
 function loadMonaco(vsBase: string): Promise<typeof Monaco> {
   return new Promise<typeof Monaco>((resolve, reject) => {
@@ -78,6 +137,7 @@ export async function hydrateCache(generated: MonacoGenerated = MONACO_GENERATED
   for (const vsBase of generated.vs) {
     try {
       cachedMonaco = await loadMonaco(vsBase);
+      cachedVsBase = vsBase;
       return cachedMonaco;
     } catch (err) {
       errors.push(err instanceof Error ? err : new Error(String(err)));
@@ -216,6 +276,8 @@ export class MonacoDiffManager {
     this._readyPromise = (async () => {
       const monaco = await hydrateCache(MONACO_GENERATED);
 
+      await ensureMonacoStylesInShadowRoot(this._container);
+
       this._editor = monaco.editor.createDiffEditor(this._container, {
         automaticLayout: false,
         scrollbar: {
@@ -243,6 +305,12 @@ export class MonacoDiffManager {
 
   public getEditor() {
     return this._editor;
+  }
+
+  public async setTheme(theme: string): Promise<void> {
+    await this.whenReady();
+    const monaco = await hydrateCache(MONACO_GENERATED);
+    monaco.editor.setTheme(theme);
   }
 
   public destroy() {

@@ -22,7 +22,7 @@
     </center-and-height-resizer>
     <br />
     <center-and-height-resizer left="100px" center="1200px" height="300px">
-      <monaco-diff theme="vs-dark">
+      <monaco-diff>
         <script type="text/original" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
@@ -67,6 +67,16 @@
         </script>
       </monaco-diff>
     </center-and-height-resizer>
+    <p style="margin: 12px 100px">
+      <label for="theme-select">Theme</label>
+      <select id="theme-select">
+        <option value="" selected>(Monaco default)</option>
+        <option value="vs">vs</option>
+        <option value="vs-dark">vs-dark</option>
+        <option value="hc-black">hc-black</option>
+        <option value="hc-light">hc-light</option>
+      </select>
+    </p>
     <script type="module" src="index.js"></script>
   </body>
 </html>
