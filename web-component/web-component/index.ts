@@ -1,6 +1,71 @@
 import "../CenterAndHeightResizer.js";
 
+import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
+
 import { MonacoDiffManager } from "./MonacoDiffManager.js";
+
+type ResizerParams = {
+  left: string;
+  center: string;
+  height: string;
+};
+
+const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
+
+function createResizerParamConfig(resizer: HTMLElement): {
+  [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
+} {
+  return {
+    left: {
+      default: resizer.getAttribute("left") ?? "100px",
+      getParam: "l",
+      encode: (value: string) => value,
+      decode: (value: string) => value,
+    },
+    center: {
+      default: resizer.getAttribute("center") ?? "1200px",
+      getParam: "c",
+      encode: (value: string) => value,
+      decode: (value: string) => value,
+    },
+    height: {
+      default: resizer.getAttribute("height") ?? "100px",
+      getParam: "h",
+      encode: (value: string) => value,
+      decode: (value: string) => value,
+    },
+  };
+}
+
+/** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
+function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
+  const config = createResizerParamConfig(resizer);
+  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+
+  const applyParams = (params: ResizerParams): void => {
+    resizer.setAttribute("left", params.left);
+    resizer.setAttribute("center", params.center);
+    resizer.setAttribute("height", params.height);
+  };
+
+  const { setParams, setParam } = trackUrl((params) => applyParams(params), { ctx: index, fireOnMount: true });
+
+  const syncToUrl = (): void => {
+    setParams({
+      left: resizer.getAttribute("left") ?? config.left.default,
+      center: resizer.getAttribute("center") ?? config.center.default,
+      height: resizer.getAttribute("height") ?? config.height.default,
+    });
+  };
+
+  resizer.addEventListener("onLeft", syncToUrl);
+  resizer.addEventListener("onCenter", syncToUrl);
+  resizer.addEventListener("onHeight", syncToUrl);
+}
+
+document.querySelectorAll("center-and-height-resizer").forEach((el, index) => {
+  wireResizerUrlSync(el as HTMLElement, index);
+});
 
 const original = `
 function hello() {

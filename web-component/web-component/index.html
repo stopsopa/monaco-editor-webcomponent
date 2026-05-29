@@ -5,19 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MonacoDiffManager Demo</title>
     <style>
-      .monaco-diff {
+      html,
+      body {
         height: 100%;
+        font-family: "Inter", sans-serif;
       }
     </style>
+    <link rel="stylesheet" href="../floating-label-pattern.css" />
+
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   </head>
   <body>
-    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="100px">
+    <center-and-height-resizer left="100px" center="1200px" height="100px" style="padding: 12px">
+      <a href="javascript:location.href=location.href.split('?')[0]" class="gcp-css">off</a>
     </center-and-height-resizer>
     <br />
-    <center-and-height-resizer data-role="resizer" left="1000px" center="600px" height="500px">
-      <div id="container" class="monaco-diff"></div>
+    <center-and-height-resizer left="100px" center="1200px" height="300px">
+      <div id="container"></div>
     </center-and-height-resizer>
-    <script type="module" src="../CenterAndHeightResizer.js"></script>
     <script type="module" src="index.js"></script>
   </body>
 </html>
