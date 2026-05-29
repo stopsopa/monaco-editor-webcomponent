@@ -14,6 +14,14 @@ let cachedMonaco = null;
 let cachedVsBase = null;
 /** Monaco AMD injects editor CSS into `document`; shadow roots need their own copy. */
 const MONACO_VS_STYLESHEET = /\/vs\/(base|editor|platform)/;
+/**
+ * Marker on `<link rel="stylesheet">` nodes we inject into a shadow root.
+ * Purpose: tag “our” Monaco CSS copies so we do not insert duplicates on reconnect
+ * or second editor in the same shadow tree. Usage: set on each cloned/created link
+ * before append; `ensureMonacoStylesInShadowRoot` bails out if one is already present.
+ */
+const MONACO_SHADOW_STYLES_ATTR = "data-monaco-shadow-styles";
+/** Waits until a CSS file linked in the page has finished loading (or is already loaded). */
 function loadStylesheetLink(link) {
   if (link.sheet) {
     return Promise.resolve();
@@ -26,15 +34,18 @@ function loadStylesheetLink(link) {
   });
 }
 /**
- * Copies Monaco's global stylesheet links into a shadow root so editor layout and
- * themes render correctly inside `<monaco-diff>`.
+ * Puts Monaco’s CSS inside the web component’s shadow DOM so the editor looks correct
+ * there (normal page CSS does not reach inside a shadow root).
+ *
+ * Each injected stylesheet is marked with {@link MONACO_SHADOW_STYLES_ATTR} so this
+ * runs only once per shadow root.
  */
 async function ensureMonacoStylesInShadowRoot(container) {
   const root = container.getRootNode();
   if (!(root instanceof ShadowRoot)) {
     return;
   }
-  if (root.querySelector("[data-monaco-shadow-styles]")) {
+  if (root.querySelector(`[${MONACO_SHADOW_STYLES_ATTR}]`)) {
     return;
   }
   const documentLinks = Array.from(document.querySelectorAll("link[rel='stylesheet']")).filter((link) => {
@@ -44,7 +55,7 @@ async function ensureMonacoStylesInShadowRoot(container) {
   const loads = [];
   for (const documentLink of documentLinks) {
     const clone = documentLink.cloneNode(true);
-    clone.setAttribute("data-monaco-shadow-styles", "");
+    clone.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
     loads.push(loadStylesheetLink(clone));
     root.insertBefore(clone, root.firstChild);
   }
@@ -52,12 +63,16 @@ async function ensureMonacoStylesInShadowRoot(container) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = `${cachedVsBase}/editor/editor.main.css`;
-    link.setAttribute("data-monaco-shadow-styles", "");
+    link.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
     loads.push(loadStylesheetLink(link));
     root.insertBefore(link, root.firstChild);
   }
   await Promise.all(loads);
 }
+/**
+ * Downloads and starts Monaco from a given base URL (CDN or local `/monaco/vs`),
+ * using the same loader script the official samples use.
+ */
 function loadMonaco(vsBase) {
   return new Promise((resolve, reject) => {
     const win = window;
@@ -93,7 +108,10 @@ function loadMonaco(vsBase) {
     document.head.appendChild(script);
   });
 }
-/** Try each `/min/vs` URL in order until Monaco loads. */
+/**
+ * Loads Monaco once and keeps it in memory. Tries each configured URL until one works,
+ * so the app still runs if a CDN is down.
+ */
 export async function hydrateCache(generated = MONACO_GENERATED) {
   if (cachedMonaco) {
     return cachedMonaco;
@@ -113,17 +131,17 @@ export async function hydrateCache(generated = MONACO_GENERATED) {
 export const SCRIPT_TYPE_ORIGINAL = "text/original";
 export const SCRIPT_TYPE_MODIFIED = "text/modified";
 /**
- * Reads optional `<script type="text/original">` and `<script type="text/modified">`
- * from direct children of `host`. Returns `null` when none are present.
+ * Reads the “before” and “after” code from `<script>` tags inside the element (HTML-first setup).
+ * Returns nothing if there are no scripts; throws if the markup is incomplete or wrong.
  */
 export function readDeclarativeDiffScripts(host) {
   const scripts = Array.from(host.querySelectorAll(":scope > script"));
   if (scripts.length === 0) {
     return null;
   }
-  if (scripts.length !== 2) {
+  if (scripts.length < 2) {
     throw new Error(
-      `<monaco-diff>: expected exactly two <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
+      `<monaco-diff>: expected exactly at leasttwo <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
     );
   }
   let originalScript;
@@ -159,6 +177,10 @@ export function readDeclarativeDiffScripts(host) {
   return { original, modified, originalLanguage, modifiedLanguage };
 }
 const DEFAULT_LANGUAGE = "javascript";
+/**
+ * Figures out what text and language to show on each side: from options, from HTML scripts,
+ * or empty strings with a sensible default language.
+ */
 function resolveDiffContent(options) {
   let original = options.original ?? "";
   let modified = options.modified ?? "";
@@ -187,6 +209,10 @@ export class MonacoDiffManager {
   _editor = null;
   _resizeObserver = null;
   _layoutRaf = null;
+  /**
+   * Mounts a side-by-side diff editor into the given element: loads Monaco, applies styles,
+   * fills in original/modified text, and starts watching size changes.
+   */
   constructor(_container, options) {
     this._container = _container;
     _container.style.height = "100%";
@@ -212,17 +238,15 @@ export class MonacoDiffManager {
       this._resizeObserver.observe(this._container);
     })();
   }
+  /** Promise that resolves when the editor has finished loading and is safe to use. */
   whenReady() {
     return this._readyPromise;
   }
+  /** Returns the underlying Monaco diff editor instance (or null if not ready yet). */
   getEditor() {
     return this._editor;
   }
-  async setTheme(theme) {
-    await this.whenReady();
-    const monaco = await hydrateCache(MONACO_GENERATED);
-    monaco.editor.setTheme(theme);
-  }
+  /** Tears down the editor, frees memory, and stops listening for resize events. */
   destroy() {
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
@@ -236,6 +260,7 @@ export class MonacoDiffManager {
     this._editor?.dispose();
     this._editor = null;
   }
+  /** Resizes the editor to match its container on the next animation frame (avoids jank). */
   _scheduleLayout() {
     if (this._layoutRaf !== null) return;
     this._layoutRaf = requestAnimationFrame(() => {

@@ -2,7 +2,7 @@ import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
 import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
-import { isMonacoTheme, MonacoDiffElement } from "../monaco-diff.js";
+import { isMonacoTheme, MonacoDiffElement, tagName } from "../monaco-diff.js";
 
 type ResizerParams = {
   left: string;
@@ -53,6 +53,7 @@ function createResizerParamConfig(resizer: HTMLElement): {
 /** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
 function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   const config = createResizerParamConfig(resizer);
+
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
 
   const applyParams = (params: ResizerParams): void => {
@@ -90,9 +91,9 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   wireResizerUrlSync(el as HTMLElement, index);
 });
 
-await customElements.whenDefined(MonacoDiffElement.tagName);
+await customElements.whenDefined(tagName);
 
-const diffEl = document.querySelector(MonacoDiffElement.tagName);
+const diffEl = document.querySelector(tagName);
 if (!(diffEl instanceof MonacoDiffElement)) {
   throw new Error("Missing <monaco-diff> element");
 }

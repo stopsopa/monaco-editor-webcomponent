@@ -1,6 +1,18 @@
 /**
  * `<monaco-diff>` — declarative diff editor with optional embedded `<script>` sources.
  *
+ * Import this module to register the element (`customElements.define` at file bottom).
+ * Before querying the DOM or calling instance APIs from other modules, wait until the
+ * browser knows the tag (same pattern as other custom elements in this repo):
+ *
+ *   import { tagName, MonacoDiffElement } from "./monaco-diff.js";
+ *
+ *   await customElements.whenDefined(tagName);
+ *
+ *   const diff = document.querySelector(tagName);
+ *   if (!(diff instanceof MonacoDiffElement)) throw new Error("Missing <monaco-diff>");
+ *   await diff.whenReady();
+ *
  * @example HTML
  * ```html
  * <monaco-diff theme="vs-dark">
@@ -14,7 +26,10 @@
  * ```
  */
 
-import { MonacoDiffManager } from "./MonacoDiffManager.js";
+import { hydrateCache, MonacoDiffManager } from "./MonacoDiffManager.js";
+
+/** Custom element tag name (`"monaco-diff"`). Pass to `customElements.whenDefined(tagName)`. */
+export const tagName = "monaco-diff" as const;
 
 export const MONACO_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"] as const;
 
@@ -32,7 +47,7 @@ function parseThemeAttribute(value: string | null): MonacoTheme | undefined {
 }
 
 export class MonacoDiffElement extends HTMLElement {
-  static readonly tagName = "monaco-diff" as const;
+  static readonly tagName = tagName;
 
   static get observedAttributes(): string[] {
     return ["theme"];
@@ -90,6 +105,7 @@ export class MonacoDiffElement extends HTMLElement {
     this._manager = null;
   }
 
+  /** Promise that resolves when the editor has finished loading and is safe to use. */
   whenReady(): Promise<void> {
     if (!this._manager) {
       throw new Error("<monaco-diff>: not connected");
@@ -109,8 +125,10 @@ export class MonacoDiffElement extends HTMLElement {
       return;
     }
 
-    await this._manager.setTheme(theme ?? "vs");
+    await this.whenReady();
+    const monaco = await hydrateCache();
+    monaco.editor.setTheme(theme ?? "vs");
   }
 }
 
-customElements.define(MonacoDiffElement.tagName, MonacoDiffElement);
+customElements.define(tagName, MonacoDiffElement);

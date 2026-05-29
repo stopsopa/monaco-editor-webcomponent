@@ -1,6 +1,6 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-import { isMonacoTheme, MonacoDiffElement } from "../monaco-diff.js";
+import { isMonacoTheme, MonacoDiffElement, tagName } from "../monaco-diff.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
 const diffDemoParamConfig = {
   theme: {
@@ -64,8 +64,8 @@ await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
-await customElements.whenDefined(MonacoDiffElement.tagName);
-const diffEl = document.querySelector(MonacoDiffElement.tagName);
+await customElements.whenDefined(tagName);
+const diffEl = document.querySelector(tagName);
 if (!(diffEl instanceof MonacoDiffElement)) {
   throw new Error("Missing <monaco-diff> element");
 }
