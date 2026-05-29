@@ -28,7 +28,7 @@ cat <<EEE
 
 After clonning this repository run:
 pnpm install
-pnpm run monaco:sync
+pnpm run monaco -- --skip
 
 that will recreate /public/monaco/ directory
 

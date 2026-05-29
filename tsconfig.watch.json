@@ -20,6 +20,7 @@
     "prettier.config.ts",
     "pnpm-lock.yaml",
     "server.ts",
-    "lib/utils.js"
+    "lib/utils.js",
+    "scripts/sync-monaco-version.ts"
   ]
 }

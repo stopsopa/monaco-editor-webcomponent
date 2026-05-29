@@ -1,5 +1,5 @@
 /**
- * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco:sync
+ * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco -- --skip
  */
 
 import type * as Monaco from "monaco-editor";

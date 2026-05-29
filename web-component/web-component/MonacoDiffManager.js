@@ -1,5 +1,6 @@
-import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
-
+/**
+ * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco -- --skip
+ */
 // autogenerate v
 export const MONACO_GENERATED = {
   version: "0.55.1",
@@ -9,7 +10,6 @@ export const MONACO_GENERATED = {
     "/monaco/vs",
   ],
 };
-// autogenerate ^
 let cachedMonaco = null;
 function loadMonaco(vsBase) {
   return new Promise((resolve, reject) => {
@@ -63,19 +63,18 @@ export async function hydrateCache(generated = MONACO_GENERATED) {
   throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
 }
 export class MonacoDiffManager {
-  _readyPromise;
   _container;
+  _readyPromise;
   _editor = null;
   _resizeObserver = null;
   _layoutRaf = null;
-  constructor(container, options) {
-    this._container = container;
-    container.style.height = "100%";
-    container.style.width = "100%";
+  constructor(_container, options) {
+    this._container = _container;
+    _container.style.height = "100%";
+    _container.style.width = "100%";
     this._readyPromise = (async () => {
-      await CenterAndHeightResizer.whenHostReady(container);
       const monaco = await hydrateCache(MONACO_GENERATED);
-      this._editor = monaco.editor.createDiffEditor(container, {
+      this._editor = monaco.editor.createDiffEditor(this._container, {
         automaticLayout: false,
         scrollbar: {
           vertical: "auto",

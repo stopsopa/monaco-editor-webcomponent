@@ -8,7 +8,8 @@
     "start": "node --env-file=.env server.js",
     "dev": "node --env-file=.env server.js",
     "ln": "/bin/bash link.sh",
-    "monaco": "node scripts/sync-monaco-version.mjs"
+    "monaco": "node --experimental-strip-types scripts/sync-monaco-version.ts",
+    "monaco:skip": "node --experimental-strip-types scripts/sync-monaco-version.ts --skip"
   },
   "keywords": [
     "web-components",
