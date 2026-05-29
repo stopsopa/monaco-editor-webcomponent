@@ -2,6 +2,7 @@
 export const MONACO_GENERATED = {
   version: "0.53.0",
   vs: [
+    // "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs",
     "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
     "https://unpkg.com/monaco-editor@0.53.0/min/vs",
     "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
@@ -66,15 +67,20 @@ export class MonacoDiffManager {
   _resizeObserver = null;
   _layoutRaf = null;
   constructor(container, options) {
+    container.style.height = "100%";
+    container.style.width = "100%";
     this._readyPromise = (async () => {
       const monaco = await loadMonaco(MONACO_GENERATED);
       this._editor = monaco.editor.createDiffEditor(container, {
         automaticLayout: false,
-        scrollbar: { vertical: "auto" },
+        scrollbar: {
+          vertical: "auto",
+        },
         scrollBeyondLastLine: false,
         ...options.editorOptions,
       });
       const language = options.language || "javascript";
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       this._editor.setModel({
         original: monaco.editor.createModel(options.original, language),
         modified: monaco.editor.createModel(options.modified, language),
@@ -109,7 +115,16 @@ export class MonacoDiffManager {
     if (this._layoutRaf !== null) return;
     this._layoutRaf = requestAnimationFrame(() => {
       this._layoutRaf = null;
-      this._editor?.layout();
+      if (!this._editor) return;
+      const container = this._editor.getContainerDomNode();
+      const rect = container.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        return;
+      }
+      this._editor.layout({
+        width: rect.width,
+        height: rect.height,
+      });
     });
   }
 }
