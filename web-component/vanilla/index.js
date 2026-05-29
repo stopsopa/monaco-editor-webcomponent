@@ -1,6 +1,7 @@
 import "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
+// const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
+const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs";
 const original = `
 const loadMonaco = (vsPath = VS_PATH) =>
   new Promise((resolve, reject) => {
@@ -113,9 +114,16 @@ function wireResizerUrlSync(resizer, index) {
   resizer.addEventListener("onCenter", syncToUrl);
   resizer.addEventListener("onHeight", syncToUrl);
 }
+/** Slotted `#container` may not resize when shadow `#center-div` does — observe that panel instead. */
+function resolveLayoutRoot(container) {
+  // const resizer = container.closest("center-and-height-resizer") as CenterAndHeightResizerEl | null;
+  // return resizer?.getContentRoot?.() ?? container;
+  return container;
+}
 async function initMonacoDiffEditor(container) {
   container.style.height = "100%";
   container.style.width = "100%";
+  const layoutRoot = resolveLayoutRoot(container);
   const monaco = await loadMonaco();
   const editor = monaco.editor.createDiffEditor(container, {
     automaticLayout: false,
@@ -128,13 +136,24 @@ async function initMonacoDiffEditor(container) {
     original: monaco.editor.createModel(original, "javascript"),
     modified: monaco.editor.createModel(modified, "javascript"),
   });
+  let layoutRaf = null;
   const scheduleLayout = () => {
-    requestAnimationFrame(() => {
-      editor.layout();
+    if (layoutRaf !== null) return;
+    layoutRaf = requestAnimationFrame(() => {
+      layoutRaf = null;
+      const { width, height } = layoutRoot.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      editor.layout({ width, height });
     });
   };
   scheduleLayout();
-  new ResizeObserver(() => scheduleLayout()).observe(container);
+  new ResizeObserver(() => scheduleLayout()).observe(layoutRoot);
+  const resizer = container.closest("center-and-height-resizer");
+  if (resizer) {
+    for (const eventName of ["onLeft", "onCenter", "onHeight"]) {
+      resizer.addEventListener(eventName, scheduleLayout);
+    }
+  }
 }
 document.querySelectorAll("center-and-height-resizer").forEach((el, index) => {
   wireResizerUrlSync(el, index);
