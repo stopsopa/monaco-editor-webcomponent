@@ -1,7 +1,5 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-// const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
-// const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs";
 const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs";
 const original = `
 const loadMonaco = (vsPath = VS_PATH) =>
@@ -115,7 +113,7 @@ function wireResizerUrlSync(resizer, index) {
   resizer.addEventListener("onCenter", syncToUrl);
   resizer.addEventListener("onHeight", syncToUrl);
 }
-async function initMonacoDiffEditor(container, layoutRoot) {
+async function initMonacoDiffEditor(container) {
   container.style.height = "100%";
   container.style.width = "100%";
   const monaco = await loadMonaco();
@@ -142,12 +140,6 @@ async function initMonacoDiffEditor(container, layoutRoot) {
   };
   scheduleLayout();
   new ResizeObserver(() => scheduleLayout()).observe(container);
-  const resizer = container.closest(CenterAndHeightResizer.tagName);
-  if (resizer) {
-    for (const eventName of ["onLeft", "onCenter", "onHeight"]) {
-      resizer.addEventListener(eventName, scheduleLayout);
-    }
-  }
 }
 const container = document.getElementById("container");
 if (!container) {
@@ -157,6 +149,4 @@ await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
-// const layoutRoot = await CenterAndHeightResizer.whenHostReady(container);
-// await initMonacoDiffEditor(container, layoutRoot);
-await initMonacoDiffEditor(container, container);
+await initMonacoDiffEditor(container);

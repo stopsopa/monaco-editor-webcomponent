@@ -70,17 +70,47 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
 });
 
 const original = `
-function hello() {
-  console.log('before');
-  return 1;
-}
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.monaco) return resolve(win.monaco);
+    if (win.require) return finish();
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
 `.trim();
 
 const modified = `
-function helloWorld() {
-  console.log('after');
-  return 2;
-}
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.moneco) return resolve(win.monaco);    
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.added = 'stuff'
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
 `.trim();
 
 const container = document.getElementById("container");

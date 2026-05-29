@@ -4,8 +4,6 @@ import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
 import type * as Monaco from "monaco-editor";
 
-// const VS_PATH = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs";
-// const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs";
 const VS_PATH = "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs";
 
 type MonacoWindow = Window & {
@@ -149,7 +147,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-async function initMonacoDiffEditor(container: HTMLElement, layoutRoot: HTMLElement): Promise<void> {
+async function initMonacoDiffEditor(container: HTMLElement): Promise<void> {
   container.style.height = "100%";
   container.style.width = "100%";
 
@@ -182,13 +180,6 @@ async function initMonacoDiffEditor(container: HTMLElement, layoutRoot: HTMLElem
   scheduleLayout();
 
   new ResizeObserver(() => scheduleLayout()).observe(container);
-
-  const resizer = container.closest(CenterAndHeightResizer.tagName);
-  if (resizer) {
-    for (const eventName of ["onLeft", "onCenter", "onHeight"] as const) {
-      resizer.addEventListener(eventName, scheduleLayout);
-    }
-  }
 }
 
 const container = document.getElementById("container");
@@ -202,7 +193,4 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   wireResizerUrlSync(el as HTMLElement, index);
 });
 
-// const layoutRoot = await CenterAndHeightResizer.whenHostReady(container);
-// await initMonacoDiffEditor(container, layoutRoot);
-
-await initMonacoDiffEditor(container, container);
+await initMonacoDiffEditor(container);

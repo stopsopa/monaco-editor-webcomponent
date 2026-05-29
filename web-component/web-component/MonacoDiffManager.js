@@ -1,16 +1,17 @@
+import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
+
 // autogenerate v
 export const MONACO_GENERATED = {
-  version: "0.53.0",
+  version: "0.55.1",
   vs: [
-    // "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.10.1/min/vs",
-    "https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min/vs",
-    "https://unpkg.com/monaco-editor@0.53.0/min/vs",
-    "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min/vs",
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs",
+    "https://unpkg.com/monaco-editor@0.55.1/min/vs",
     "/monaco/vs",
   ],
 };
+// autogenerate ^
 let cachedMonaco = null;
-function loadMonacoFromVs(vsBase) {
+function loadMonaco(vsBase) {
   return new Promise((resolve, reject) => {
     const win = window;
     const finish = () => {
@@ -46,14 +47,14 @@ function loadMonacoFromVs(vsBase) {
   });
 }
 /** Try each `/min/vs` URL in order until Monaco loads. */
-export async function loadMonaco(generated = MONACO_GENERATED) {
+export async function hydrateCache(generated = MONACO_GENERATED) {
   if (cachedMonaco) {
     return cachedMonaco;
   }
   const errors = [];
   for (const vsBase of generated.vs) {
     try {
-      cachedMonaco = await loadMonacoFromVs(vsBase);
+      cachedMonaco = await loadMonaco(vsBase);
       return cachedMonaco;
     } catch (err) {
       errors.push(err instanceof Error ? err : new Error(String(err)));
@@ -63,14 +64,17 @@ export async function loadMonaco(generated = MONACO_GENERATED) {
 }
 export class MonacoDiffManager {
   _readyPromise;
+  _container;
   _editor = null;
   _resizeObserver = null;
   _layoutRaf = null;
   constructor(container, options) {
+    this._container = container;
     container.style.height = "100%";
     container.style.width = "100%";
     this._readyPromise = (async () => {
-      const monaco = await loadMonaco(MONACO_GENERATED);
+      await CenterAndHeightResizer.whenHostReady(container);
+      const monaco = await hydrateCache(MONACO_GENERATED);
       this._editor = monaco.editor.createDiffEditor(container, {
         automaticLayout: false,
         scrollbar: {
@@ -80,16 +84,13 @@ export class MonacoDiffManager {
         ...options.editorOptions,
       });
       const language = options.language || "javascript";
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       this._editor.setModel({
         original: monaco.editor.createModel(options.original, language),
         modified: monaco.editor.createModel(options.modified, language),
       });
       this._scheduleLayout();
-      if (typeof ResizeObserver !== "undefined") {
-        this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-        this._resizeObserver.observe(container);
-      }
+      this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
+      this._resizeObserver.observe(this._container);
     })();
   }
   whenReady() {
@@ -116,15 +117,11 @@ export class MonacoDiffManager {
     this._layoutRaf = requestAnimationFrame(() => {
       this._layoutRaf = null;
       if (!this._editor) return;
-      const container = this._editor.getContainerDomNode();
-      const rect = container.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) {
+      const { width, height } = this._container.getBoundingClientRect();
+      if (width === 0 || height === 0) {
         return;
       }
-      this._editor.layout({
-        width: rect.width,
-        height: rect.height,
-      });
+      this._editor.layout({ width, height });
     });
   }
 }

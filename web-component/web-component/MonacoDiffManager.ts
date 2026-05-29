@@ -1,7 +1,6 @@
 /**
  * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco:sync
  */
-import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
 import type * as Monaco from "monaco-editor";
 
@@ -28,7 +27,7 @@ type MonacoWindow = Window & {
 
 let cachedMonaco: typeof Monaco | null = null;
 
-function loadMonacoFromVs(vsBase: string): Promise<typeof Monaco> {
+function loadMonaco(vsBase: string): Promise<typeof Monaco> {
   return new Promise<typeof Monaco>((resolve, reject) => {
     const win = window as unknown as MonacoWindow;
 
@@ -69,7 +68,7 @@ function loadMonacoFromVs(vsBase: string): Promise<typeof Monaco> {
 }
 
 /** Try each `/min/vs` URL in order until Monaco loads. */
-export async function loadMonaco(generated: MonacoGenerated = MONACO_GENERATED): Promise<typeof Monaco> {
+export async function hydrateCache(generated: MonacoGenerated = MONACO_GENERATED): Promise<typeof Monaco> {
   if (cachedMonaco) {
     return cachedMonaco;
   }
@@ -78,7 +77,7 @@ export async function loadMonaco(generated: MonacoGenerated = MONACO_GENERATED):
 
   for (const vsBase of generated.vs) {
     try {
-      cachedMonaco = await loadMonacoFromVs(vsBase);
+      cachedMonaco = await loadMonaco(vsBase);
       return cachedMonaco;
     } catch (err) {
       errors.push(err instanceof Error ? err : new Error(String(err)));
@@ -95,28 +94,23 @@ export interface MonacoDiffManagerOptions {
   editorOptions?: Monaco.editor.IStandaloneDiffEditorConstructionOptions;
 }
 
-function resolveLayoutRoot(container: HTMLElement): HTMLElement {
-  const resizer = container.closest(CenterAndHeightResizer.tagName) as CenterAndHeightResizer | null;
-  return resizer?.getContentRoot() ?? container;
-}
-
 export class MonacoDiffManager {
   private _readyPromise: Promise<void>;
   private _editor: Monaco.editor.IStandaloneDiffEditor | null = null;
-  private _layoutRoot!: HTMLElement;
   private _resizeObserver: ResizeObserver | null = null;
   private _layoutRaf: number | null = null;
 
-  constructor(container: HTMLElement, options: MonacoDiffManagerOptions) {
-    container.style.height = "100%";
-    container.style.width = "100%";
-    this._layoutRoot = resolveLayoutRoot(container);
+  constructor(
+    private readonly _container: HTMLElement,
+    options: MonacoDiffManagerOptions,
+  ) {
+    _container.style.height = "100%";
+    _container.style.width = "100%";
+
     this._readyPromise = (async () => {
-      this._layoutRoot = await CenterAndHeightResizer.whenHostReady(container);
+      const monaco = await hydrateCache(MONACO_GENERATED);
 
-      const monaco = await loadMonaco(MONACO_GENERATED);
-
-      this._editor = monaco.editor.createDiffEditor(container, {
+      this._editor = monaco.editor.createDiffEditor(this._container, {
         automaticLayout: false,
         scrollbar: {
           vertical: "auto",
@@ -134,17 +128,8 @@ export class MonacoDiffManager {
 
       this._scheduleLayout();
 
-      if (typeof ResizeObserver !== "undefined") {
-        this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-        this._resizeObserver.observe(this._layoutRoot);
-      }
-
-      const resizer = container.closest(CenterAndHeightResizer.tagName);
-      if (resizer) {
-        for (const eventName of ["onLeft", "onCenter", "onHeight"] as const) {
-          resizer.addEventListener(eventName, () => this._scheduleLayout());
-        }
-      }
+      this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
+      this._resizeObserver.observe(this._container);
     })();
   }
 
@@ -179,7 +164,7 @@ export class MonacoDiffManager {
 
       if (!this._editor) return;
 
-      const { width, height } = this._layoutRoot.getBoundingClientRect();
+      const { width, height } = this._container.getBoundingClientRect();
 
       if (width === 0 || height === 0) {
         return;
