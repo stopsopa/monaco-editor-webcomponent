@@ -88,7 +88,7 @@ function governedKeysForInstance(i) {
 /**
  * Commits a full query string to the address bar when it differs from the current location (normalized).
  */
-function commitSearch(next) {
+function updateUrl(next) {
   const current = cloneSearchParams(new URLSearchParams(window.location.search));
   if (compareNormalizedSearchParams(next, current)) return;
   const search = next.toString();
@@ -102,7 +102,7 @@ function commitSearch(next) {
  * Keys absent from `patch` are removed — required for default elision and instance teardown.
  */
 function replaceSearchSynced(governed, patch, base) {
-  commitSearch(
+  updateUrl(
     syncURLSearchParams(base ?? cloneSearchParams(new URLSearchParams(window.location.search)), governed, patch),
   );
 }
@@ -134,7 +134,7 @@ const updateUrlDisplay = (url = window.location.href) => {
   if (urlDisplayEl) urlDisplayEl.textContent = url;
 };
 /** HTML template for one demo instance (form controls + JSON dump). Injected via `innerHTML`. */
-function childSectionHtml(index) {
+function generateSectionHtml(index) {
   const radioOptionsHtml = radioOptions
     .map(
       (opt) => `
@@ -219,7 +219,7 @@ class ChildSection {
     this.root = document.createElement("div");
     this.root.className = "url-ser-container";
     this.root.dataset.index = String(index);
-    this.root.innerHTML = childSectionHtml(index);
+    this.root.innerHTML = generateSectionHtml(index);
     container.appendChild(this.root);
     const form = this.root.querySelector('[data-role="form"]');
     this.textInput = this.root.querySelector('[data-role="text"]');

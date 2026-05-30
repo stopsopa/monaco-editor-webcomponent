@@ -21,6 +21,7 @@
     "pnpm-lock.yaml",
     "server.ts",
     "lib/utils.js",
-    "scripts/sync-monaco-version.ts"
+    "scripts/sync-monaco-version.ts",
+    "**/*.test.ts"
   ]
 }

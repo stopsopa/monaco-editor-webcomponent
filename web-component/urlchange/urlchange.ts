@@ -24,7 +24,7 @@ export type ParamDef<T> = {
 
 type ParamValues<C> = C;
 
-/** 
+/**
  * Param value types inferred from a config object's `default` fields.
  * Extracts the types of default values to create a strongly-typed parameter object.
  */
