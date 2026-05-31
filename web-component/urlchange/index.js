@@ -2,14 +2,11 @@
  * Demo page for vanilla `trackUrl` / `modURLSearchParams`.
  * Mirrors ModURLSearchParamsComponent.tsx: multiple indexed instances, each syncing UI ↔ URL.
  *
- * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`
- * (see `toolsURLSearchParams.test.ts` for behaviour).
+ * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`.
  */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
 import { cloneSearchParams, compareNormalizedSearchParams, syncURLSearchParams } from "./toolsURLSearchParams.js";
-const radioOptions = ["radio1", "radio2", "radio3"];
-const defaultRadioOption = radioOptions[1];
-const selectOptions = ["item1", "item2", "item3", "item4"];
+import { ChildSection, selectOptions, defaultRadioOption } from "./ChildSection.js";
 /** Schema for one instance: local names, short URL keys (`t`, `r`, …), defaults, encode/decode. */
 const urlParamConfig = {
   text: {
@@ -48,6 +45,8 @@ const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(urlParamCon
 /** Parent-only key: lists instance indexes without writing default-valued tracked params. */
 const INSTANCE_IDS_KEY = "ids";
 /**
+ * Attempt to find list of indices to determine how many html formations to render
+ *
  * Collects all instance indexes present in the query string.
  * Uses the parent `ids=1,2` list plus any key ending in `-{n}` (e.g. `t-3` from deep links).
  */
@@ -133,183 +132,6 @@ const urlDisplayEl = document.getElementById("url-display");
 const updateUrlDisplay = (url = window.location.href) => {
   if (urlDisplayEl) urlDisplayEl.textContent = url;
 };
-/** HTML template for one demo instance (form controls + JSON dump). Injected via `innerHTML`. */
-function generateSectionHtml(index) {
-  const radioOptionsHtml = radioOptions
-    .map(
-      (opt) => `
-        <label class="url-ser-label-margin">
-          <input type="radio" name="radio-${index}" value="${opt}" data-role="radio" />
-          ${opt}
-        </label>`,
-    )
-    .join("");
-  const selectOptionsHtml = selectOptions.map((opt) => `<option value="${opt}">${opt}</option>`).join("");
-  return `
-    <div class="url-ser-flex">
-      <form class="url-ser-form" data-role="form">
-        <label>
-          <strong>Text Input:</strong>
-          <br />
-          <input type="text" class="url-ser-input" data-role="text" />
-        </label>
-
-        <fieldset>
-          <legend><strong>Radio Group:</strong></legend>
-          ${radioOptionsHtml}
-        </fieldset>
-
-        <label>
-          <strong>Multiple Select:</strong>
-          <br />
-          <select multiple class="url-ser-select" data-role="multi-select">
-            ${selectOptionsHtml}
-          </select>
-        </label>
-
-        <fieldset>
-          <legend><strong>Checkboxes:</strong></legend>
-          <label class="url-ser-label-margin">
-            <input type="checkbox" data-role="checkbox-a" />
-            Checkbox A
-          </label>
-          <label>
-            <input type="checkbox" data-role="checkbox-b" />
-            Checkbox B
-          </label>
-        </fieldset>
-
-        <div class="buttons">
-          <button type="button" class="url-ser-delete-btn red" data-role="delete">
-            Delete Component #${index}
-          </button>
-          <button type="button" class="url-ser-delete-btn" data-role="reconfigure">
-            Reconfigure #${index}
-          </button>
-        </div>
-      </form>
-
-      <div class="url-ser-dump-container">
-        <pre class="url-ser-pre" data-role="dump"></pre>
-      </div>
-    </div>
-  `;
-}
-/**
- * One indexed param block in the page.
- * Wires `trackUrl` for instance `index`, binds inputs to `setParam` / `setParams`, and mirrors URL → UI.
- */
-class ChildSection {
-  index;
-  root;
-  textInput;
-  multiSelect;
-  checkboxA;
-  checkboxB;
-  dumpPre;
-  radioInputs;
-  handle;
-  syncing = false;
-  /**
-   * Builds DOM from template, starts `trackUrl` for this index, and hooks user events to URL updates.
-   * `onDelete` is shared from the parent so every section calls the same delete handler.
-   */
-  constructor(container, index, onDelete) {
-    this.index = index;
-    this.root = document.createElement("div");
-    this.root.className = "url-ser-container";
-    this.root.dataset.index = String(index);
-    this.root.innerHTML = generateSectionHtml(index);
-    container.appendChild(this.root);
-    const form = this.root.querySelector('[data-role="form"]');
-    this.textInput = this.root.querySelector('[data-role="text"]');
-    this.multiSelect = this.root.querySelector('[data-role="multi-select"]');
-    this.checkboxA = this.root.querySelector('[data-role="checkbox-a"]');
-    this.checkboxB = this.root.querySelector('[data-role="checkbox-b"]');
-    this.dumpPre = this.root.querySelector('[data-role="dump"]');
-    this.radioInputs = Array.from(this.root.querySelectorAll('[data-role="radio"]'));
-    const deleteBtn = this.root.querySelector('[data-role="delete"]');
-    const reconfigureBtn = this.root.querySelector('[data-role="reconfigure"]');
-    form.addEventListener("submit", (e) => e.preventDefault());
-    this.handle = trackUrl(
-      (params, updatedURLSearchParams) => {
-        console.log(`render child ${index} >${updatedURLSearchParams.toString()}<`, params);
-        this.syncUi(params, updatedURLSearchParams.toString());
-        updateUrlDisplay();
-      },
-      { ctx: index, fireOnMount: true },
-    );
-    this.textInput.addEventListener("input", () => {
-      if (this.syncing) return;
-      this.handle.setParam("text", this.textInput.value);
-    });
-    for (const input of this.radioInputs) {
-      input.addEventListener("change", () => {
-        if (this.syncing || !input.checked) return;
-        this.handle.setParam("radio", input.value);
-      });
-    }
-    this.multiSelect.addEventListener("change", () => {
-      if (this.syncing) return;
-      this.handle.setParam(
-        "multiSelect",
-        Array.from(this.multiSelect.selectedOptions, (o) => o.value),
-      );
-    });
-    this.checkboxA.addEventListener("change", () => {
-      if (this.syncing) return;
-      this.handle.setParam("checkboxA", this.checkboxA.checked);
-    });
-    this.checkboxB.addEventListener("change", () => {
-      if (this.syncing) return;
-      this.handle.setParam("checkboxB", this.checkboxB.checked);
-    });
-    deleteBtn.addEventListener("click", () => onDelete(index));
-    reconfigureBtn.addEventListener("click", () => {
-      const params = this.handle.getParams();
-      if (params.radio === "radio2") {
-        this.handle.setParams({
-          text: `text-${index} second state`,
-          radio: "radio3",
-          multiSelect: [selectOptions[1], selectOptions[selectOptions.length - 2]],
-          checkboxA: true,
-          checkboxB: false,
-        });
-        return;
-      }
-      this.handle.setParams({
-        text: `text-${index}`,
-        radio: "radio2",
-        multiSelect: [selectOptions[0], selectOptions[selectOptions.length - 1]],
-        checkboxA: false,
-        checkboxB: true,
-      });
-    });
-  }
-  /**
-   * Applies decoded URL params to form controls and the debug `<pre>`.
-   * `syncing` prevents input handlers from writing back to the URL while we push values in.
-   */
-  syncUi(params, path) {
-    this.syncing = true;
-    this.textInput.value = params.text;
-    for (const input of this.radioInputs) {
-      input.checked = params.radio === input.value;
-    }
-    for (const option of Array.from(this.multiSelect.options)) {
-      option.selected = params.multiSelect.includes(option.value);
-    }
-    this.checkboxA.checked = params.checkboxA;
-    this.checkboxB.checked = params.checkboxB;
-    this.dumpPre.textContent = JSON.stringify({ params, path }, null, 2);
-    this.syncing = false;
-  }
-  /** Stops URL listener and removes this section from the DOM. */
-  destroy() {
-    this.handle.disconnect();
-    this.root.remove();
-  }
-}
 const sectionsEl = document.getElementById("sections");
 const instanceListEl = document.getElementById("instance-list");
 const addBtn = document.getElementById("add-btn");
@@ -325,23 +147,77 @@ function reconcileSections() {
   instanceListEl.textContent = list.length > 0 ? list.join(", ") : "(none)";
   for (const i of list) {
     if (!sections.has(i)) {
-      sections.set(i, new ChildSection(sectionsEl, i, deleteItem));
+      const section = new ChildSection(sectionsEl, i);
+      const handle = trackUrl(
+        (params, updatedURLSearchParams) => {
+          console.log(`RENDER ${i} >${updatedURLSearchParams.toString()}<`, params);
+          section.setText(params.text);
+          section.setRadio(params.radio);
+          section.setMultiSelect(params.multiSelect);
+          section.setCheckboxA(params.checkboxA);
+          section.setCheckboxB(params.checkboxB);
+          section.setDump({ params, path: updatedURLSearchParams.toString() });
+          updateUrlDisplay();
+        },
+        { ctx: i, fireOnMount: true },
+      );
+      section.onText((idx, val) => {
+        handle.setParam("text", val);
+      });
+      section.onRadio((idx, val) => {
+        handle.setParam("radio", val);
+      });
+      section.onMultiSelect((idx, val) => {
+        handle.setParam("multiSelect", val);
+      });
+      section.onCheckboxA((idx, val) => {
+        handle.setParam("checkboxA", val);
+      });
+      section.onCheckboxB((idx, val) => {
+        handle.setParam("checkboxB", val);
+      });
+      section.onDelete((idx) => {
+        deleteItem(idx);
+      });
+      section.onReconfigure((idx) => {
+        const params = handle.getParams();
+        if (params.radio === "radio2") {
+          handle.setParams({
+            text: `text-${idx} second state`,
+            radio: "radio3",
+            multiSelect: [selectOptions[1], selectOptions[selectOptions.length - 2]],
+            checkboxA: true,
+            checkboxB: false,
+          });
+        } else {
+          handle.setParams({
+            text: `text-${idx}`,
+            radio: "radio2",
+            multiSelect: [selectOptions[0], selectOptions[selectOptions.length - 1]],
+            checkboxA: false,
+            checkboxB: true,
+          });
+        }
+      });
+      sections.set(i, { section, handle });
     }
   }
-  for (const [i, section] of sections) {
+  for (const [i, record] of sections) {
     if (!list.includes(i)) {
-      section.destroy();
+      record.handle.disconnect();
+      record.section.destroy();
       sections.delete(i);
     }
   }
   for (const i of list) {
-    const el = sections.get(i).root;
+    const el = sections.get(i).section.root;
     sectionsEl.appendChild(el);
   }
 }
 addBtn.addEventListener("click", addComponent);
 // Initial paint + react to back/forward and any URL change that affects instance list or params.
 onUrlChange(() => {
+  console.log("any change");
   updateUrlDisplay();
   reconcileSections();
 });
