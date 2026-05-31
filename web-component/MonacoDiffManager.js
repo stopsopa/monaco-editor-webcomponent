@@ -1,6 +1,7 @@
 /**
  * Monaco diff editor manager. Refresh version/CDN URLs: pnpm run monaco -- --skip
  */
+import trimLeft from "./trimLeft.js";
 // autogenerate v
 export const MONACO_GENERATED = {
   version: "0.55.1",
@@ -168,10 +169,20 @@ export function readDeclarativeDiffScripts(host) {
     const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
     throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
   }
-  const original = originalScript.textContent ?? "";
-  const modified = modifiedScript.textContent ?? "";
+  let original = originalScript.textContent ?? "";
+  let modified = modifiedScript.textContent ?? "";
   const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
   const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
+  let originalOffset = parseInt(originalScript.getAttribute("data-offset"), 10) ?? 0;
+  let modifiedOffset = parseInt(modifiedScript.getAttribute("data-offset"), 10) ?? 0;
+  if (!(originalOffset > 0)) {
+    originalOffset = 0;
+  }
+  if (!(modifiedOffset > 0)) {
+    modifiedOffset = 0;
+  }
+  original = trimLeft(original, originalOffset);
+  modified = trimLeft(modified, modifiedOffset);
   originalScript.remove();
   modifiedScript.remove();
   return { original, modified, originalLanguage, modifiedLanguage };

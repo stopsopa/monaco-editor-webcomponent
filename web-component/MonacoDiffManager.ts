@@ -3,6 +3,7 @@
  */
 
 import type * as Monaco from "monaco-editor";
+import trimLeft from "./trimLeft.js";
 
 // autogenerate v
 export const MONACO_GENERATED = {
@@ -221,10 +222,21 @@ export function readDeclarativeDiffScripts(host: HTMLElement): DeclarativeDiffCo
     throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
   }
 
-  const original = originalScript.textContent ?? "";
-  const modified = modifiedScript.textContent ?? "";
+  let original = originalScript.textContent ?? "";
+  let modified = modifiedScript.textContent ?? "";
   const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
   const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
+  let originalOffset = parseInt(originalScript.getAttribute("data-offset") as string, 10) ?? 0;
+  let modifiedOffset = parseInt(modifiedScript.getAttribute("data-offset") as string, 10) ?? 0;
+  if (!(originalOffset > 0)) {
+    originalOffset = 0;
+  }
+  if (!(modifiedOffset > 0)) {
+    modifiedOffset = 0;
+  }
+
+  original = trimLeft(original, originalOffset);
+  modified = trimLeft(modified, modifiedOffset);
 
   originalScript.remove();
   modifiedScript.remove();
