@@ -4,14 +4,9 @@ import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
 
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 
-type ResizerParams = {
-  left: string;
-  center: string;
-  height: string;
-  theme: string;
-};
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
-const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
+const instanceKeyFn = (key: string, i?: number): string => /^\d+&/.test(String(i)) ? `${key}-${i}` : key;
 
 const config = {
   left: {
@@ -60,7 +55,7 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`.trim();
+`;
 
 const modified = `
 const loadMonaco = (vsPath = VS_PATH) =>
@@ -82,14 +77,16 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`.trim();
+`;
 
 const container = document.getElementById("container");
 if (!container) {
   throw new Error("Missing #container element");
 }
 
-await customElements.whenDefined(CenterAndHeightResizer.tagName);
+{
+  const el = document.querySelector(CenterAndHeightResizer.tagName);
+
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el as HTMLElement;

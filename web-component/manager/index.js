@@ -1,7 +1,8 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
-const instanceKeyFn = (key, i) => `${key}-${i}`;
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
+const instanceKeyFn = (key, i) => (/^\d+&/.test(String(i)) ? `${key}-${i}` : key);
 const config = {
   left: {
     default: "100px",
@@ -48,7 +49,7 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`.trim();
+`;
 const modified = `
 const loadMonaco = (vsPath = VS_PATH) =>
   new Promise((resolve, reject) => {
@@ -69,37 +70,39 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`.trim();
+`;
 const container = document.getElementById("container");
 if (!container) {
   throw new Error("Missing #container element");
 }
-await customElements.whenDefined(CenterAndHeightResizer.tagName);
-document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
-  const resizer = el;
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
-  const { setParams } = trackUrl(
-    (params) => {
-      resizer.setAttribute("left", params.left);
-      resizer.setAttribute("center", params.center);
-      resizer.setAttribute("height", params.height);
-    },
-    { ctx: index, fireOnMount: true },
-  );
-  const syncToUrl = () => {
-    setParams({
-      left: resizer.getAttribute("left") ?? config.left.default,
-      center: resizer.getAttribute("center") ?? config.center.default,
-      height: resizer.getAttribute("height") ?? config.height.default,
-    });
-  };
-  resizer.addEventListener("onLeft", syncToUrl);
-  resizer.addEventListener("onCenter", syncToUrl);
-  resizer.addEventListener("onHeight", syncToUrl);
-});
-const mgr = new MonacoDiffManager(container, {
-  original,
-  modified,
-  language: "javascript",
-});
-await mgr.whenReady();
+{
+  const el = document.querySelector(CenterAndHeightResizer.tagName);
+  document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
+    const resizer = el;
+    const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+    const { setParams } = trackUrl(
+      (params) => {
+        resizer.setAttribute("left", params.left);
+        resizer.setAttribute("center", params.center);
+        resizer.setAttribute("height", params.height);
+      },
+      { ctx: index, fireOnMount: true },
+    );
+    const syncToUrl = () => {
+      setParams({
+        left: resizer.getAttribute("left") ?? config.left.default,
+        center: resizer.getAttribute("center") ?? config.center.default,
+        height: resizer.getAttribute("height") ?? config.height.default,
+      });
+    };
+    resizer.addEventListener("onLeft", syncToUrl);
+    resizer.addEventListener("onCenter", syncToUrl);
+    resizer.addEventListener("onHeight", syncToUrl);
+  });
+  const mgr = new MonacoDiffManager(container, {
+    original,
+    modified,
+    language: "javascript",
+  });
+  await mgr.whenReady();
+}
