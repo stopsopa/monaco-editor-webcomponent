@@ -3,6 +3,7 @@ import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 import modURLSearchParams, { type ParamDef } from "../../urlchange/urlchange.js";
 
 import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
+
 await customElements.whenDefined(tagName);
 
 type ResizerParams = {
