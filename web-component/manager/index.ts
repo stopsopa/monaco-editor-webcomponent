@@ -8,6 +8,7 @@ type ResizerParams = {
   left: string;
   center: string;
   height: string;
+  theme: string;
 };
 
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
@@ -15,40 +16,50 @@ const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
 function createResizerParamConfig(resizer: HTMLElement): {
   [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
 } {
-  return {
-    left: {
-      default: resizer.getAttribute("left") ?? "100px",
-      getParam: "l",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-    center: {
-      default: resizer.getAttribute("center") ?? "1200px",
-      getParam: "c",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-    height: {
-      default: resizer.getAttribute("height") ?? "100px",
-      getParam: "h",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-  };
+  return;
 }
 
 /** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
 function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   const config = createResizerParamConfig(resizer);
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { trackUrl } = modURLSearchParams(
+    {
+      left: {
+        default: resizer.getAttribute("left") ?? "100px",
+        getParam: "l",
+        encode: (value: string) => value,
+        decode: (value: string) => value,
+      },
+      center: {
+        default: resizer.getAttribute("center") ?? "1200px",
+        getParam: "c",
+        encode: (value: string) => value,
+        decode: (value: string) => value,
+      },
+      height: {
+        default: resizer.getAttribute("height") ?? "100px",
+        getParam: "h",
+        encode: (value: string) => value,
+        decode: (value: string) => value,
+      },
+      theme: {
+        default: "",
+        getParam: "theme",
+        encode: (value: string) => value,
+        decode: (value: string) => value,
+      },
+    },
+    instanceKeyFn,
+  );
 
-  const applyParams = (params: ResizerParams): void => {
-    resizer.setAttribute("left", params.left);
-    resizer.setAttribute("center", params.center);
-    resizer.setAttribute("height", params.height);
-  };
-
-  const { setParams } = trackUrl((params) => applyParams(params), { ctx: index, fireOnMount: true });
+  const { setParams } = trackUrl(
+    (params): void => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
+    },
+    { ctx: index, fireOnMount: true },
+  );
 
   const syncToUrl = (): void => {
     setParams({
