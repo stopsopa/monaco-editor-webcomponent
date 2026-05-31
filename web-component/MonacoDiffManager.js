@@ -176,10 +176,14 @@ export function readDeclarativeDiffScripts(host) {
   let originalOffset = parseInt(originalScript.getAttribute("data-offset"), 10) ?? 0;
   let modifiedOffset = parseInt(modifiedScript.getAttribute("data-offset"), 10) ?? 0;
   if (!(originalOffset > 0)) {
-    originalOffset = 0;
+    throw new Error(
+      `<monaco-diff><script type='text/original'>: data-offset must be a positive integer >${originalOffset}<`,
+    );
   }
   if (!(modifiedOffset > 0)) {
-    modifiedOffset = 0;
+    throw new Error(
+      `<monaco-diff><script type='text/modified'>: data-offset must be a positive integer >${modifiedOffset}<`,
+    );
   }
   original = trimLeft(original, originalOffset);
   modified = trimLeft(modified, modifiedOffset);
