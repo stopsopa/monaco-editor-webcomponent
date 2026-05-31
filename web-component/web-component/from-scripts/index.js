@@ -9,6 +9,12 @@ const diffDemoParamConfig = {
     encode: (value) => value,
     decode: (value) => (isMonacoTheme(value) ? value : ""),
   },
+  language: {
+    default: "javascript",
+    getParam: "lang",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
 };
 function createResizerParamConfig(resizer) {
   return {
@@ -59,6 +65,13 @@ function applyThemeAttribute(diffEl, theme) {
     diffEl.removeAttribute("theme");
   }
 }
+function applyLanguageAttribute(diffEl, language) {
+  if (language) {
+    diffEl.setAttribute("language", language);
+  } else {
+    diffEl.removeAttribute("language");
+  }
+}
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
@@ -72,17 +85,28 @@ const themeSelect = document.getElementById("theme-select");
 if (!(themeSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #theme-select element");
 }
+const languageSelect = document.getElementById("language-select");
+if (!(languageSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #language-select element");
+}
 const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
-const { setParam: setThemeParam } = trackDiffUrl(
+const { setParam } = trackDiffUrl(
   (params) => {
     themeSelect.value = params.theme;
     applyThemeAttribute(diffEl, params.theme);
+    languageSelect.value = params.language;
+    applyLanguageAttribute(diffEl, params.language);
   },
   { fireOnMount: true },
 );
 themeSelect.addEventListener("change", () => {
   const theme = themeSelect.value;
   applyThemeAttribute(diffEl, theme);
-  setThemeParam("theme", theme);
+  setParam("theme", theme);
+});
+languageSelect.addEventListener("change", () => {
+  const language = languageSelect.value;
+  applyLanguageAttribute(diffEl, language);
+  setParam("language", language);
 });
 await diffEl.whenReady();

@@ -12,16 +12,23 @@ type ResizerParams = {
 
 type DiffDemoParams = {
   theme: string;
+  language: string;
 };
 
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
 
-const diffDemoParamConfig: { theme: ParamDef<string> } = {
+const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
   theme: {
     default: "",
     getParam: "theme",
     encode: (value: string) => value,
     decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+  },
+  language: {
+    default: "javascript",
+    getParam: "lang",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
   },
 };
 
@@ -127,6 +134,14 @@ function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
   }
 }
 
+function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string): void {
+  if (language) {
+    diffEl.setAttribute("language", language);
+  } else {
+    diffEl.removeAttribute("language");
+  }
+}
+
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
@@ -145,12 +160,19 @@ if (!(themeSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #theme-select element");
 }
 
+const languageSelect = document.getElementById("language-select");
+if (!(languageSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #language-select element");
+}
+
 const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
 
-const { setParam: setThemeParam } = trackDiffUrl(
+const { setParam } = trackDiffUrl(
   (params: DiffDemoParams) => {
     themeSelect.value = params.theme;
     applyThemeAttribute(diffEl, params.theme);
+    languageSelect.value = params.language;
+    applyLanguageAttribute(diffEl, params.language);
   },
   { fireOnMount: true },
 );
@@ -158,7 +180,13 @@ const { setParam: setThemeParam } = trackDiffUrl(
 themeSelect.addEventListener("change", () => {
   const theme = themeSelect.value;
   applyThemeAttribute(diffEl, theme);
-  setThemeParam("theme", theme);
+  setParam("theme", theme);
+});
+
+languageSelect.addEventListener("change", () => {
+  const language = languageSelect.value;
+  applyLanguageAttribute(diffEl, language);
+  setParam("language", language);
 });
 
 await diffEl.whenReady();

@@ -275,6 +275,14 @@ export class MonacoDiffManager {
     this._editor?.dispose();
     this._editor = null;
   }
+  /** Updates the language for both sides of the diff editor. Falls back to the default language when undefined. */
+  setLanguage(language) {
+    const model = this._editor?.getModel();
+    if (!model) return;
+    const lang = language ?? DEFAULT_LANGUAGE;
+    cachedMonaco?.editor.setModelLanguage(model.original, lang);
+    cachedMonaco?.editor.setModelLanguage(model.modified, lang);
+  }
   /** Resizes the editor to match its container on the next animation frame (avoids jank). */
   _scheduleLayout() {
     if (this._layoutRaf !== null) return;

@@ -41,7 +41,7 @@ function parseThemeAttribute(value) {
 export class MonacoDiffElement extends HTMLElement {
   static tagName = tagName;
   static get observedAttributes() {
-    return ["theme"];
+    return ["theme", "language"];
   }
   _container;
   _manager = null;
@@ -70,18 +70,21 @@ export class MonacoDiffElement extends HTMLElement {
       return;
     }
     const theme = parseThemeAttribute(this.getAttribute("theme"));
+    const language = this.getAttribute("language") ?? undefined;
     this._manager = new MonacoDiffManager(this._container, {
       host: this,
+      language,
       editorOptions: {
         theme,
       },
     });
   }
   attributeChangedCallback(name, _oldValue, newValue) {
-    if (name !== "theme") {
-      return;
+    if (name === "theme") {
+      void this._applyTheme(parseThemeAttribute(newValue));
+    } else if (name === "language") {
+      void this._applyLanguage(newValue ?? undefined);
     }
-    void this._applyTheme(parseThemeAttribute(newValue));
   }
   disconnectedCallback() {
     this._manager?.destroy();
@@ -107,6 +110,13 @@ export class MonacoDiffElement extends HTMLElement {
     await this.whenReady();
     const monaco = await hydrateCache();
     monaco.editor.setTheme(theme ?? "vs");
+  }
+  async _applyLanguage(language) {
+    if (!this._manager) {
+      return;
+    }
+    await this.whenReady();
+    this._manager.setLanguage(language);
   }
 }
 customElements.define(tagName, MonacoDiffElement);
