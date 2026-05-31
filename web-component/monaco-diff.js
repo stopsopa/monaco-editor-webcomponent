@@ -5,11 +5,11 @@
  * Before querying the DOM or calling instance APIs from other modules, wait until the
  * browser knows the tag (same pattern as other custom elements in this repo):
  *
- *   import { tagName, MonacoDiffElement } from "./monaco-diff.js";
+ *   import { MonacoDiffElement } from "./monaco-diff.js";
  *
- *   await customElements.whenDefined(tagName);
+ *   await customElements.whenDefined(MonacoDiffElement.tagName);
  *
- *   const diff = document.querySelector(tagName);
+ *   const diff = document.querySelector(MonacoDiffElement.tagName);
  *   if (!(diff instanceof MonacoDiffElement)) throw new Error("Missing <monaco-diff>");
  *   await diff.whenReady();
  *

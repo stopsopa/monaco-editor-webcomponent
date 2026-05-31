@@ -1,6 +1,7 @@
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 import modURLSearchParams from "../../urlchange/urlchange.js";
 import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
+await customElements.whenDefined(tagName);
 const instanceKeyFn = (key, i) => `${key}-${i}`;
 const diffDemoParamConfig = {
   theme: {
