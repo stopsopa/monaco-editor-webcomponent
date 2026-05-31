@@ -11,25 +11,25 @@ const diffDemoParamConfig = {
   },
 };
 const original = `
-const loadMonaco = (vsPath = VS_PATH) =>
-  new Promise((resolve, reject) => {
-    const win = window;
+    const loadMonaco = (vsPath = VS_PATH) =>
+      new Promise((resolve, reject) => {
+        const win = window;
 
-    const finish = () => {
-      win.require.config({ paths: { vs: vsPath } });
-      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
-    };
+        const finish = () => {
+          win.require.config({ paths: { vs: vsPath } });
+          win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+        };
 
-    if (win.require && win.monaco) return resolve(win.monaco);
-    if (win.require) return finish();
+        if (win.require && win.monaco) return resolve(win.monaco);
+        if (win.require) return finish();
 
-    const script = document.createElement("script");
-    script.src = \`\${vsPath}/loader.js\`;
-    script.async = true;
-    script.onload = () => finish();
-    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
-    document.head.appendChild(script);
-  });
+        const script = document.createElement("script");
+        script.src = \`\${vsPath}/loader.js\`;
+        script.async = true;
+        script.onload = () => finish();
+        script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+        document.head.appendChild(script);
+      });
 `.trim();
 const modified = `
 const loadMonaco = (vsPath = VS_PATH) =>

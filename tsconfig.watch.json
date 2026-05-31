@@ -22,6 +22,7 @@
     "server.ts",
     "lib/utils.js",
     "scripts/sync-monaco-version.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/*.test.parallel.ts"
   ]
 }
