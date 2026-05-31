@@ -63,13 +63,14 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   const config = createResizerParamConfig(resizer);
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
 
-  const applyParams = (params: ResizerParams): void => {
-    resizer.setAttribute("left", params.left);
-    resizer.setAttribute("center", params.center);
-    resizer.setAttribute("height", params.height);
-  };
-
-  const { setParams } = trackUrl((params) => applyParams(params), { ctx: index, fireOnMount: true });
+  const { setParams } = trackUrl(
+    (params): void => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
+    },
+    { ctx: index, fireOnMount: true },
+  );
 
   const syncToUrl = (): void => {
     setParams({
