@@ -13,66 +13,32 @@ type ResizerParams = {
 
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
 
-function createResizerParamConfig(resizer: HTMLElement): {
-  [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
-} {
-  return;
-}
-
-/** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
-function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
-  const config = createResizerParamConfig(resizer);
-  const { trackUrl } = modURLSearchParams(
-    {
-      left: {
-        default: resizer.getAttribute("left") ?? "100px",
-        getParam: "l",
-        encode: (value: string) => value,
-        decode: (value: string) => value,
-      },
-      center: {
-        default: resizer.getAttribute("center") ?? "1200px",
-        getParam: "c",
-        encode: (value: string) => value,
-        decode: (value: string) => value,
-      },
-      height: {
-        default: resizer.getAttribute("height") ?? "100px",
-        getParam: "h",
-        encode: (value: string) => value,
-        decode: (value: string) => value,
-      },
-      theme: {
-        default: "",
-        getParam: "theme",
-        encode: (value: string) => value,
-        decode: (value: string) => value,
-      },
-    },
-    instanceKeyFn,
-  );
-
-  const { setParams } = trackUrl(
-    (params): void => {
-      resizer.setAttribute("left", params.left);
-      resizer.setAttribute("center", params.center);
-      resizer.setAttribute("height", params.height);
-    },
-    { ctx: index, fireOnMount: true },
-  );
-
-  const syncToUrl = (): void => {
-    setParams({
-      left: resizer.getAttribute("left") ?? config.left.default,
-      center: resizer.getAttribute("center") ?? config.center.default,
-      height: resizer.getAttribute("height") ?? config.height.default,
-    });
-  };
-
-  resizer.addEventListener("onLeft", syncToUrl);
-  resizer.addEventListener("onCenter", syncToUrl);
-  resizer.addEventListener("onHeight", syncToUrl);
-}
+const config = {
+  left: {
+    default: "100px",
+    getParam: "l",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+  center: {
+    default: "1200px",
+    getParam: "c",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+  height: {
+    default: "100px",
+    getParam: "h",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+};
 
 const original = `
 const loadMonaco = (vsPath = VS_PATH) =>
@@ -126,7 +92,30 @@ if (!container) {
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
-  wireResizerUrlSync(el as HTMLElement, index);
+  const resizer = el as HTMLElement;
+
+  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+
+  const { setParams } = trackUrl(
+    (params): void => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
+    },
+    { ctx: index, fireOnMount: true },
+  );
+
+  const syncToUrl = (): void => {
+    setParams({
+      left: resizer.getAttribute("left") ?? config.left.default,
+      center: resizer.getAttribute("center") ?? config.center.default,
+      height: resizer.getAttribute("height") ?? config.height.default,
+    });
+  };
+
+  resizer.addEventListener("onLeft", syncToUrl);
+  resizer.addEventListener("onCenter", syncToUrl);
+  resizer.addEventListener("onHeight", syncToUrl);
 });
 
 const mgr = new MonacoDiffManager(container, {

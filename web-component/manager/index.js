@@ -2,60 +2,32 @@ import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 const instanceKeyFn = (key, i) => `${key}-${i}`;
-function createResizerParamConfig(resizer) {
-  return;
-}
-/** Indexed URL params (`l-0`, `c-0`, `h-0`, …) ↔ resizer attributes; drag events write back to the URL. */
-function wireResizerUrlSync(resizer, index) {
-  const config = createResizerParamConfig(resizer);
-  const { trackUrl } = modURLSearchParams(
-    {
-      left: {
-        default: resizer.getAttribute("left") ?? "100px",
-        getParam: "l",
-        encode: (value) => value,
-        decode: (value) => value,
-      },
-      center: {
-        default: resizer.getAttribute("center") ?? "1200px",
-        getParam: "c",
-        encode: (value) => value,
-        decode: (value) => value,
-      },
-      height: {
-        default: resizer.getAttribute("height") ?? "100px",
-        getParam: "h",
-        encode: (value) => value,
-        decode: (value) => value,
-      },
-      theme: {
-        default: "",
-        getParam: "theme",
-        encode: (value) => value,
-        decode: (value) => value,
-      },
-    },
-    instanceKeyFn,
-  );
-  const { setParams } = trackUrl(
-    (params) => {
-      resizer.setAttribute("left", params.left);
-      resizer.setAttribute("center", params.center);
-      resizer.setAttribute("height", params.height);
-    },
-    { ctx: index, fireOnMount: true },
-  );
-  const syncToUrl = () => {
-    setParams({
-      left: resizer.getAttribute("left") ?? config.left.default,
-      center: resizer.getAttribute("center") ?? config.center.default,
-      height: resizer.getAttribute("height") ?? config.height.default,
-    });
-  };
-  resizer.addEventListener("onLeft", syncToUrl);
-  resizer.addEventListener("onCenter", syncToUrl);
-  resizer.addEventListener("onHeight", syncToUrl);
-}
+const config = {
+  left: {
+    default: "100px",
+    getParam: "l",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  center: {
+    default: "1200px",
+    getParam: "c",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  height: {
+    default: "100px",
+    getParam: "h",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+};
 const original = `
 const loadMonaco = (vsPath = VS_PATH) =>
   new Promise((resolve, reject) => {
@@ -104,7 +76,26 @@ if (!container) {
 }
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
-  wireResizerUrlSync(el, index);
+  const resizer = el;
+  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { setParams } = trackUrl(
+    (params) => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
+    },
+    { ctx: index, fireOnMount: true },
+  );
+  const syncToUrl = () => {
+    setParams({
+      left: resizer.getAttribute("left") ?? config.left.default,
+      center: resizer.getAttribute("center") ?? config.center.default,
+      height: resizer.getAttribute("height") ?? config.height.default,
+    });
+  };
+  resizer.addEventListener("onLeft", syncToUrl);
+  resizer.addEventListener("onCenter", syncToUrl);
+  resizer.addEventListener("onHeight", syncToUrl);
 });
 const mgr = new MonacoDiffManager(container, {
   original,
