@@ -1,6 +1,6 @@
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 
-import modURLSearchParams, { type ParamDef } from "../../urlchange/urlchange.js";
+import modURLSearchParams from "../../urlchange/urlchange.js";
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../../urlchange/toolsURLSearchParams.js";
 
 import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";

@@ -5,18 +5,18 @@
  * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`.
  */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
+
 import {
   cloneSearchParams,
   compareNormalizedSearchParams,
   syncURLSearchParams,
   buildUrlWithSearchParams,
 } from "./toolsURLSearchParams.js";
+
 import {
   ChildSection,
-  radioOptions,
   RadioOptionType,
   selectOptions,
-  SingleOptionType,
   MultiSelectOptionsArray,
   defaultRadioOption,
 } from "./ChildSection.js";

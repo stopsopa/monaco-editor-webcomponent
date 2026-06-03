@@ -3,17 +3,6 @@ import modURLSearchParams from "../urlchange/urlchange.js";
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../urlchange/toolsURLSearchParams.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
-const instanceKeyFn = (key, i) => {
-  let t;
-  const cond = /^\d+$/.test(String(i));
-  if (cond) {
-    t = `${key}-${i}`;
-  } else {
-    t = key;
-  }
-  // console.log("instanceKeyFn", { cond, key, i }, "t: ", t);
-  return t;
-};
 const config = {
   left: {
     default: "100px",
@@ -88,7 +77,17 @@ if (!container) {
 }
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el;
-  const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
+  const { trackUrl } = modURLSearchParams(config, (key, i) => {
+    let t;
+    const cond = /^\d+$/.test(String(i));
+    if (cond) {
+      t = `${key}-${i}`;
+    } else {
+      t = key;
+    }
+    // console.log("instanceKeyFn", { cond, key, i }, "t: ", t);
+    return t;
+  });
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams, governedKeys) => {
       // console.log("trackUrl", index, JSON.stringify(params));
