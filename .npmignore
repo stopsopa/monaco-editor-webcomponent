@@ -1,0 +1,106 @@
+node_modules/
+/bash/
+/.github/
+/.agent/
+/playwright*
+/pl.sh
+/package.dev.json
+/package-lock*
+/html/
+/custom/
+*.md
+/pw.sh
+*.tgz
+/xx.cjs
+/transpile.sh
+.env*
+server.ts
+server.js
+/.prettierignore
+/PLAN.md
+/.vscode/
+/.tool-versions
+/README.md
+/es.ts
+/import-map.js
+/js/*
+!/js/*.js
+/select.*
+*.e2e.*
+prettier.config.ts
+/select_previous.ts
+/render.ts
+/produceRender.ts
+/options.json
+*.html
+/links.sh
+/*.ts
+/___try/
+/tsconfig.*
+*.sh
+**/*.html.js
+**/*.html.ts
+**/*.html.d.ts
+**/*urlManager*
+**/*namesSource*
+**/*list-up-down-navi*
+vite-project/
+*.ts
+!*.d.ts
+morph.js
+import-map.js
+radio.js
+loader.js
+*.tar.gz
+/web-component/other-manager/
+/web-component/*.css
+/web-component/CenterAndHeightResizer.js
+/web-component/CenterResizer.js
+/web-component/manager/
+/web-component/urlchange/
+/web-component/web-component/
+
+# uncommment for vite testing
+*.png
+img.json
+release.config.js
+commitlint.config.js
+/test/
+/diff/
+/public/
+/monaco-codepen/
+.nojekyll
+.prettierrc
+lib/cacheTemplate.js
+lib/createScript.js
+lib/doEval.js
+lib/template.js
+lib/utils.js
+/monaco-editor/
+pnpm-workspace.yaml
+npm-workspace.yaml
+tsc.ignore
+# /web-component/**/*.css
+
+# /web-component/
+# /web-component/composite-select/*
+# /web-component/container/*
+# /web-component/unbind/*
+# /web-component/img/*
+# /web-component/list-up-down-navi/*
+# !/web-component/list-up-down-navi/ListManager.css
+# /web-component/options-section/*
+# !/web-component/options-section/OptionsSectionManager.css
+# /web-component/react/*
+# /web-component/selected-section/*
+# !/web-component/selected-section/SelectedSectionManager.css
+# /web-component/test/*
+# /web-component/unbind/*
+
+
+
+
+
+
+
+

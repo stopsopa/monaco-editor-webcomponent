@@ -23,6 +23,7 @@
     "lib/utils.js",
     "scripts/sync-monaco-version.ts",
     "**/*.test.ts",
-    "**/*.test.parallel.ts"
+    "**/*.test.parallel.ts",
+    "**/*.e2e.ts"
   ]
 }

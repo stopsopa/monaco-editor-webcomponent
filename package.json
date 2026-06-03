@@ -1,5 +1,5 @@
 {
-  "name": "monaco-editor-webcomponent",
+  "name": "monaco-diff",
   "version": "1.0.0",
   "description": "Comprehensive learning path for Web Components, culminating in an monaco Editor web component",
   "type": "module",

@@ -1,0 +1,5 @@
+{
+  "red": ["ai.png", "chatgpt.png", "claude.png", "gemini.png"],
+  "blue": ["gmail.png", "google_calendar.png", "google_drive.png", "google_keep.png"],
+  "green": ["perplexity.png", "t3chat.png", "timeanddate.png", "tools.png", "youtube.png"]
+}
