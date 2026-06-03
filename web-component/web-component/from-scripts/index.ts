@@ -1,43 +1,31 @@
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 
-import modURLSearchParams, { type ParamDef } from "../../urlchange/urlchange.js";
+import modURLSearchParams from "../../urlchange/urlchange.js";
+import { syncURLSearchParams } from "../../urlchange/toolsURLSearchParams.js";
 
 import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
 
 await customElements.whenDefined(tagName);
 
-type ResizerParams = {
-  left: string;
-  center: string;
-  height: string;
-};
-
-type DiffDemoParams = {
-  theme: string;
-  language: string;
-};
-
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
 
-const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
-  theme: {
-    default: "",
-    getParam: "theme",
-    encode: (value: string) => value,
-    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
-  },
-  language: {
-    default: "javascript",
-    getParam: "lang",
-    encode: (value: string) => value,
-    decode: (value: string) => value,
-  },
-};
+// const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
+//   theme: {
+//     default: "",
+//     getParam: "theme",
+//     encode: (value: string) => value,
+//     decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+//   },
+//   language: {
+//     default: "javascript",
+//     getParam: "lang",
+//     encode: (value: string) => value,
+//     decode: (value: string) => value,
+//   },
+// };
 
-function createResizerParamConfig(resizer: HTMLElement): {
-  [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
-} {
-  return {
+function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
+  const config = {
     left: {
       default: resizer.getAttribute("left") ?? "100px",
       getParam: "l",
@@ -57,17 +45,26 @@ function createResizerParamConfig(resizer: HTMLElement): {
       decode: (value: string) => value,
     },
   };
-}
 
-function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
-  const config = createResizerParamConfig(resizer);
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
 
   const { setParams } = trackUrl(
-    (params): void => {
+    (params, updatedURLSearchParams): void => {
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
+
+      const governedKeys = Object.values(config).map((def) => instanceKeyFn(def.getParam, index));
+      const current = new URLSearchParams(window.location.search);
+      const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+
+      if (next.toString() !== current.toString()) {
+        const search = next.toString();
+        const url = search
+          ? `${window.location.pathname}?${search}${window.location.hash}`
+          : `${window.location.pathname}${window.location.hash}`;
+        history.replaceState(history.state, "", url);
+      }
     },
     { ctx: index, fireOnMount: true },
   );
@@ -124,14 +121,41 @@ if (!(languageSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #language-select element");
 }
 
-const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
+const diffConfig = {
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value: string) => value,
+    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+  },
+  language: {
+    default: "javascript",
+    getParam: "lang",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+};
+
+const { trackUrl: trackDiffUrl } = modURLSearchParams(diffConfig);
 
 const { setParam } = trackDiffUrl(
-  (params: DiffDemoParams) => {
+  (params, updatedURLSearchParams) => {
     themeSelect.value = params.theme;
     applyThemeAttribute(diffEl, params.theme);
     languageSelect.value = params.language;
     applyLanguageAttribute(diffEl, params.language);
+
+    const governedKeys = Object.values(diffConfig).map((def) => def.getParam);
+    const current = new URLSearchParams(window.location.search);
+    const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+
+    if (next.toString() !== current.toString()) {
+      const search = next.toString();
+      const url = search
+        ? `${window.location.pathname}?${search}${window.location.hash}`
+        : `${window.location.pathname}${window.location.hash}`;
+      history.replaceState(history.state, "", url);
+    }
   },
   { fireOnMount: true },
 );

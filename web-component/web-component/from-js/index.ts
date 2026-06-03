@@ -1,6 +1,7 @@
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 
 import modURLSearchParams, { type ParamDef } from "../../urlchange/urlchange.js";
+import { syncURLSearchParams } from "../../urlchange/toolsURLSearchParams.js";
 
 import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
 
@@ -113,7 +114,24 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
     resizer.setAttribute("height", params.height);
   };
 
-  const { setParams } = trackUrl((params) => applyParams(params), { ctx: index, fireOnMount: true });
+  const { setParams } = trackUrl(
+    (params, updatedURLSearchParams) => {
+      applyParams(params);
+
+      const governedKeys = Object.values(config).map((def) => instanceKeyFn(def.getParam, index));
+      const current = new URLSearchParams(window.location.search);
+      const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+
+      if (next.toString() !== current.toString()) {
+        const search = next.toString();
+        const url = search
+          ? `${window.location.pathname}?${search}${window.location.hash}`
+          : `${window.location.pathname}${window.location.hash}`;
+        history.replaceState(history.state, "", url);
+      }
+    },
+    { ctx: index, fireOnMount: true },
+  );
 
   const syncToUrl = (): void => {
     setParams({
@@ -170,11 +188,23 @@ if (!(languageSelect instanceof HTMLSelectElement)) {
 const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
 
 const { setParam } = trackDiffUrl(
-  (params: DiffDemoParams) => {
+  (params, updatedURLSearchParams) => {
     themeSelect.value = params.theme;
     applyThemeAttribute(diffEl, params.theme);
     languageSelect.value = params.language;
     applyLanguageAttribute(diffEl, params.language);
+
+    const governedKeys = Object.values(diffDemoParamConfig).map((def) => def.getParam);
+    const current = new URLSearchParams(window.location.search);
+    const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+
+    if (next.toString() !== current.toString()) {
+      const search = next.toString();
+      const url = search
+        ? `${window.location.pathname}?${search}${window.location.hash}`
+        : `${window.location.pathname}${window.location.hash}`;
+      history.replaceState(history.state, "", url);
+    }
   },
   { fireOnMount: true },
 );
