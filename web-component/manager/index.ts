@@ -1,12 +1,22 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 
-import modURLSearchParams, { type ParamDef } from "../urlchange/urlchange.js";
+import modURLSearchParams from "../urlchange/urlchange.js";
 
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
-const instanceKeyFn = (key: string, i?: number): string => (/^\d+&/.test(String(i)) ? `${key}-${i}` : key);
+const instanceKeyFn = (key: string, i?: number): string => {
+  let t;
+  const cond = /^\d+$/.test(String(i));
+  if (cond) {
+    t = `${key}-${i}`;
+  } else {
+    t = key;
+  }
+  // console.log("instanceKeyFn", { cond, key, i }, "t: ", t);
+  return t;
+};
 
 const config = {
   left: {
@@ -87,10 +97,12 @@ if (!container) {
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el as HTMLElement;
 
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
 
   const { setParams } = trackUrl(
     (params): void => {
+      console.log("trackUrl", index, JSON.stringify(params));
+
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);

@@ -2,7 +2,17 @@ import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
-const instanceKeyFn = (key, i) => (/^\d+&/.test(String(i)) ? `${key}-${i}` : key);
+const instanceKeyFn = (key, i) => {
+  let t;
+  const cond = /^\d+$/.test(String(i));
+  if (cond) {
+    t = `${key}-${i}`;
+  } else {
+    t = key;
+  }
+  // console.log("instanceKeyFn", { cond, key, i }, "t: ", t);
+  return t;
+};
 const config = {
   left: {
     default: "100px",
@@ -77,9 +87,10 @@ if (!container) {
 }
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el;
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
   const { setParams } = trackUrl(
     (params) => {
+      console.log("trackUrl", index, JSON.stringify(params));
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
