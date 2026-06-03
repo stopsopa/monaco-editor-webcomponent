@@ -15,9 +15,9 @@ import {
 
 import {
   ChildSection,
-  RadioOptionType,
+  type RadioOptionType,
   selectOptions,
-  MultiSelectOptionsArray,
+  type MultiSelectOptionsArray,
   defaultRadioOption,
 } from "./ChildSection.js";
 

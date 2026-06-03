@@ -7,12 +7,12 @@ import trimLeft from "./trimLeft.js";
 
 // autogenerate v
 export const MONACO_GENERATED = {
-  version: "0.55.1",
-  vs: [
+  "version": "0.55.1",
+  "vs": [
     "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs",
     "https://unpkg.com/monaco-editor@0.55.1/min/vs",
-    "/monaco/vs",
-  ],
+    "/monaco/vs"
+  ]
 } as const;
 // autogenerate ^
 

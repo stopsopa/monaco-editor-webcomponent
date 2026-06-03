@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="floating-label-pattern.css" />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      .g-inter {
+        font-family: Inter, sans-serif;
+        font-feature-settings:
+          "liga" 1,
+          "calt" 1,
+          /* fix for Chrome */ "zero",
+          "ss01";
+      }
+      body {
+        padding: 10px 30px;
+      }
+
+      :root {
+        font-family: "Inter", sans-serif;
+      }
+      @supports (font-variation-settings: normal) {
+        :root {
+          font-family: "Inter var", sans-serif;
+          font-feature-settings:
+            "liga" 1,
+            "calt" 1,
+            /* fix for Chrome */ "zero",
+            "ss01";
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Main repo</h2>
+    <ul>
+      <li>
+        <a href="https://stopsopa.github.io/select-component-sandbox/list.html" class="gcp-css"
+          >Sandbox Github repository WARNING: SIMPLEST REACT USE EXAMPLE IS HERE</a
+        >
+      </li>
+      <li>
+        <a href="docs/api.html" class="gcp-css">API Reference</a>
+      </li>
+      <li>
+        <a href="https://www.npmjs.com/package/composite-select" class="gcp-css">NPM</a>
+      </li>
+      <!-- <li><a href="" class="gcp-css"></a></li>
+      <li><a href="" class="gcp-css"></a></li>
+      <li><a href="" class="gcp-css"></a></li>
+      <li><a href="" class="gcp-css"></a></li> -->
+    </ul>
+    <hr />
+
+    <ul>
+      <li>
+        <a href="composition/options-section/_list.html" class="gcp-css">composition/options-section/_list.html</a>
+      </li>
+      <li>
+        <a href="composition/selected-section/_list.html" class="gcp-css">composition/selected-section/_list.html</a>
+      </li>
+      <li>
+        <a href="composition/composite-select/_list.html" class="gcp-css">composition/composite-select/_list.html</a>
+      </li>
+      <li>
+        <a href="vite-project/dist/" class="gcp-css">React wrappers demos</a>
+      </li>
+    </ul>
+
+    <script
+      src="https://cdn.jsdelivr.net/gh/MarketingPipeline/GitHub-Ribbon-Web-Component/dist/github-ribbon-wc.min.js"
+      defer
+    ></script>
+
+    <github-ribbon link="https://github.com/stopsopa/select-component" type="right" color="#679d2c"
+      >Fork me on GitHub</github-ribbon
+    >
+  </body>
+</html>

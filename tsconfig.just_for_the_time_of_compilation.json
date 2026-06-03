@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist/esm",
+    "target": "esnext",
+    "module": "esnext",
+    "declaration": true,
+    "declarationDir": "./dist/types"
+  },
+
+  "exclude": ["node_modules", "jest.config.ts", "dist", ".github", "bash", "html", "**/*.e2e.ts", "**/*.e2e.js", "**/*.test.ts"]
+}

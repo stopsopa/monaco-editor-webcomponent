@@ -30,25 +30,25 @@ import { hydrateCache, MonacoDiffManager } from "./MonacoDiffManager.js";
 export const tagName = "monaco-diff";
 export const MONACO_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"];
 export function isMonacoTheme(value) {
-  return MONACO_THEMES.includes(value);
+    return MONACO_THEMES.includes(value);
 }
 function parseThemeAttribute(value) {
-  if (value && isMonacoTheme(value)) {
-    return value;
-  }
-  return undefined;
+    if (value && isMonacoTheme(value)) {
+        return value;
+    }
+    return undefined;
 }
 export class MonacoDiffElement extends HTMLElement {
-  static tagName = tagName;
-  static get observedAttributes() {
-    return ["theme", "language"];
-  }
-  _container;
-  _manager = null;
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-    this.shadowRoot.innerHTML = `
+    static tagName = tagName;
+    static get observedAttributes() {
+        return ["theme", "language"];
+    }
+    _container;
+    _manager = null;
+    constructor() {
+        super();
+        this.attachShadow({ mode: "open" });
+        this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: block;
@@ -63,60 +63,61 @@ export class MonacoDiffElement extends HTMLElement {
       </style>
       <div class="container"></div>
     `;
-    this._container = this.shadowRoot.querySelector(".container");
-  }
-  connectedCallback() {
-    if (this._manager) {
-      return;
+        this._container = this.shadowRoot.querySelector(".container");
     }
-    const theme = parseThemeAttribute(this.getAttribute("theme"));
-    const language = this.getAttribute("language") ?? undefined;
-    this._manager = new MonacoDiffManager(this._container, {
-      host: this,
-      language,
-      editorOptions: {
-        theme,
-      },
-    });
-  }
-  attributeChangedCallback(name, _oldValue, newValue) {
-    if (name === "theme") {
-      void this._applyTheme(parseThemeAttribute(newValue));
-    } else if (name === "language") {
-      void this._applyLanguage(newValue ?? undefined);
+    connectedCallback() {
+        if (this._manager) {
+            return;
+        }
+        const theme = parseThemeAttribute(this.getAttribute("theme"));
+        const language = this.getAttribute("language") ?? undefined;
+        this._manager = new MonacoDiffManager(this._container, {
+            host: this,
+            language,
+            editorOptions: {
+                theme,
+            },
+        });
     }
-  }
-  disconnectedCallback() {
-    this._manager?.destroy();
-    this._manager = null;
-  }
-  /** Promise that resolves when the editor has finished loading and is safe to use. */
-  whenReady() {
-    if (!this._manager) {
-      throw new Error("<monaco-diff>: not connected");
+    attributeChangedCallback(name, _oldValue, newValue) {
+        if (name === "theme") {
+            void this._applyTheme(parseThemeAttribute(newValue));
+        }
+        else if (name === "language") {
+            void this._applyLanguage(newValue ?? undefined);
+        }
     }
-    return this._manager.whenReady();
-  }
-  getManager() {
-    if (!this._manager) {
-      throw new Error("<monaco-diff>: not connected");
+    disconnectedCallback() {
+        this._manager?.destroy();
+        this._manager = null;
     }
-    return this._manager;
-  }
-  async _applyTheme(theme) {
-    if (!this._manager) {
-      return;
+    /** Promise that resolves when the editor has finished loading and is safe to use. */
+    whenReady() {
+        if (!this._manager) {
+            throw new Error("<monaco-diff>: not connected");
+        }
+        return this._manager.whenReady();
     }
-    await this.whenReady();
-    const monaco = await hydrateCache();
-    monaco.editor.setTheme(theme ?? "vs");
-  }
-  async _applyLanguage(language) {
-    if (!this._manager) {
-      return;
+    getManager() {
+        if (!this._manager) {
+            throw new Error("<monaco-diff>: not connected");
+        }
+        return this._manager;
     }
-    await this.whenReady();
-    this._manager.setLanguage(language);
-  }
+    async _applyTheme(theme) {
+        if (!this._manager) {
+            return;
+        }
+        await this.whenReady();
+        const monaco = await hydrateCache();
+        monaco.editor.setTheme(theme ?? "vs");
+    }
+    async _applyLanguage(language) {
+        if (!this._manager) {
+            return;
+        }
+        await this.whenReady();
+        this._manager.setLanguage(language);
+    }
 }
 customElements.define(tagName, MonacoDiffElement);

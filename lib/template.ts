@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import cacheTemplate, { setProduceData, th } from "./cacheTemplate.ts";
+import cacheTemplate, { setProduceData, th } from "./cacheTemplate.js";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 

@@ -7,3 +7,4 @@ git-monaco-editor/
 monaco-editor/src/monaco-web-component.d.ts
 monaco-editor/src/monaco-web-component.js
 *.tgz
+/dist/

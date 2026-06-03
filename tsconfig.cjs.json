@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist/cjs",
+    "target": "es2022",
+    "module": "esnext",
+    "declaration": false
+  },
+  "exclude": ["**/*.e2e.ts", "**/*.e2e.js", "**/*.test.ts"]
+}

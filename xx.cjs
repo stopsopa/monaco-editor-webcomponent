@@ -41,14 +41,10 @@ EEE
       source: false,
       confirm: false,
     },
-    server: {
-      command: `
-set -e
-export DISABLE_CACHE_TEMPLATE=true
+    [`server`]: {
+      command: `   
 node --env-file .env --watch server.ts
       `,
-      description: "Status of all things",
-      source: false,
       confirm: false,
     },
     [`type`]: {
@@ -65,6 +61,44 @@ NODE_OPTIONS= /bin/bash tsc.sh
       description: `launch esbuild - will NOT launch browser nor IDE`,
       confirm: false,
       source: false,
+    },
+    [`build`]: {
+      command: `
+set -e      
+/bin/bash build.sh
+      `,
+      description: "Start server",
+      source: false,
+      confirm: false,
+    },
+    [`typecheck`]: {
+      command: `
+set -e      
+
+cat <<EEE
+
+  INFO:
+      This will typecheck more then normally is checked during compilation
+      Because normally we transpile for npm only what is in 'composition' directory
+      but here we are typechecking the whole project
+
+EEE
+
+echo -e "\n  Press enter to continue\n"
+read
+
+
+cat <<EEE
+
+\$ npx tsc -p tsconfig.json
+
+EEE
+
+npx tsc -p tsconfig.json
+      `,
+      description: "Typecheck entire codebase",
+      source: false,
+      confirm: false,
     },
     [`transpile`]: {
       command: `
@@ -120,11 +154,89 @@ EEE
       source: false,
       confirm: false,
     },
+    [`link`]: {
+      command: `
+set -e      
+/bin/bash links.sh
+      `,
+      description: "Make symlinks to node_modules",
+      source: false,
+      confirm: false,
+    },
+    [`npm`]: {
+      command: `
+set -e
+S="\\\\"  
+
+CMD="$(cat <<EOF
+rm -rf node_modules
+/bin/bash bash/swap-files-v2.sh \${S}
+  package.json package.dev.json \${S}
+  package-lock.json package-lock.dev.json \${S}
+  -- npm install
+/bin/bash diff/patch.sh
+EOF
+)"
+
+cat <<EEE
+
+\${CMD}   
+
+EEE
+
+echo -e "\n    Press enter to continue\n"
+read
+
+CMD="\${CMD//\\$'\n'/}"
+
+eval "\${CMD}"
+
+`,
+      description: `test server`,
+      confirm: false,
+    },
+    [`npm pack`]: {
+      command: `
+set -e
+npm pack
+`,
+      description: `npm pack`,
+      confirm: false,
+    },
+    [`playwright`]: {
+      command: `
+cat <<EEE
+
+# run server, then tests then stop server
+  ENVFILE=.env.playwright /bin/bash pw.sh
+  ENVFILE=.env.playwright /bin/bash pw.sh --target docker
+
+# for continuously running server use  
+  /bin/bash playwright.sh -- --debug -- vite-project/src/App.e2e.js
+
+  npx playwright show-report
+
+  ./node_modules/.bin/playwright test --headed --forbid-only --project=chromium --workers=1 
+
+  /bin/bash playwright.sh vite-project/src/App.e2e.ts
+  /bin/bash playwright.sh -- vite-project/src/App.e2e.ts
+  /bin/bash playwright.sh -- --debug -- vite-project/src/App.e2e.ts
+
+  ./node_modules/.bin/playwright codegen http://0.0.0.0:5678/vite-project/dist/
+
+  /bin/bash playwright.sh -- vite-project/src/App.e2e.ts -g "build list"
+  /bin/bash playwright.sh -- --debug -g "build list" -- vite-project/src/App.e2e.ts
+
+EEE
+      `,
+      description: "Transpile choice.js/select.ts to choice.js/select.js",
+      source: false,
+      confirm: false,
+    },
 
     [`style:check`]: {
       command: `
 set -e
-/bin/bash node_modules/.bin/prettier --config prettier.config.ts --check .
 ./node_modules/.bin/prettier --config prettier.config.ts --check .
 `,
       description: `style_check`,
@@ -133,7 +245,6 @@ set -e
     [`style:fix`]: {
       command: `
 set -e
-/bin/bash node_modules/.bin/prettier --config prettier.config.ts --write .
 ./node_modules/.bin/prettier --config prettier.config.ts --write .
 `,
       description: `style_list`,
@@ -142,7 +253,6 @@ set -e
     [`style:list`]: {
       command: `
 set -e
-/bin/bash node_modules/.bin/prettier --config prettier.config.ts --list-different .
 ./node_modules/.bin/prettier --config prettier.config.ts --list-different .
 `,
       description: `style_list`,
@@ -239,19 +349,6 @@ npm run build-all
 
 `,
       description: `remove directory and clone fresh monaco repository and switching to particular tag`,
-      confirm: false,
-    },
-    [`dev`]: {
-      command: `   
-node --env-file=.env server.js
-      `,
-      confirm: false,
-    },
-    [`link`]: {
-      command: `
-/bin/bash link.sh       
-`,
-      description: `run catalog-ui-service`,
       confirm: false,
     },
 

@@ -22,6 +22,7 @@
     "scripts/sync-monaco-version.ts",
     "web-component/other-manager",
     "monaco-editor",
-    "**/*.e2e.ts"
+    "**/*.e2e.ts",
+    "**/*.test.ts"
   ]
 }

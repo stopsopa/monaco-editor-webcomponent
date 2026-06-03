@@ -50,8 +50,10 @@ vite-project/
 morph.js
 import-map.js
 radio.js
+floating-label-pattern.css
 loader.js
 *.tar.gz
+produceRender.js
 /web-component/other-manager/
 /web-component/*.css
 /web-component/CenterAndHeightResizer.js

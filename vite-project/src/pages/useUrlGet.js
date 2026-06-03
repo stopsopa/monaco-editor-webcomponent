@@ -2,98 +2,92 @@ import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 // ─── Built-in serializers ─────────────────────────────────────────────────────
 export const StringSerializer = {
-  parse: (raw) => raw,
-  serialize: (val) => val,
+    parse: (raw) => raw,
+    serialize: (val) => val,
 };
 export const predefinedUseUrlString = createUseUrlGet(StringSerializer);
 export const NumberSerializer = {
-  parse: (raw) => Number(raw),
-  serialize: (val) => String(val),
+    parse: (raw) => Number(raw),
+    serialize: (val) => String(val),
 };
 export const predefinedUseUrlNumber = createUseUrlGet(NumberSerializer);
 export const BooleanSerializer = {
-  parse: (raw) => raw === "1",
-  serialize: (val) => (String(val) === "true" ? "1" : "0"),
+    parse: (raw) => raw === "1",
+    serialize: (val) => (String(val) === "true" ? "1" : "0"),
 };
 export const predefinedUseUrlBoolean = createUseUrlGet(BooleanSerializer);
 export const StringArraySerializer = {
-  parse: (raw) => (raw ? raw.split("~") : []),
-  serialize: (val) => val.join("~"),
+    parse: (raw) => (raw ? raw.split("~") : []),
+    serialize: (val) => val.join("~"),
 };
 export const predefinedUseUrlStringArray = createUseUrlGet(StringArraySerializer);
 export const NumberArraySerializer = {
-  parse: (raw) => (raw ? raw.split("~").map(Number) : []),
-  serialize: (val) => val.join("~"),
+    parse: (raw) => (raw ? raw.split("~").map(Number) : []),
+    serialize: (val) => val.join("~"),
 };
 export const predefinedUseUrlNumberArray = createUseUrlGet(NumberArraySerializer);
 // most flexible
 export const JsonSerializer = () => ({
-  parse: (raw) => JSON.parse(raw),
-  serialize: (val) => JSON.stringify(val),
+    parse: (raw) => JSON.parse(raw),
+    serialize: (val) => JSON.stringify(val),
 });
 export const predefinedUseUrlJson = () => createUseUrlGet(JsonSerializer());
 let pendingSearchParams = null;
 let batchTimeout = null;
 export default function useUrlGet(opt) {
-  const {
-    key,
-    defaultValue,
+    const { key, defaultValue, 
     // Auto-detect string serializer when T is a string; otherwise require explicit serializer
-    serializer = StringSerializer,
-  } = opt;
-  const [searchParams, setSearchParams] = useSearchParams();
-  // ── Read ──────────────────────────────────────────────────────────────────
-  const raw = searchParams.get(key);
-  const value =
-    raw !== null
-      ? (() => {
-          try {
-            return serializer.parse(raw);
-          } catch {
-            return defaultValue;
-          }
+    serializer = StringSerializer, } = opt;
+    const [searchParams, setSearchParams] = useSearchParams();
+    // ── Read ──────────────────────────────────────────────────────────────────
+    const raw = searchParams.get(key);
+    const value = raw !== null
+        ? (() => {
+            try {
+                return serializer.parse(raw);
+            }
+            catch {
+                return defaultValue;
+            }
         })()
-      : defaultValue;
-  // ── Write ─────────────────────────────────────────────────────────────────
-  const setValue = useCallback(
-    (next) => {
-      if (!pendingSearchParams) {
-        pendingSearchParams = new URLSearchParams(window.location.search);
-      }
-      const isDefault =
-        next === null ||
-        next === undefined ||
-        next === defaultValue ||
-        (defaultValue !== null &&
-          defaultValue !== undefined &&
-          serializer.serialize(next) === serializer.serialize(defaultValue));
-      if (isDefault) {
-        pendingSearchParams.delete(key);
-      } else {
-        pendingSearchParams.set(key, serializer.serialize(next));
-      }
-      if (batchTimeout) {
-        clearTimeout(batchTimeout);
-      }
-      batchTimeout = setTimeout(() => {
-        if (pendingSearchParams) {
-          setSearchParams(pendingSearchParams, { replace: true });
-          pendingSearchParams = null;
+        : defaultValue;
+    // ── Write ─────────────────────────────────────────────────────────────────
+    const setValue = useCallback((next) => {
+        if (!pendingSearchParams) {
+            pendingSearchParams = new URLSearchParams(window.location.search);
         }
-      }, 0);
-    },
-    [key, defaultValue, serializer, setSearchParams],
-  );
-  return [value, setValue];
+        const isDefault = next === null ||
+            next === undefined ||
+            next === defaultValue ||
+            (defaultValue !== null &&
+                defaultValue !== undefined &&
+                serializer.serialize(next) === serializer.serialize(defaultValue));
+        if (isDefault) {
+            pendingSearchParams.delete(key);
+        }
+        else {
+            pendingSearchParams.set(key, serializer.serialize(next));
+        }
+        if (batchTimeout) {
+            clearTimeout(batchTimeout);
+        }
+        batchTimeout = setTimeout(() => {
+            if (pendingSearchParams) {
+                setSearchParams(pendingSearchParams, { replace: true });
+                pendingSearchParams = null;
+            }
+        }, 0);
+    }, [key, defaultValue, serializer, setSearchParams]);
+    return [value, setValue];
 }
 export function createUseUrlGet(serializer) {
-  return function useBoundUrlGet(key, defaultValue) {
-    return useUrlGet({
-      key,
-      defaultValue,
-      serializer,
-    });
-  };
+    return function useBoundUrlGet(key, defaultValue) {
+        return useUrlGet({
+            key,
+            defaultValue,
+            serializer,
+        });
+    };
 }
 // ─── Usage examples ───────────────────────────────────────────────────────────
 //

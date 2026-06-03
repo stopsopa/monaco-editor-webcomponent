@@ -5,73 +5,73 @@
  * The final result is sorted alphabetically.
  */
 export function mergeURLSearchParams(...args) {
-  const result = new URLSearchParams();
-  if (args.length === 0) return result;
-  // Find the filter array if it exists
-  const filterIndex = args.findIndex((arg) => Array.isArray(arg));
-  const filterKeys = filterIndex !== -1 ? args[filterIndex] : null;
-  const filterSet = filterKeys ? new Set(filterKeys) : null;
-  for (let i = 0; i < args.length; i++) {
-    const params = args[i];
-    if (params instanceof URLSearchParams) {
-      // The first URLSearchParams contributes all its keys.
-      // Subsequent ones only contribute keys in the filterSet (if defined).
-      const isFirstParams = i === args.findIndex((arg) => arg instanceof URLSearchParams);
-      const uniqueKeys = new Set();
-      params.forEach((_, key) => uniqueKeys.add(key));
-      const keys = Array.from(uniqueKeys);
-      const keysToProcess = !isFirstParams && filterSet ? keys.filter((k) => filterSet.has(k)) : keys;
-      for (const key of keysToProcess) {
-        result.delete(key);
-        params.getAll(key).forEach((value) => {
-          result.append(key, value);
-        });
-      }
+    const result = new URLSearchParams();
+    if (args.length === 0)
+        return result;
+    // Find the filter array if it exists
+    const filterIndex = args.findIndex((arg) => Array.isArray(arg));
+    const filterKeys = filterIndex !== -1 ? args[filterIndex] : null;
+    const filterSet = filterKeys ? new Set(filterKeys) : null;
+    for (let i = 0; i < args.length; i++) {
+        const params = args[i];
+        if (params instanceof URLSearchParams) {
+            // The first URLSearchParams contributes all its keys.
+            // Subsequent ones only contribute keys in the filterSet (if defined).
+            const isFirstParams = i === args.findIndex((arg) => arg instanceof URLSearchParams);
+            const uniqueKeys = new Set();
+            params.forEach((_, key) => uniqueKeys.add(key));
+            const keys = Array.from(uniqueKeys);
+            const keysToProcess = !isFirstParams && filterSet ? keys.filter((k) => filterSet.has(k)) : keys;
+            for (const key of keysToProcess) {
+                result.delete(key);
+                params.getAll(key).forEach((value) => {
+                    result.append(key, value);
+                });
+            }
+        }
     }
-  }
-  result.sort();
-  return result;
+    result.sort();
+    return result;
 }
 /**
  * Creates a deep, distinct copy of a URLSearchParams instance, preserving its data
  * but decoupling its object reference so mutations don't affect the original.
  */
 export function cloneSearchParams(params) {
-  return new URLSearchParams(params);
+    return new URLSearchParams(params);
 }
 /**
  * Returns a new URLSearchParams instance with all keys sorted alphabetically.
  * Useful for ensuring consistent parameter ordering before serialization.
  */
 export function normalizeSearchParams(params) {
-  const result = new URLSearchParams(params);
-  result.sort();
-  return result;
+    const result = new URLSearchParams(params);
+    result.sort();
+    return result;
 }
 /**
  * Compares two URLSearchParams instances for equality by normalizing and sorting them.
  * Returns true if they contain the exact same keys and values regardless of original order.
  */
 export function compareNormalizedSearchParams(a, b) {
-  const na = normalizeSearchParams(a);
-  const nb = normalizeSearchParams(b);
-  return na.toString() === nb.toString();
+    const na = normalizeSearchParams(a);
+    const nb = normalizeSearchParams(b);
+    return na.toString() === nb.toString();
 }
 /**
  * Returns a new URLSearchParams instance sorted primarily by keys,
  * and secondarily by values if the keys are identical.
  */
 export function sortSearchParamsByKeyThenValue(params) {
-  const entries = [];
-  params.forEach((value, key) => {
-    entries.push([key, value]);
-  });
-  return new URLSearchParams(
-    entries.sort(([k1, v1], [k2, v2]) => {
-      if (k1 === k2) return v1.localeCompare(v2);
-      return k1.localeCompare(k2);
-    }),
-  );
+    const entries = [];
+    params.forEach((value, key) => {
+        entries.push([key, value]);
+    });
+    return new URLSearchParams(entries.sort(([k1, v1], [k2, v2]) => {
+        if (k1 === k2)
+            return v1.localeCompare(v2);
+        return k1.localeCompare(k2);
+    }));
 }
 /**
  * Merges consecutive source URLSearchParams into a base URLSearchParams, but strictly
@@ -81,30 +81,31 @@ export function sortSearchParamsByKeyThenValue(params) {
  *  - If the key is absent from the source, it is deleted from the result.
  */
 export function syncURLSearchParams(base, governedKeys, ...sources) {
-  const result = new URLSearchParams(base);
-  const keys = Array.isArray(governedKeys) ? governedKeys : Array.from(governedKeys);
-  for (const source of sources) {
-    for (const key of keys) {
-      if (source.has(key)) {
-        result.delete(key);
-        source.getAll(key).forEach((value) => {
-          result.append(key, value);
-        });
-      } else {
-        result.delete(key);
-      }
+    const result = new URLSearchParams(base);
+    const keys = Array.isArray(governedKeys) ? governedKeys : Array.from(governedKeys);
+    for (const source of sources) {
+        for (const key of keys) {
+            if (source.has(key)) {
+                result.delete(key);
+                source.getAll(key).forEach((value) => {
+                    result.append(key, value);
+                });
+            }
+            else {
+                result.delete(key);
+            }
+        }
     }
-  }
-  result.sort();
-  return result;
+    result.sort();
+    return result;
 }
 /**
  * Updates a URL string with new search parameters, preserving origin, pathname, and hash.
  * Handles both absolute and relative locations.
  */
 export function buildUrlWithSearchParams(location, nextParams) {
-  const search = typeof nextParams === "string" ? nextParams : nextParams.toString();
-  const url = new URL(location, "http://dummy");
-  url.search = search ? `?${search}` : "";
-  return url.origin === "http://dummy" ? `${url.pathname}${url.search}${url.hash}` : url.toString();
+    const search = typeof nextParams === "string" ? nextParams : nextParams.toString();
+    const url = new URL(location, "http://dummy");
+    url.search = search ? `?${search}` : "";
+    return url.origin === "http://dummy" ? `${url.pathname}${url.search}${url.hash}` : url.toString();
 }

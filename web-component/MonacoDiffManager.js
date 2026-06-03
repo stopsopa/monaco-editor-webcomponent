@@ -4,12 +4,12 @@
 import trimLeft from "./trimLeft.js";
 // autogenerate v
 export const MONACO_GENERATED = {
-  version: "0.55.1",
-  vs: [
-    "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs",
-    "https://unpkg.com/monaco-editor@0.55.1/min/vs",
-    "/monaco/vs",
-  ],
+    "version": "0.55.1",
+    "vs": [
+        "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs",
+        "https://unpkg.com/monaco-editor@0.55.1/min/vs",
+        "/monaco/vs"
+    ]
 };
 let cachedMonaco = null;
 let cachedVsBase = null;
@@ -24,15 +24,15 @@ const MONACO_VS_STYLESHEET = /\/vs\/(base|editor|platform)/;
 const MONACO_SHADOW_STYLES_ATTR = "data-monaco-shadow-styles";
 /** Waits until a CSS file linked in the page has finished loading (or is already loaded). */
 function loadStylesheetLink(link) {
-  if (link.sheet) {
-    return Promise.resolve();
-  }
-  return new Promise((resolve, reject) => {
-    link.addEventListener("load", () => resolve(), { once: true });
-    link.addEventListener("error", () => reject(new Error(`Failed to load Monaco stylesheet: ${link.href}`)), {
-      once: true,
+    if (link.sheet) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        link.addEventListener("load", () => resolve(), { once: true });
+        link.addEventListener("error", () => reject(new Error(`Failed to load Monaco stylesheet: ${link.href}`)), {
+            once: true,
+        });
     });
-  });
 }
 /**
  * Puts Monaco’s CSS inside the web component’s shadow DOM so the editor looks correct
@@ -42,92 +42,90 @@ function loadStylesheetLink(link) {
  * runs only once per shadow root.
  */
 async function ensureMonacoStylesInShadowRoot(container) {
-  const root = container.getRootNode();
-  if (!(root instanceof ShadowRoot)) {
-    return;
-  }
-  if (root.querySelector(`[${MONACO_SHADOW_STYLES_ATTR}]`)) {
-    return;
-  }
-  const documentLinks = Array.from(document.querySelectorAll("link[rel='stylesheet']")).filter((link) => {
-    const href = link.getAttribute("href") ?? "";
-    return MONACO_VS_STYLESHEET.test(href);
-  });
-  const loads = [];
-  for (const documentLink of documentLinks) {
-    const clone = documentLink.cloneNode(true);
-    clone.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
-    loads.push(loadStylesheetLink(clone));
-    root.insertBefore(clone, root.firstChild);
-  }
-  if (documentLinks.length === 0 && cachedVsBase) {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `${cachedVsBase}/editor/editor.main.css`;
-    link.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
-    loads.push(loadStylesheetLink(link));
-    root.insertBefore(link, root.firstChild);
-  }
-  await Promise.all(loads);
+    const root = container.getRootNode();
+    if (!(root instanceof ShadowRoot)) {
+        return;
+    }
+    if (root.querySelector(`[${MONACO_SHADOW_STYLES_ATTR}]`)) {
+        return;
+    }
+    const documentLinks = Array.from(document.querySelectorAll("link[rel='stylesheet']")).filter((link) => {
+        const href = link.getAttribute("href") ?? "";
+        return MONACO_VS_STYLESHEET.test(href);
+    });
+    const loads = [];
+    for (const documentLink of documentLinks) {
+        const clone = documentLink.cloneNode(true);
+        clone.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
+        loads.push(loadStylesheetLink(clone));
+        root.insertBefore(clone, root.firstChild);
+    }
+    if (documentLinks.length === 0 && cachedVsBase) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `${cachedVsBase}/editor/editor.main.css`;
+        link.setAttribute(MONACO_SHADOW_STYLES_ATTR, "");
+        loads.push(loadStylesheetLink(link));
+        root.insertBefore(link, root.firstChild);
+    }
+    await Promise.all(loads);
 }
 /**
  * Downloads and starts Monaco from a given base URL (CDN or local `/monaco/vs`),
  * using the same loader script the official samples use.
  */
 function loadMonaco(vsBase) {
-  return new Promise((resolve, reject) => {
-    const win = window;
-    const finish = () => {
-      win.require?.config({ paths: { vs: vsBase } });
-      win.require?.(
-        ["vs/editor/editor.main"],
-        () => {
-          if (win.monaco) {
+    return new Promise((resolve, reject) => {
+        const win = window;
+        const finish = () => {
+            win.require?.config({ paths: { vs: vsBase } });
+            win.require?.(["vs/editor/editor.main"], () => {
+                if (win.monaco) {
+                    resolve(win.monaco);
+                }
+                else {
+                    reject(new Error(`Monaco did not initialize from ${vsBase}`));
+                }
+            }, (err) => {
+                reject(err instanceof Error ? err : new Error(String(err)));
+            });
+        };
+        if (win.monaco) {
             resolve(win.monaco);
-          } else {
-            reject(new Error(`Monaco did not initialize from ${vsBase}`));
-          }
-        },
-        (err) => {
-          reject(err instanceof Error ? err : new Error(String(err)));
-        },
-      );
-    };
-    if (win.monaco) {
-      resolve(win.monaco);
-      return;
-    }
-    if (win.require) {
-      finish();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = `${vsBase}/loader.js`;
-    script.async = true;
-    script.onload = () => finish();
-    script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsBase}`));
-    document.head.appendChild(script);
-  });
+            return;
+        }
+        if (win.require) {
+            finish();
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = `${vsBase}/loader.js`;
+        script.async = true;
+        script.onload = () => finish();
+        script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsBase}`));
+        document.head.appendChild(script);
+    });
 }
 /**
  * Loads Monaco once and keeps it in memory. Tries each configured URL until one works,
  * so the app still runs if a CDN is down.
  */
 export async function hydrateCache(generated = MONACO_GENERATED) {
-  if (cachedMonaco) {
-    return cachedMonaco;
-  }
-  const errors = [];
-  for (const vsBase of generated.vs) {
-    try {
-      cachedMonaco = await loadMonaco(vsBase);
-      cachedVsBase = vsBase;
-      return cachedMonaco;
-    } catch (err) {
-      errors.push(err instanceof Error ? err : new Error(String(err)));
+    if (cachedMonaco) {
+        return cachedMonaco;
     }
-  }
-  throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
+    const errors = [];
+    for (const vsBase of generated.vs) {
+        try {
+            cachedMonaco = await loadMonaco(vsBase);
+            cachedVsBase = vsBase;
+            return cachedMonaco;
+        }
+        catch (err) {
+            errors.push(err instanceof Error ? err : new Error(String(err)));
+        }
+    }
+    throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
 }
 export const SCRIPT_TYPE_ORIGINAL = "text/original";
 export const SCRIPT_TYPE_MODIFIED = "text/modified";
@@ -136,60 +134,54 @@ export const SCRIPT_TYPE_MODIFIED = "text/modified";
  * Returns nothing if there are no scripts; throws if the markup is incomplete or wrong.
  */
 export function readDeclarativeDiffScripts(host) {
-  const scripts = Array.from(host.querySelectorAll(":scope > script"));
-  if (scripts.length === 0) {
-    return null;
-  }
-  if (scripts.length < 2) {
-    throw new Error(
-      `<monaco-diff>: expected exactly at leasttwo <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
-    );
-  }
-  let originalScript;
-  let modifiedScript;
-  for (const script of scripts) {
-    const type = script.getAttribute("type");
-    if (type === SCRIPT_TYPE_ORIGINAL) {
-      if (originalScript) {
-        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
-      }
-      originalScript = script;
-    } else if (type === SCRIPT_TYPE_MODIFIED) {
-      if (modifiedScript) {
-        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
-      }
-      modifiedScript = script;
-    } else {
-      throw new Error(
-        `<monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`,
-      );
+    const scripts = Array.from(host.querySelectorAll(":scope > script"));
+    if (scripts.length === 0) {
+        return null;
     }
-  }
-  if (!originalScript || !modifiedScript) {
-    const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
-    throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
-  }
-  let original = originalScript.textContent ?? "";
-  let modified = modifiedScript.textContent ?? "";
-  const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
-  const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
-  let originalOffset = parseInt(originalScript.getAttribute("data-offset"), 10) ?? 0;
-  let modifiedOffset = parseInt(modifiedScript.getAttribute("data-offset"), 10) ?? 0;
-  if (!(originalOffset > 0)) {
-    throw new Error(
-      `<monaco-diff><script type='text/original'>: data-offset must be a positive integer >${originalOffset}<`,
-    );
-  }
-  if (!(modifiedOffset > 0)) {
-    throw new Error(
-      `<monaco-diff><script type='text/modified'>: data-offset must be a positive integer >${modifiedOffset}<`,
-    );
-  }
-  original = trimLeft(original, originalOffset);
-  modified = trimLeft(modified, modifiedOffset);
-  originalScript.remove();
-  modifiedScript.remove();
-  return { original, modified, originalLanguage, modifiedLanguage };
+    if (scripts.length < 2) {
+        throw new Error(`<monaco-diff>: expected exactly at leasttwo <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`);
+    }
+    let originalScript;
+    let modifiedScript;
+    for (const script of scripts) {
+        const type = script.getAttribute("type");
+        if (type === SCRIPT_TYPE_ORIGINAL) {
+            if (originalScript) {
+                throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
+            }
+            originalScript = script;
+        }
+        else if (type === SCRIPT_TYPE_MODIFIED) {
+            if (modifiedScript) {
+                throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
+            }
+            modifiedScript = script;
+        }
+        else {
+            throw new Error(`<monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`);
+        }
+    }
+    if (!originalScript || !modifiedScript) {
+        const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
+        throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
+    }
+    let original = originalScript.textContent ?? "";
+    let modified = modifiedScript.textContent ?? "";
+    const originalLanguage = originalScript.getAttribute("lang") ?? undefined;
+    const modifiedLanguage = modifiedScript.getAttribute("lang") ?? undefined;
+    let originalOffset = parseInt(originalScript.getAttribute("data-offset"), 10) ?? 0;
+    let modifiedOffset = parseInt(modifiedScript.getAttribute("data-offset"), 10) ?? 0;
+    if (!(originalOffset > 0)) {
+        throw new Error(`<monaco-diff><script type='text/original'>: data-offset must be a positive integer >${originalOffset}<`);
+    }
+    if (!(modifiedOffset > 0)) {
+        throw new Error(`<monaco-diff><script type='text/modified'>: data-offset must be a positive integer >${modifiedOffset}<`);
+    }
+    original = trimLeft(original, originalOffset);
+    modified = trimLeft(modified, modifiedOffset);
+    originalScript.remove();
+    modifiedScript.remove();
+    return { original, modified, originalLanguage, modifiedLanguage };
 }
 const DEFAULT_LANGUAGE = "javascript";
 /**
@@ -197,107 +189,110 @@ const DEFAULT_LANGUAGE = "javascript";
  * or empty strings with a sensible default language.
  */
 function resolveDiffContent(options) {
-  let original = options.original ?? "";
-  let modified = options.modified ?? "";
-  let originalLanguage = options.originalLanguage;
-  let modifiedLanguage = options.modifiedLanguage;
-  if (options.host) {
-    const declarative = readDeclarativeDiffScripts(options.host);
-    if (declarative) {
-      original = declarative.original;
-      modified = declarative.modified;
-      originalLanguage = originalLanguage ?? declarative.originalLanguage;
-      modifiedLanguage = modifiedLanguage ?? declarative.modifiedLanguage;
+    let original = options.original ?? "";
+    let modified = options.modified ?? "";
+    let originalLanguage = options.originalLanguage;
+    let modifiedLanguage = options.modifiedLanguage;
+    if (options.host) {
+        const declarative = readDeclarativeDiffScripts(options.host);
+        if (declarative) {
+            original = declarative.original;
+            modified = declarative.modified;
+            originalLanguage = originalLanguage ?? declarative.originalLanguage;
+            modifiedLanguage = modifiedLanguage ?? declarative.modifiedLanguage;
+        }
     }
-  }
-  const sharedLanguage = options.language;
-  return {
-    original,
-    modified,
-    originalLanguage: originalLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
-    modifiedLanguage: modifiedLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
-  };
+    const sharedLanguage = options.language;
+    return {
+        original,
+        modified,
+        originalLanguage: originalLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+        modifiedLanguage: modifiedLanguage ?? sharedLanguage ?? DEFAULT_LANGUAGE,
+    };
 }
 export class MonacoDiffManager {
-  _container;
-  _readyPromise;
-  _editor = null;
-  _resizeObserver = null;
-  _layoutRaf = null;
-  /**
-   * Mounts a side-by-side diff editor into the given element: loads Monaco, applies styles,
-   * fills in original/modified text, and starts watching size changes.
-   */
-  constructor(_container, options) {
-    this._container = _container;
-    _container.style.height = "100%";
-    _container.style.width = "100%";
-    const { original, modified, originalLanguage, modifiedLanguage } = resolveDiffContent(options);
-    this._readyPromise = (async () => {
-      const monaco = await hydrateCache(MONACO_GENERATED);
-      await ensureMonacoStylesInShadowRoot(this._container);
-      this._editor = monaco.editor.createDiffEditor(this._container, {
-        automaticLayout: false,
-        scrollbar: {
-          vertical: "auto",
-        },
-        scrollBeyondLastLine: false,
-        ...options.editorOptions,
-      });
-      this._editor.setModel({
-        original: monaco.editor.createModel(original, originalLanguage),
-        modified: monaco.editor.createModel(modified, modifiedLanguage),
-      });
-      this._scheduleLayout();
-      this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-      this._resizeObserver.observe(this._container);
-    })();
-  }
-  /** Promise that resolves when the editor has finished loading and is safe to use. */
-  whenReady() {
-    return this._readyPromise;
-  }
-  /** Returns the underlying Monaco diff editor instance (or null if not ready yet). */
-  getEditor() {
-    return this._editor;
-  }
-  /** Returns the global Monaco API instance (or null if not loaded yet). */
-  getMonaco() {
-    return cachedMonaco;
-  }
-  /** Tears down the editor, frees memory, and stops listening for resize events. */
-  destroy() {
-    this._resizeObserver?.disconnect();
-    this._resizeObserver = null;
-    if (this._layoutRaf !== null) {
-      cancelAnimationFrame(this._layoutRaf);
-      this._layoutRaf = null;
+    _container;
+    _readyPromise;
+    _editor = null;
+    _resizeObserver = null;
+    _layoutRaf = null;
+    /**
+     * Mounts a side-by-side diff editor into the given element: loads Monaco, applies styles,
+     * fills in original/modified text, and starts watching size changes.
+     */
+    constructor(_container, options) {
+        this._container = _container;
+        _container.style.height = "100%";
+        _container.style.width = "100%";
+        const { original, modified, originalLanguage, modifiedLanguage } = resolveDiffContent(options);
+        this._readyPromise = (async () => {
+            const monaco = await hydrateCache(MONACO_GENERATED);
+            await ensureMonacoStylesInShadowRoot(this._container);
+            this._editor = monaco.editor.createDiffEditor(this._container, {
+                automaticLayout: false,
+                scrollbar: {
+                    vertical: "auto",
+                },
+                scrollBeyondLastLine: false,
+                ...options.editorOptions,
+            });
+            this._editor.setModel({
+                original: monaco.editor.createModel(original, originalLanguage),
+                modified: monaco.editor.createModel(modified, modifiedLanguage),
+            });
+            this._scheduleLayout();
+            this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
+            this._resizeObserver.observe(this._container);
+        })();
     }
-    const model = this._editor?.getModel();
-    model?.original.dispose();
-    model?.modified.dispose();
-    this._editor?.dispose();
-    this._editor = null;
-  }
-  /** Updates the language for both sides of the diff editor. Falls back to the default language when undefined. */
-  setLanguage(language) {
-    const model = this._editor?.getModel();
-    if (!model) return;
-    const lang = language ?? DEFAULT_LANGUAGE;
-    cachedMonaco?.editor.setModelLanguage(model.original, lang);
-    cachedMonaco?.editor.setModelLanguage(model.modified, lang);
-  }
-  /** Resizes the editor to match its container on the next animation frame (avoids jank). */
-  _scheduleLayout() {
-    if (this._layoutRaf !== null) return;
-    this._layoutRaf = requestAnimationFrame(() => {
-      this._layoutRaf = null;
-      if (!this._editor) return;
-      const { width, height } = this._container.getBoundingClientRect();
-      if (width === 0 || height === 0) {
-        return;
-      }
-      this._editor.layout({ width, height });
-    });
-  }
+    /** Promise that resolves when the editor has finished loading and is safe to use. */
+    whenReady() {
+        return this._readyPromise;
+    }
+    /** Returns the underlying Monaco diff editor instance (or null if not ready yet). */
+    getEditor() {
+        return this._editor;
+    }
+    /** Returns the global Monaco API instance (or null if not loaded yet). */
+    getMonaco() {
+        return cachedMonaco;
+    }
+    /** Tears down the editor, frees memory, and stops listening for resize events. */
+    destroy() {
+        this._resizeObserver?.disconnect();
+        this._resizeObserver = null;
+        if (this._layoutRaf !== null) {
+            cancelAnimationFrame(this._layoutRaf);
+            this._layoutRaf = null;
+        }
+        const model = this._editor?.getModel();
+        model?.original.dispose();
+        model?.modified.dispose();
+        this._editor?.dispose();
+        this._editor = null;
+    }
+    /** Updates the language for both sides of the diff editor. Falls back to the default language when undefined. */
+    setLanguage(language) {
+        const model = this._editor?.getModel();
+        if (!model)
+            return;
+        const lang = language ?? DEFAULT_LANGUAGE;
+        cachedMonaco?.editor.setModelLanguage(model.original, lang);
+        cachedMonaco?.editor.setModelLanguage(model.modified, lang);
+    }
+    /** Resizes the editor to match its container on the next animation frame (avoids jank). */
+    _scheduleLayout() {
+        if (this._layoutRaf !== null)
+            return;
+        this._layoutRaf = requestAnimationFrame(() => {
+            this._layoutRaf = null;
+            if (!this._editor)
+                return;
+            const { width, height } = this._container.getBoundingClientRect();
+            if (width === 0 || height === 0) {
+                return;
+            }
+            this._editor.layout({ width, height });
+        });
+    }
 }

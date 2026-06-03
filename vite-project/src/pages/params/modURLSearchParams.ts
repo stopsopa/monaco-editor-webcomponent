@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import { mergeURLSearchParams } from "./toolsURLSearchParams.ts";
+import { mergeURLSearchParams } from "./toolsURLSearchParams.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 // @ts-ignore
-import React from "react";
+import * as React from "react";
 import "./monaco-diff.js";
 import type { MonacoTheme } from "./monaco-diff.js";
 import type { MonacoDiffManager } from "./MonacoDiffManager.js";
@@ -22,7 +22,7 @@ export type MonacoDiffProps = {
   children?: React.ReactNode;
 };
 
-export const MonacoDiff = React.forwardRef((props: MonacoDiffProps, ref: React.ForwardedRef<HTMLElement>) => {
+export const MonacoDiff: (props: MonacoDiffProps & React.RefAttributes<HTMLElement>) => React.ReactElement = React.forwardRef((props: MonacoDiffProps, ref: React.ForwardedRef<HTMLElement>) => {
   const { theme, language, original, modified, originalLanguage, modifiedLanguage, children, ...rest } = props;
 
   const internalRef = React.useRef<HTMLElement>(null);
@@ -84,6 +84,7 @@ export const MonacoDiff = React.forwardRef((props: MonacoDiffProps, ref: React.F
   if (theme !== undefined) wcProps["theme"] = theme;
   if (language !== undefined) wcProps["language"] = language;
 
+  
   return React.createElement("monaco-diff", wcProps, children);
 });
 

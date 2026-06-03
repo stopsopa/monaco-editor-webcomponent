@@ -35,30 +35,31 @@ EEE
 
 echo "=== Linking ==="
 npx tsc -p tsconfig.watch.json
-# /bin/bash links.sh
+npm run monaco:skip
+/bin/bash links.sh
 
-# if [[ -z "${ARG}" ]]; then
-#   echo "Running full build..."
-#   rm -rf dist
-#   build_cjs
-#   build_esm
-#   if [[ -f "${DIR}/.github/override.sh" ]]; then
-#     /bin/bash "${DIR}/.github/override.sh"
-#   fi
-#   exit 0
-# fi
+if [[ -z "${ARG}" ]]; then
+  echo "Running full build..."
+  rm -rf dist
+  build_cjs
+  build_esm
+  if [[ -f "${DIR}/.github/override.sh" ]]; then
+    /bin/bash "${DIR}/.github/override.sh"
+  fi
+  exit 0
+fi
 
-# if [[ "${ARG}" == "cjs" ]]; then
-#   echo "Running CJS build..."
-#   build_cjs
-#   exit 0
-# fi
+if [[ "${ARG}" == "cjs" ]]; then
+  echo "Running CJS build..."
+  build_cjs
+  exit 0
+fi
 
-# if [[ "${ARG}" == "esm" ]]; then
-#   echo "Running ESM build..."
-#   build_esm
-#   exit 0
-# fi
+if [[ "${ARG}" == "esm" ]]; then
+  echo "Running ESM build..."
+  build_esm
+  exit 0
+fi
 
-# echo "${0} error: Invalid argument >${ARG}<. Only 'cjs' or 'esm' are allowed."
-# exit 1
+echo "${0} error: Invalid argument >${ARG}<. Only 'cjs' or 'esm' are allowed."
+exit 1
