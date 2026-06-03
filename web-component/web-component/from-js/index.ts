@@ -7,29 +7,6 @@ import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js"
 
 await customElements.whenDefined(tagName);
 
-type ResizerParams = {
-  left: string;
-  center: string;
-  height: string;
-};
-
-const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
-
-const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
-  theme: {
-    default: "",
-    getParam: "theme",
-    encode: (value: string) => value,
-    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
-  },
-  language: {
-    default: "javascript",
-    getParam: "lang",
-    encode: (value: string) => value,
-    decode: (value: string) => value,
-  },
-};
-
 const original = `
     const loadMonaco = (vsPath = VS_PATH) =>
       new Promise((resolve, reject) => {
@@ -95,9 +72,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
       decode: (value: string) => value,
     },
   };
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
-
-  const applyParams = (params): void => {};
+  const { trackUrl } = modURLSearchParams(config, (key: string, i?: number): string => `${key}-${i}`);
 
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams, governedKeys) => {
@@ -168,7 +143,20 @@ if (!(languageSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #language-select element");
 }
 
-const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
+const { trackUrl: trackDiffUrl } = modURLSearchParams({
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value: string) => value,
+    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+  },
+  language: {
+    default: "javascript",
+    getParam: "lang",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
+});
 
 const { setParam } = trackDiffUrl(
   (params, updatedURLSearchParams, governedKeys) => {
@@ -181,10 +169,7 @@ const { setParam } = trackDiffUrl(
     const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
 
     if (next.toString() !== current.toString()) {
-      const search = next.toString();
-      const url = search
-        ? `${window.location.pathname}?${search}${window.location.hash}`
-        : `${window.location.pathname}${window.location.hash}`;
+      const url = buildUrlWithSearchParams(window.location.href, next);
       history.replaceState(history.state, "", url);
     }
   },

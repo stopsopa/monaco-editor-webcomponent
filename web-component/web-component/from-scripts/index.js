@@ -96,7 +96,7 @@ const languageSelect = document.getElementById("language-select");
 if (!(languageSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #language-select element");
 }
-const diffConfig = {
+const { trackUrl: trackDiffUrl } = modURLSearchParams({
   theme: {
     default: "",
     getParam: "theme",
@@ -109,8 +109,7 @@ const diffConfig = {
     encode: (value) => value,
     decode: (value) => value,
   },
-};
-const { trackUrl: trackDiffUrl } = modURLSearchParams(diffConfig);
+});
 const { setParam } = trackDiffUrl(
   (params, updatedURLSearchParams, governedKeys) => {
     themeSelect.value = params.theme;
