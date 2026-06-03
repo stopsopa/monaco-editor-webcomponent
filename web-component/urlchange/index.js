@@ -95,10 +95,7 @@ function governedKeysForInstance(i) {
 function updateUrl(next) {
   const current = cloneSearchParams(new URLSearchParams(window.location.search));
   if (compareNormalizedSearchParams(next, current)) return;
-  const search = next.toString();
-  const url = search
-    ? `${window.location.pathname}?${search}${window.location.hash}`
-    : `${window.location.pathname}${window.location.hash}`;
+  const url = buildUrlWithSearchParams(window.location.href, next);
   history.replaceState(history.state, "", url);
 }
 /**
