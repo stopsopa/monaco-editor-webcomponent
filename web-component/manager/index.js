@@ -91,7 +91,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams) => {
-      console.log("trackUrl", index, JSON.stringify(params));
+      // console.log("trackUrl", index, JSON.stringify(params));
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
@@ -109,7 +109,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
     { ctx: index, fireOnMount: true },
   );
   const syncToUrl = () => {
-    console.log("syncToUrl: ", index);
+    // console.log("syncToUrl: ", index);
     setParams({
       left: resizer.getAttribute("left") ?? config.left.default,
       center: resizer.getAttribute("center") ?? config.center.default,

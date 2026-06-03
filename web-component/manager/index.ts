@@ -102,7 +102,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
 
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams): void => {
-      console.log("trackUrl", index, JSON.stringify(params));
+      // console.log("trackUrl", index, JSON.stringify(params));
 
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
@@ -124,7 +124,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   );
 
   const syncToUrl = (): void => {
-    console.log("syncToUrl: ", index);
+    // console.log("syncToUrl: ", index);
     setParams({
       left: resizer.getAttribute("left") ?? config.left.default,
       center: resizer.getAttribute("center") ?? config.center.default,
