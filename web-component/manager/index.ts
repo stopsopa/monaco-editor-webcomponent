@@ -101,14 +101,13 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
 
   const { setParams } = trackUrl(
-    (params, updatedURLSearchParams): void => {
+    (params, updatedURLSearchParams, governedKeys): void => {
       // console.log("trackUrl", index, JSON.stringify(params));
 
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
 
-      const governedKeys = Object.values(config).map((def) => instanceKeyFn(def.getParam, index));
       const current = new URLSearchParams(window.location.search);
       const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
 

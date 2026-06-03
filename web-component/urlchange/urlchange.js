@@ -93,12 +93,13 @@ function createURLParamTracker(config, keyFn) {
     const ctx = options?.ctx;
     const replace = options?.replace !== false;
     const fireOnMount = options?.fireOnMount !== false;
+    const governedKeys = Object.values(config).map((def) => applyKey(def.getParam, ctx));
     let lastSignature = "";
     /** Decodes the current URL parameters and invokes the onChange callback. */
     const emitCurrentState = (search = window.location.search) => {
       lastSignature = trackedSignature(search, ctx);
       const { params, updatedURLSearchParams } = readState(search, ctx);
-      onChange(params, updatedURLSearchParams);
+      onChange(params, updatedURLSearchParams, governedKeys);
     };
     /** Checks if the signature of the tracked parameters changed, and triggers update if so. */
     const emitIfTrackedChanged = () => {
@@ -157,6 +158,7 @@ function createURLParamTracker(config, keyFn) {
       getUpdatedURLSearchParams: () => separateIndexedSearchParams(window.location.search, ctx),
       refresh: () => emitCurrentState(),
       disconnect: unsubscribe,
+      governedKeys,
     };
   }
   return {

@@ -149,7 +149,7 @@ function reconcileSections() {
     if (!sections.has(i)) {
       const section = new ChildSection(sectionsEl, i);
       const handle = trackUrl(
-        (params, updatedURLSearchParams) => {
+        (params, updatedURLSearchParams, governedKeys) => {
           console.log(`RENDER ${i} >${updatedURLSearchParams.toString()}<`, params);
           section.setText(params.text);
           section.setRadio(params.radio);
@@ -158,7 +158,6 @@ function reconcileSections() {
           section.setCheckboxB(params.checkboxB);
           section.setDump({ params, path: updatedURLSearchParams.toString() });
           updateUrlDisplay();
-          const governedKeys = Object.values(urlParamConfig).map((def) => instanceKeyFn(def.getParam, i));
           const current = new URLSearchParams(window.location.search);
           const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
           if (next.toString() !== current.toString()) {

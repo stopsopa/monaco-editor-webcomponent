@@ -62,6 +62,8 @@ export type TrackUrlHandle<C extends Record<string, unknown>> = {
   refresh: () => void;
   /** Unsubscribe from URL changes. */
   disconnect: () => void;
+  /** List of query parameter keys governed by this instance. */
+  governedKeys: string[];
 };
 
 // ─── History helpers ─────────────────────────────────────────────────────────
@@ -169,12 +171,14 @@ function createURLParamTracker<C extends Record<string, unknown>, Ctx = unknown>
    * Returns a handle containing functions to read/update the state.
    */
   function trackUrl(
-    onChange: (params: ParamValues<C>, updatedURLSearchParams: URLSearchParams) => void,
+    onChange: (params: ParamValues<C>, updatedURLSearchParams: URLSearchParams, governedKeys: string[]) => void,
     options?: TrackUrlOptions<Ctx>,
   ): TrackUrlHandle<C> {
     const ctx = options?.ctx;
     const replace = options?.replace !== false;
     const fireOnMount = options?.fireOnMount !== false;
+
+    const governedKeys = Object.values(config).map((def) => applyKey((def as ParamDef<unknown>).getParam, ctx));
 
     let lastSignature = "";
 
@@ -182,7 +186,7 @@ function createURLParamTracker<C extends Record<string, unknown>, Ctx = unknown>
     const emitCurrentState = (search: string | URLSearchParams = window.location.search) => {
       lastSignature = trackedSignature(search, ctx);
       const { params, updatedURLSearchParams } = readState(search, ctx);
-      onChange(params, updatedURLSearchParams);
+      onChange(params, updatedURLSearchParams, governedKeys);
     };
 
     /** Checks if the signature of the tracked parameters changed, and triggers update if so. */
@@ -254,6 +258,7 @@ function createURLParamTracker<C extends Record<string, unknown>, Ctx = unknown>
       getUpdatedURLSearchParams: () => separateIndexedSearchParams(window.location.search, ctx),
       refresh: () => emitCurrentState(),
       disconnect: unsubscribe,
+      governedKeys,
     };
   }
 
@@ -289,7 +294,7 @@ export default function modURLSearchParams<C extends Record<string, unknown>, Ct
  */
 export function trackUrl<C extends Record<string, unknown>, Ctx = unknown>(
   config: { [K in keyof C]: ParamDef<C[K]> },
-  onChange: (params: ParamValues<C>, updatedURLSearchParams: URLSearchParams) => void,
+  onChange: (params: ParamValues<C>, updatedURLSearchParams: URLSearchParams, governedKeys: string[]) => void,
   options?: TrackUrlOptions<Ctx> & { keyFn?: (key: string, ctx?: Ctx) => string },
 ): TrackUrlHandle<C> {
   const { keyFn, ...trackOptions } = options ?? {};

@@ -84,9 +84,10 @@ function wireResizerUrlSync(resizer, index) {
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
   const applyParams = (params) => {};
   const { setParams } = trackUrl(
-    (params, updatedURLSearchParams) => {
-      applyParams(params);
-      const governedKeys = Object.values(config).map((def) => instanceKeyFn(def.getParam, index));
+    (params, updatedURLSearchParams, governedKeys) => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
       const current = new URLSearchParams(window.location.search);
       const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
       if (next.toString() !== current.toString()) {
@@ -143,12 +144,11 @@ if (!(languageSelect instanceof HTMLSelectElement)) {
 }
 const { trackUrl: trackDiffUrl } = modURLSearchParams(diffDemoParamConfig);
 const { setParam } = trackDiffUrl(
-  (params, updatedURLSearchParams) => {
+  (params, updatedURLSearchParams, governedKeys) => {
     themeSelect.value = params.theme;
     applyThemeAttribute(diffEl, params.theme);
     languageSelect.value = params.language;
     applyLanguageAttribute(diffEl, params.language);
-    const governedKeys = Object.values(diffDemoParamConfig).map((def) => def.getParam);
     const current = new URLSearchParams(window.location.search);
     const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
     if (next.toString() !== current.toString()) {

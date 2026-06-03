@@ -190,7 +190,7 @@ function reconcileSections() {
       const section = new ChildSection(sectionsEl, i);
 
       const handle = trackUrl(
-        (params: UrlParams, updatedURLSearchParams) => {
+        (params: UrlParams, updatedURLSearchParams, governedKeys) => {
           console.log(`RENDER ${i} >${updatedURLSearchParams.toString()}<`, params);
 
           section.setText(params.text);
@@ -202,7 +202,6 @@ function reconcileSections() {
           section.setDump({ params, path: updatedURLSearchParams.toString() });
           updateUrlDisplay();
 
-          const governedKeys = Object.values(urlParamConfig).map((def) => instanceKeyFn(def.getParam, i));
           const current = new URLSearchParams(window.location.search);
           const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
 
