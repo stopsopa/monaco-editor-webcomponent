@@ -6,7 +6,7 @@ import { MonacoDiffManager } from "../MonacoDiffManager.js";
 
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
-const instanceKeyFn = (key: string, i?: number): string => /^\d+&/.test(String(i)) ? `${key}-${i}` : key;
+const instanceKeyFn = (key: string, i?: number): string => (/^\d+&/.test(String(i)) ? `${key}-${i}` : key);
 
 const config = {
   left: {
@@ -83,10 +83,6 @@ const container = document.getElementById("container");
 if (!container) {
   throw new Error("Missing #container element");
 }
-
-{
-  const el = document.querySelector(CenterAndHeightResizer.tagName);
-
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el as HTMLElement;

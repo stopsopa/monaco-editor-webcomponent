@@ -75,34 +75,31 @@ const container = document.getElementById("container");
 if (!container) {
   throw new Error("Missing #container element");
 }
-{
-  const el = document.querySelector(CenterAndHeightResizer.tagName);
-  document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
-    const resizer = el;
-    const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
-    const { setParams } = trackUrl(
-      (params) => {
-        resizer.setAttribute("left", params.left);
-        resizer.setAttribute("center", params.center);
-        resizer.setAttribute("height", params.height);
-      },
-      { ctx: index, fireOnMount: true },
-    );
-    const syncToUrl = () => {
-      setParams({
-        left: resizer.getAttribute("left") ?? config.left.default,
-        center: resizer.getAttribute("center") ?? config.center.default,
-        height: resizer.getAttribute("height") ?? config.height.default,
-      });
-    };
-    resizer.addEventListener("onLeft", syncToUrl);
-    resizer.addEventListener("onCenter", syncToUrl);
-    resizer.addEventListener("onHeight", syncToUrl);
-  });
-  const mgr = new MonacoDiffManager(container, {
-    original,
-    modified,
-    language: "javascript",
-  });
-  await mgr.whenReady();
-}
+document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
+  const resizer = el;
+  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { setParams } = trackUrl(
+    (params) => {
+      resizer.setAttribute("left", params.left);
+      resizer.setAttribute("center", params.center);
+      resizer.setAttribute("height", params.height);
+    },
+    { ctx: index, fireOnMount: true },
+  );
+  const syncToUrl = () => {
+    setParams({
+      left: resizer.getAttribute("left") ?? config.left.default,
+      center: resizer.getAttribute("center") ?? config.center.default,
+      height: resizer.getAttribute("height") ?? config.height.default,
+    });
+  };
+  resizer.addEventListener("onLeft", syncToUrl);
+  resizer.addEventListener("onCenter", syncToUrl);
+  resizer.addEventListener("onHeight", syncToUrl);
+});
+const mgr = new MonacoDiffManager(container, {
+  original,
+  modified,
+  language: "javascript",
+});
+await mgr.whenReady();
