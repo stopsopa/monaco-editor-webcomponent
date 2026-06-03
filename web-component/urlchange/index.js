@@ -158,6 +158,16 @@ function reconcileSections() {
           section.setCheckboxB(params.checkboxB);
           section.setDump({ params, path: updatedURLSearchParams.toString() });
           updateUrlDisplay();
+          const governedKeys = Object.values(urlParamConfig).map((def) => instanceKeyFn(def.getParam, i));
+          const current = new URLSearchParams(window.location.search);
+          const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+          if (next.toString() !== current.toString()) {
+            const search = next.toString();
+            const url = search
+              ? `${window.location.pathname}?${search}${window.location.hash}`
+              : `${window.location.pathname}${window.location.hash}`;
+            history.replaceState(history.state, "", url);
+          }
         },
         { ctx: i, fireOnMount: true },
       );
