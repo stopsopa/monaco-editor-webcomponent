@@ -24,6 +24,29 @@
     <center-and-height-resizer left="100px" center="1200px" height="300px">
       <div id="container"></div>
     </center-and-height-resizer>
+
+    <p style="margin: 12px 100px">
+      <label for="theme-select">Theme</label>
+      <select id="theme-select">
+        <option value="" selected>(Monaco default)</option>
+        <option value="vs">vs</option>
+        <option value="vs-dark">vs-dark</option>
+        <option value="hc-black">hc-black</option>
+        <option value="hc-light">hc-light</option>
+      </select>
+      &nbsp;
+      <label for="language-select">Language</label>
+      <select id="language-select">
+        <option value="javascript" selected>javascript</option>
+        <option value="typescript">typescript</option>
+        <option value="json">json</option>
+        <option value="css">css</option>
+        <option value="html">html</option>
+        <option value="python">python</option>
+        <option value="plaintext">plaintext</option>
+      </select>
+    </p>
+
     <script type="module" src="index.js"></script>
   </body>
 </html>

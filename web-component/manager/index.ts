@@ -5,6 +5,18 @@ import { syncURLSearchParams, buildUrlWithSearchParams } from "../urlchange/tool
 
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 
+import { isMonacoTheme, MonacoDiffElement, tagName } from "../monaco-diff.js";
+
+const themeSelect = document.getElementById("theme-select");
+if (!(themeSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #theme-select element");
+}
+
+const languageSelect = document.getElementById("language-select");
+if (!(languageSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #language-select element");
+}
+
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
 const config = {
@@ -83,6 +95,18 @@ if (!container) {
   throw new Error("Missing #container element");
 }
 
+const mgr = new MonacoDiffManager(container, {
+  original,
+  modified,
+  language: "javascript",
+});
+
+/**
+ * This is actually important for mgr to
+ * be ready before continuing with trackUrl()
+ */
+await mgr.whenReady();
+
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el as HTMLElement;
 
@@ -131,10 +155,56 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   resizer.addEventListener("onHeight", syncToUrl);
 });
 
-const mgr = new MonacoDiffManager(container, {
-  original,
-  modified,
-  language: "javascript",
+function applyThemeAttribute(theme: string): void {
+  console.log("applyThemeAttribute", theme);
+  mgr.getMonaco()?.editor.setTheme(theme || "vs");
+}
+
+function applyLanguageAttribute(language: string): void {
+  console.log("applyLanguageAttribute", language);
+  mgr.setLanguage(language || undefined);
+}
+
+const { trackUrl: trackUrlNoIndex } = modURLSearchParams({
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value: string) => value,
+    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
+  },
+  language: {
+    default: "javascript",
+    getParam: "lang",
+    encode: (value: string) => value,
+    decode: (value: string) => value,
+  },
 });
 
-await mgr.whenReady();
+const { setParam } = trackUrlNoIndex(
+  (params, updatedURLSearchParams, governedKeys) => {
+    console.log("trackUrlNoIndex", params);
+    themeSelect.value = params.theme;
+    applyThemeAttribute(params.theme);
+    languageSelect.value = params.language;
+    applyLanguageAttribute(params.language);
+
+    const current = new URLSearchParams(window.location.search);
+    const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+
+    if (next.toString() !== current.toString()) {
+      const url = buildUrlWithSearchParams(window.location.href, next);
+      history.replaceState(history.state, "", url);
+    }
+  },
+  { fireOnMount: true },
+);
+
+themeSelect.addEventListener("change", () => {
+  console.log("themeSelect.value", themeSelect.value);
+  setParam("theme", themeSelect.value);
+});
+
+languageSelect.addEventListener("change", () => {
+  console.log("languageSelect.value", languageSelect.value);
+  setParam("language", languageSelect.value);
+});

@@ -356,6 +356,11 @@ export class MonacoDiffManager {
     return this._editor;
   }
 
+  /** Returns the global Monaco API instance (or null if not loaded yet). */
+  public getMonaco() {
+    return cachedMonaco;
+  }
+
   /** Tears down the editor, frees memory, and stops listening for resize events. */
   public destroy() {
     this._resizeObserver?.disconnect();
