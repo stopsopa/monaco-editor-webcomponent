@@ -1,23 +1,14 @@
-import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
 import modURLSearchParams from "../../urlchange/urlchange.js";
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../../urlchange/toolsURLSearchParams.js";
-import { isMonacoTheme, MonacoDiffElement, tagName } from "../../monaco-diff.js";
-await customElements.whenDefined(tagName);
-const instanceKeyFn = (key, i) => `${key}-${i}`;
-// const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
-//   theme: {
-//     default: "",
-//     getParam: "theme",
-//     encode: (value: string) => value,
-//     decode: (value: string) => (isMonacoTheme(value) ? value : ""),
-//   },
-//   language: {
-//     default: "javascript",
-//     getParam: "lang",
-//     encode: (value: string) => value,
-//     decode: (value: string) => value,
-//   },
-// };
+import { isMonacoTheme, MonacoDiffElement } from "../../monaco-diff.js";
+import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
+await customElements.whenDefined(MonacoDiffElement.tagName);
+await customElements.whenDefined(CenterAndHeightResizer.tagName);
+const diffEl = document.querySelector(MonacoDiffElement.tagName);
+if (!(diffEl instanceof MonacoDiffElement)) {
+  throw new Error("Missing <monaco-diff> element");
+}
+await diffEl.whenReady();
 function wireResizerUrlSync(resizer, index) {
   const config = {
     left: {
@@ -39,7 +30,7 @@ function wireResizerUrlSync(resizer, index) {
       decode: (value) => value,
     },
   };
-  const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
+  const { trackUrl } = modURLSearchParams(config, (key, i) => `${key}-${i}`);
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams, governedKeys) => {
       resizer.setAttribute("left", params.left);
@@ -79,15 +70,9 @@ function applyLanguageAttribute(diffEl, language) {
     diffEl.removeAttribute("language");
   }
 }
-await customElements.whenDefined(CenterAndHeightResizer.tagName);
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el, index);
 });
-await customElements.whenDefined(tagName);
-const diffEl = document.querySelector(tagName);
-if (!(diffEl instanceof MonacoDiffElement)) {
-  throw new Error("Missing <monaco-diff> element");
-}
 const themeSelect = document.getElementById("theme-select");
 if (!(themeSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #theme-select element");
@@ -96,7 +81,6 @@ const languageSelect = document.getElementById("language-select");
 if (!(languageSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #language-select element");
 }
-await diffEl.whenReady();
 const { trackUrl: trackUrlNoIndex } = modURLSearchParams({
   theme: {
     default: "",

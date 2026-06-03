@@ -3,41 +3,11 @@ import modURLSearchParams from "../urlchange/urlchange.js";
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../urlchange/toolsURLSearchParams.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 import { isMonacoTheme } from "../monaco-diff.js";
-const themeSelect = document.getElementById("theme-select");
-if (!(themeSelect instanceof HTMLSelectElement)) {
-  throw new Error("Missing #theme-select element");
-}
-const languageSelect = document.getElementById("language-select");
-if (!(languageSelect instanceof HTMLSelectElement)) {
-  throw new Error("Missing #language-select element");
-}
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
-const config = {
-  left: {
-    default: "100px",
-    getParam: "l",
-    encode: (value) => value,
-    decode: (value) => value,
-  },
-  center: {
-    default: "1200px",
-    getParam: "c",
-    encode: (value) => value,
-    decode: (value) => value,
-  },
-  height: {
-    default: "100px",
-    getParam: "h",
-    encode: (value) => value,
-    decode: (value) => value,
-  },
-  theme: {
-    default: "",
-    getParam: "theme",
-    encode: (value) => value,
-    decode: (value) => value,
-  },
-};
+const container = document.getElementById("container");
+if (!container) {
+  throw new Error("Missing #container element");
+}
 const original = `
 const loadMonaco = (vsPath = VS_PATH) =>
   new Promise((resolve, reject) => {
@@ -80,10 +50,6 @@ const loadMonaco = (vsPath = VS_PATH) =>
     document.head.appendChild(script);
   });
 `;
-const container = document.getElementById("container");
-if (!container) {
-  throw new Error("Missing #container element");
-}
 const mgr = new MonacoDiffManager(container, {
   original,
   modified,
@@ -94,6 +60,40 @@ const mgr = new MonacoDiffManager(container, {
  * be ready before continuing with trackUrl()
  */
 await mgr.whenReady();
+const themeSelect = document.getElementById("theme-select");
+if (!(themeSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #theme-select element");
+}
+const languageSelect = document.getElementById("language-select");
+if (!(languageSelect instanceof HTMLSelectElement)) {
+  throw new Error("Missing #language-select element");
+}
+const config = {
+  left: {
+    default: "100px",
+    getParam: "l",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  center: {
+    default: "1200px",
+    getParam: "c",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  height: {
+    default: "100px",
+    getParam: "h",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+  theme: {
+    default: "",
+    getParam: "theme",
+    encode: (value) => value,
+    decode: (value) => value,
+  },
+};
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   const resizer = el;
   const { trackUrl } = modURLSearchParams(config, (key, i) => {
