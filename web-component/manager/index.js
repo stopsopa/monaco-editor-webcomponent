@@ -89,7 +89,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
   const resizer = el;
   const { trackUrl } = modURLSearchParams(config, (key, ctx) => instanceKeyFn(key, index));
   const { setParams } = trackUrl(
-    (params) => {
+    (params, updatedURLSearchParams) => {
       console.log("trackUrl", index, JSON.stringify(params));
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
