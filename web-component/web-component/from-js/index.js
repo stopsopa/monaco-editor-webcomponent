@@ -60,8 +60,8 @@ const loadMonaco = (vsPath = VS_PATH) =>
     document.head.appendChild(script);
   });
 `.trim();
-function createResizerParamConfig(resizer) {
-  return {
+function wireResizerUrlSync(resizer, index) {
+  const config = {
     left: {
       default: resizer.getAttribute("left") ?? "100px",
       getParam: "l",
@@ -81,15 +81,8 @@ function createResizerParamConfig(resizer) {
       decode: (value) => value,
     },
   };
-}
-function wireResizerUrlSync(resizer, index) {
-  const config = createResizerParamConfig(resizer);
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
-  const applyParams = (params) => {
-    resizer.setAttribute("left", params.left);
-    resizer.setAttribute("center", params.center);
-    resizer.setAttribute("height", params.height);
-  };
+  const applyParams = (params) => {};
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams) => {
       applyParams(params);

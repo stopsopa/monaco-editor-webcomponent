@@ -13,11 +13,6 @@ type ResizerParams = {
   height: string;
 };
 
-type DiffDemoParams = {
-  theme: string;
-  language: string;
-};
-
 const instanceKeyFn = (key: string, i?: number): string => `${key}-${i}`;
 
 const diffDemoParamConfig: { theme: ParamDef<string>; language: ParamDef<string> } = {
@@ -79,10 +74,8 @@ const loadMonaco = (vsPath = VS_PATH) =>
   });
 `.trim();
 
-function createResizerParamConfig(resizer: HTMLElement): {
-  [K in keyof ResizerParams]: ParamDef<ResizerParams[K]>;
-} {
-  return {
+function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
+  const config = {
     left: {
       default: resizer.getAttribute("left") ?? "100px",
       getParam: "l",
@@ -102,17 +95,9 @@ function createResizerParamConfig(resizer: HTMLElement): {
       decode: (value: string) => value,
     },
   };
-}
-
-function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
-  const config = createResizerParamConfig(resizer);
   const { trackUrl } = modURLSearchParams(config, instanceKeyFn);
 
-  const applyParams = (params: ResizerParams): void => {
-    resizer.setAttribute("left", params.left);
-    resizer.setAttribute("center", params.center);
-    resizer.setAttribute("height", params.height);
-  };
+  const applyParams = (params): void => {};
 
   const { setParams } = trackUrl(
     (params, updatedURLSearchParams) => {
