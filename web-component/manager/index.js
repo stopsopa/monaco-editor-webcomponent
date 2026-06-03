@@ -1,5 +1,6 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
+import { syncURLSearchParams } from "../urlchange/toolsURLSearchParams.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 const instanceKeyFn = (key, i) => {
@@ -94,10 +95,21 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
+      const governedKeys = Object.values(config).map((def) => instanceKeyFn(def.getParam, index));
+      const current = new URLSearchParams(window.location.search);
+      const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
+      if (next.toString() !== current.toString()) {
+        const search = next.toString();
+        const url = search
+          ? `${window.location.pathname}?${search}${window.location.hash}`
+          : `${window.location.pathname}${window.location.hash}`;
+        history.replaceState(history.state, "", url);
+      }
     },
     { ctx: index, fireOnMount: true },
   );
   const syncToUrl = () => {
+    console.log("syncToUrl: ", index);
     setParams({
       left: resizer.getAttribute("left") ?? config.left.default,
       center: resizer.getAttribute("center") ?? config.center.default,

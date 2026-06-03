@@ -202,13 +202,6 @@ function createURLParamTracker<C extends Record<string, unknown>, Ctx = unknown>
       const current = cloneSearchParams(new URLSearchParams(window.location.search));
       if (compareNormalizedSearchParams(next, current)) return;
 
-      ensureHistoryPatched();
-      const search = next.toString();
-      const url = search
-        ? `${window.location.pathname}?${search}${window.location.hash}`
-        : `${window.location.pathname}${window.location.hash}`;
-      const commit = replace ? originalReplaceState! : originalPushState!;
-      commit.call(history, history.state, "", url);
       syncAfterLocalWrite(next);
     };
 
