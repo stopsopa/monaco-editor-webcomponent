@@ -144,6 +144,8 @@ if (!(languageSelect instanceof HTMLSelectElement)) {
   throw new Error("Missing #language-select element");
 }
 
+await diffEl.whenReady();
+
 const { trackUrl: trackUrlNoIndex } = modURLSearchParams({
   theme: {
     default: "",
@@ -178,18 +180,12 @@ const { setParam } = trackUrlNoIndex(
 );
 
 themeSelect.addEventListener("change", () => {
-  const theme = themeSelect.value;
-  applyThemeAttribute(diffEl, theme);
-  setParam("theme", theme);
+  setParam("theme", themeSelect.value);
 });
 
 languageSelect.addEventListener("change", () => {
-  const language = languageSelect.value;
-  applyLanguageAttribute(diffEl, language);
-  setParam("language", language);
+  setParam("language", languageSelect.value);
 });
-
-await diffEl.whenReady();
 
 const editor = diffEl.getManager().getEditor();
 if (!editor) {
