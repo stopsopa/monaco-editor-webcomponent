@@ -8,6 +8,7 @@ import {
   compareNormalizedSearchParams,
   sortSearchParamsByKeyThenValue,
   syncURLSearchParams,
+  buildUrlWithSearchParams,
 } from "./toolsURLSearchParams.js";
 
 /**
@@ -259,5 +260,52 @@ describe("syncURLSearchParams", () => {
 
     const r3 = syncURLSearchParams(base, governed, s1, s2, s3);
     assert.strictEqual(r3.toString(), "b=200");
+  });
+});
+
+describe("buildUrlWithSearchParams", () => {
+  it("should replace search params on a relative path with no existing params", () => {
+    const result = buildUrlWithSearchParams("/path", new URLSearchParams("a=1&b=2"));
+    assert.strictEqual(result, "/path?a=1&b=2");
+  });
+
+  it("should replace existing search params on a relative path", () => {
+    const result = buildUrlWithSearchParams("/path?old=val", new URLSearchParams("a=1"));
+    assert.strictEqual(result, "/path?a=1");
+  });
+
+  it("should remove search params when given empty URLSearchParams", () => {
+    const result = buildUrlWithSearchParams("/path?a=1&b=2", new URLSearchParams(""));
+    assert.strictEqual(result, "/path");
+  });
+
+  it("should preserve the hash fragment", () => {
+    const result = buildUrlWithSearchParams("/path#section", new URLSearchParams("x=1"));
+    assert.strictEqual(result, "/path?x=1#section");
+  });
+
+  it("should preserve hash when removing all search params", () => {
+    const result = buildUrlWithSearchParams("/page?q=old#anchor", new URLSearchParams(""));
+    assert.strictEqual(result, "/page#anchor");
+  });
+
+  it("should work with an absolute URL and return a relative path", () => {
+    const result = buildUrlWithSearchParams("http://localhost:3000/page?old=1#hash", new URLSearchParams("new=2"));
+    assert.strictEqual(result, "http://localhost:3000/page?new=2#hash");
+  });
+
+  it("should accept a plain string instead of URLSearchParams", () => {
+    const result = buildUrlWithSearchParams("/path", "a=1&b=2");
+    assert.strictEqual(result, "/path?a=1&b=2");
+  });
+
+  it("should handle a root path", () => {
+    const result = buildUrlWithSearchParams("/", new URLSearchParams("z=9"));
+    assert.strictEqual(result, "/?z=9");
+  });
+
+  it("should handle empty string params producing no query string", () => {
+    const result = buildUrlWithSearchParams("/path", "");
+    assert.strictEqual(result, "/path");
   });
 });

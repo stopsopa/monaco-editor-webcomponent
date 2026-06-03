@@ -1,6 +1,6 @@
 import { CenterAndHeightResizer } from "../CenterAndHeightResizer.js";
 import modURLSearchParams from "../urlchange/urlchange.js";
-import { syncURLSearchParams } from "../urlchange/toolsURLSearchParams.js";
+import { syncURLSearchParams, buildUrlWithSearchParams } from "../urlchange/toolsURLSearchParams.js";
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 const instanceKeyFn = (key, i) => {
@@ -98,10 +98,7 @@ document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) =>
       const current = new URLSearchParams(window.location.search);
       const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
       if (next.toString() !== current.toString()) {
-        const search = next.toString();
-        const url = search
-          ? `${window.location.pathname}?${search}${window.location.hash}`
-          : `${window.location.pathname}${window.location.hash}`;
+        const url = buildUrlWithSearchParams(window.location.href, next);
         history.replaceState(history.state, "", url);
       }
     },

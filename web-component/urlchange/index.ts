@@ -5,7 +5,12 @@
  * All query-string reads/writes go through helpers in `toolsURLSearchParams.ts`.
  */
 import modURLSearchParams, { onUrlChange } from "./urlchange.js";
-import { cloneSearchParams, compareNormalizedSearchParams, syncURLSearchParams } from "./toolsURLSearchParams.js";
+import {
+  cloneSearchParams,
+  compareNormalizedSearchParams,
+  syncURLSearchParams,
+  buildUrlWithSearchParams,
+} from "./toolsURLSearchParams.js";
 import {
   ChildSection,
   radioOptions,
@@ -206,10 +211,7 @@ function reconcileSections() {
           const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
 
           if (next.toString() !== current.toString()) {
-            const search = next.toString();
-            const url = search
-              ? `${window.location.pathname}?${search}${window.location.hash}`
-              : `${window.location.pathname}${window.location.hash}`;
+            const url = buildUrlWithSearchParams(window.location.href, next);
             history.replaceState(history.state, "", url);
           }
         },

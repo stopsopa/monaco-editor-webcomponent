@@ -117,3 +117,15 @@ export function syncURLSearchParams(
   result.sort();
   return result;
 }
+
+/**
+ * Updates a URL string with new search parameters, preserving origin, pathname, and hash.
+ * Handles both absolute and relative locations.
+ */
+export function buildUrlWithSearchParams(location: string, nextParams: URLSearchParams | string): string {
+  const search = typeof nextParams === "string" ? nextParams : nextParams.toString();
+  const url = new URL(location, "http://dummy");
+  url.search = search ? `?${search}` : "";
+
+  return url.origin === "http://dummy" ? `${url.pathname}${url.search}${url.hash}` : url.toString();
+}
