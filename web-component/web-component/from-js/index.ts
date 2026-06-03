@@ -51,7 +51,7 @@ const loadMonaco = (vsPath = VS_PATH) =>
   });
 `.trim();
 
-function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
+function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   const config = {
     left: {
       default: resizer.getAttribute("left") ?? "100px",
@@ -72,6 +72,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
       decode: (value: string) => value,
     },
   };
+
   const { trackUrl } = modURLSearchParams(config, (key: string, i?: number): string => `${key}-${i}`);
 
   const { setParams } = trackUrl(

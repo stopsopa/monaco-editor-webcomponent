@@ -59,8 +59,6 @@ const instanceKeyFn = (key: string, i?: number) => `${key}-${i}`;
 
 const { trackUrl, separateIndexedSearchParams } = modURLSearchParams(urlParamConfig, instanceKeyFn);
 
-type UrlParams = Parameters<Parameters<typeof trackUrl>[0]>[0];
-
 /** Parent-only key: lists instance indexes without writing default-valued tracked params. */
 const INSTANCE_IDS_KEY = "ids";
 
@@ -195,7 +193,7 @@ function reconcileSections() {
       const section = new ChildSection(sectionsEl, i);
 
       const handle = trackUrl(
-        (params: UrlParams, updatedURLSearchParams, governedKeys) => {
+        (params, updatedURLSearchParams, governedKeys) => {
           console.log(`RENDER ${i} >${updatedURLSearchParams.toString()}<`, params);
 
           section.setText(params.text);
