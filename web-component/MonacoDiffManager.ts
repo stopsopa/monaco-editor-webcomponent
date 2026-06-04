@@ -316,26 +316,28 @@ export class MonacoDiffManager {
   private _editor: Monaco.editor.IStandaloneDiffEditor | null = null;
   private _resizeObserver: ResizeObserver | null = null;
   private _layoutRaf: number | null = null;
+  protected _container: HTMLElement;
 
   /**
    * Mounts a side-by-side diff editor into the given element: loads Monaco, applies styles,
    * fills in original/modified text, and starts watching size changes.
    */
   constructor(
-    private readonly _container: HTMLElement,
+     container: HTMLElement,
     options: MonacoDiffManagerOptions,
   ) {
-    _container.style.height = "100%";
-    _container.style.width = "100%";
+    this._container = container;
+    container.style.height = "100%";
+    container.style.width = "100%";
 
     const { original, modified, originalLanguage, modifiedLanguage } = resolveDiffContent(options);
 
     this._readyPromise = (async () => {
       const monaco = await hydrateCache(MONACO_GENERATED);
 
-      await ensureMonacoStylesInShadowRoot(this._container);
+      await ensureMonacoStylesInShadowRoot(container);
 
-      this._editor = monaco.editor.createDiffEditor(this._container, {
+      this._editor = monaco.editor.createDiffEditor(container, {
         automaticLayout: false,
         scrollbar: {
           vertical: "auto",
@@ -352,7 +354,7 @@ export class MonacoDiffManager {
       this._scheduleLayout();
 
       this._resizeObserver = new ResizeObserver(() => this._scheduleLayout());
-      this._resizeObserver.observe(this._container);
+      this._resizeObserver.observe(container);
     })();
   }
 
