@@ -8,3 +8,17 @@ monaco-editor/src/monaco-web-component.d.ts
 monaco-editor/src/monaco-web-component.js
 *.tgz
 /dist/
+web-component/Module.js
+web-component/MonacoDiffManager.js
+web-component/react.js
+web-component/CenterAndHeightResizer.js
+web-component/CenterResizer.js
+web-component/monaco-diff.js
+web-component/trimLeft.js
+web-component/web-component/from-scripts/index.js
+web-component/web-component/from-js/index.js
+web-component/urlchange/ChildSection.js
+web-component/urlchange/index.js
+web-component/urlchange/toolsURLSearchParams.js
+web-component/urlchange/urlchange.js
+web-component/manager/index.js
