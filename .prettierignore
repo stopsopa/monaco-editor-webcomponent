@@ -13,6 +13,10 @@ release.config.js
 /test/
 /diff/
 
+/web-component/*
+!/web-component/manager/
+/web-component/manager/*
+!/web-component/manager/index.e2e.ts
 
 node_modules
 pnpm-lock.yaml

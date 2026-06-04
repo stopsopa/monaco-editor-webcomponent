@@ -1,0 +1,47 @@
+import { test, expect } from "@playwright/test";
+
+import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../../test/lib.ts";
+
+/**
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh web-component/manager/index.e2e.ts
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh -- web-component/manager/index.e2e.ts
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh -- --debug -- web-component/manager/index.e2e.ts
+ *
+ * ./node_modules/.bin/playwright codegen http://localhost:8089/web-component/manager/index.html
+ *
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh -- web-component/manager/index.e2e.ts -g "build list"
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh -- --debug -- web-component/manager/index.e2e.ts
+ * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh -- --debug -g "build list" -- web-component/manager/index.e2e.ts
+ *
+ */
+test("default", async ({ page }) => {
+  await page.goto("/web-component/manager/index.html");
+  // await page.getByRole("banner").getByRole("combobox").selectOption("vs");
+
+  // don't goto but just check if path and search is equal to /vite-project/dist/monaco-diff?theme=vs
+  // await expect(page).toHaveURL("/vite-project/dist/monaco-diff?theme=vs");
+
+  const style = await page.evaluate(
+    async () => {
+      const timeout = 5000;
+      const start = Date.now();
+
+      while (Date.now() - start < timeout) {
+        const target = document.querySelector(".original-in-monaco-diff-editor") as any;
+
+        if (target) {
+          return window.getComputedStyle(target).backgroundColor;
+        }
+
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      throw new Error("Timeout waiting for monaco-diff style");
+    },
+    {
+      timeout: 20000,
+    },
+  );
+
+  await expect(style).toEqual("rgb(255, 255, 254)");
+});
