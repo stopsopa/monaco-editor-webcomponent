@@ -57,6 +57,7 @@ rm -rf es.ts
 rm -rf package-*
 rm -rf tsconfig*
 rm -rf xx.cjs
+rm -rf noprettier
 
 
 echo 'after clean_before_github_pages'
