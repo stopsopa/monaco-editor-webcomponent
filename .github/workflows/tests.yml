@@ -66,6 +66,7 @@ jobs:
             package.json package.dev.json \
             package-lock.json package-lock.dev.json \
             -- npm ci
+          ls -la node_modules/
 
       - name: build
         run: /bin/bash build.sh
