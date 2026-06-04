@@ -44,6 +44,8 @@ echo web-component/Module.ts | DEBUG=true node es.ts
   cd vite-project
   
   npm run build
+  
+  ls -la node_modules
 )
 
 /bin/bash links.sh

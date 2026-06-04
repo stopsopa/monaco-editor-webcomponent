@@ -63,10 +63,8 @@ jobs:
       - name: npm ci
         run: |
           /bin/bash bash/swap-files-v2.sh \
-            package.json \
-            package.dev.json \
-            package-lock.json \
-            package-lock.dev.json \
+            package.json package.dev.json \
+            package-lock.json package-lock.dev.json \
             -- npm ci
 
       - name: build
