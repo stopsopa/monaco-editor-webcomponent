@@ -18,6 +18,7 @@ EEE
   exit 1
 }
 
+
 if [ "${1}" != "" ]; then
   if [ "${1}" != "drop" ]; then
     error "unknown option: ${1}"
