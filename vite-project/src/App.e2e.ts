@@ -7,7 +7,7 @@ import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../.
  * /bin/bash playwright.sh -- vite-project/src/App.e2e.ts
  * /bin/bash playwright.sh -- --debug -- vite-project/src/App.e2e.ts
  *
- * ./node_modules/.bin/playwright codegen http://0.0.0.0:5678/vite-project/dist/
+ * ./node_modules/.bin/playwright codegen http://0.0.0.0:5699/vite-project/dist/
  *
  * /bin/bash playwright.sh -- vite-project/src/App.e2e.ts -g "build list"
  * /bin/bash playwright.sh -- --debug -g "build list" -- vite-project/src/App.e2e.ts
@@ -48,7 +48,7 @@ test("remove one from preselected 3", async ({ page }) => {
 
 test("build list", async ({ page }) => {
   await prepare(page, '[data-testid="composite-select-demo"]');
-  // await page.goto('http://0.0.0.0:5678/vite-project/dist/');
+  // await page.goto('http://0.0.0.0:5699/vite-project/dist/');
 
   await page.getByTestId("composite-select-demo").click();
 

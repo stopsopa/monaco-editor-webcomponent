@@ -22,7 +22,7 @@ cd vite-project
 urls
 
 ```
-http://0.0.0.0:5678/vite-project/dist/
+http://0.0.0.0:5699/vite-project/dist/
 
 ```
 

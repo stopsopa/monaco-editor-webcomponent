@@ -22,3 +22,7 @@ web-component/urlchange/index.js
 web-component/urlchange/toolsURLSearchParams.js
 web-component/urlchange/urlchange.js
 web-component/manager/index.js
+
+
+/playwright-report/
+/test-results/
