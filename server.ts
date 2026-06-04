@@ -86,6 +86,13 @@ app.use(
   }),
 );
 
+app.get("/vite-project/dist*", (req, res, next) => {
+  if (path.extname(req.path)) {
+    return next();
+  }
+  res.sendFile(path.resolve(root, "vite-project/dist/index.html"));
+});
+
 app.use(
   "/public",
   serveIndex(publicDir, {

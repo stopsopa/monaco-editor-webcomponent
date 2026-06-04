@@ -27,10 +27,16 @@ console.log(
 );
 console.log("💡 Run enableStrictMode() or disableStrictMode() in this console to toggle.");
 
+if (window.location.pathname.endsWith("/index.html")) {
+  const newPath = window.location.pathname.slice(0, -10); // strip "/index.html"
+  window.history.replaceState(null, "", newPath + window.location.search + window.location.hash);
+}
+
 const getBasename = () => {
   let path = window.location.pathname;
-  if (path.startsWith("/vite-project/dist")) {
-    return "/vite-project/dist";
+  const match = path.match(/^.*\/vite-project\/dist/);
+  if (match) {
+    return match[0];
   }
   return "/";
 };
