@@ -1,0 +1,13 @@
+--- node_modules/playwright-core/lib/server/recorder/recorderApp.js	2026-05-21 17:28:58
++++ diff/recorderApp.js	2026-05-21 17:34:13
+@@ -186,8 +186,8 @@
+     const recorderPlaywright = require("../playwright").createPlaywright({ sdkLanguage: "javascript", isInternalPlaywright: true });
+     const { context: appContext, page } = await (0, import_launchApp2.launchApp)(recorderPlaywright.chromium, {
+       sdkLanguage,
+-      windowSize: { width: 600, height: 600 },
+-      windowPosition: { x: 1020, y: 10 },
++      windowSize: { width: 1000, height: 1200 },
++      windowPosition: { x: 1320, y: 5 },
+       persistentContextOptions: {
+         noDefaultViewport: true,
+         headless: !!process.env.PWTEST_CLI_HEADLESS || (0, import_debug.isUnderTest)() && !headed,
