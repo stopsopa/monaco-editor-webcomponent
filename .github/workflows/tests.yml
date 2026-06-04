@@ -163,6 +163,11 @@ jobs:
             package-lock.dev.json \
             -- npm install semantic-release conventional-changelog-conventionalcommits
 
+      - name: vite ci
+        run: |
+          cd vite-project
+          npm ci
+
       - name: build
         run: /bin/bash build.sh
 
