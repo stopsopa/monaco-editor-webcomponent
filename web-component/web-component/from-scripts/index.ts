@@ -17,7 +17,7 @@ if (!(diffEl instanceof MonacoDiffElement)) {
 
 await diffEl.whenReady();
 
-function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
+function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   const config = {
     left: {
       default: resizer.getAttribute("left") ?? "100px",
@@ -42,7 +42,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   const { trackUrl } = modURLSearchParams(config, (key: string, i?: number): string => `${key}-${i}`);
 
   const { setParams } = trackUrl(
-    (params, updatedURLSearchParams, governedKeys): void => {
+    (params, updatedURLSearchParams, governedKeys) => {
       resizer.setAttribute("left", params.left);
       resizer.setAttribute("center", params.center);
       resizer.setAttribute("height", params.height);
@@ -58,7 +58,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
     { ctx: index, fireOnMount: true },
   );
 
-  const syncToUrl = (): void => {
+  const syncToUrl = () => {
     setParams({
       left: resizer.getAttribute("left") ?? config.left.default,
       center: resizer.getAttribute("center") ?? config.center.default,
@@ -71,7 +71,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number): void {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
+function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string) {
   if (theme) {
     diffEl.setAttribute("theme", theme);
   } else {
@@ -79,7 +79,7 @@ function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
   }
 }
 
-function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string): void {
+function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string) {
   if (language) {
     diffEl.setAttribute("language", language);
   } else {
