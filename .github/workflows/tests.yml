@@ -71,11 +71,6 @@ jobs:
       - name: build
         run: /bin/bash build.sh
 
-      - name: vite ci
-        run: |
-          cd vite-project
-          npm ci
-
       - name: link
         run: /bin/bash links.sh
 
