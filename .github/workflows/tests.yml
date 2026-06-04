@@ -68,6 +68,11 @@ jobs:
             -- npm ci
           ls -la node_modules/
 
+      - name: vite ci
+        run: |
+          cd vite-project
+          npm ci
+
       - name: build
         run: /bin/bash build.sh
 
