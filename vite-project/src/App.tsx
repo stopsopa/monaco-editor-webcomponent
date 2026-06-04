@@ -57,7 +57,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/monaco-diff" element={<MonacoDiffDemoAttr />} />
+      <Route path="/monaco-diff" element={<MonacoDiffDemo />} />
       <Route path="/monaco-diff-attr" element={<MonacoDiffDemoAttr />} />
       {/* <Route path="/composite-select-demo-attr" element={<CompositeSelectDemoAttr />} />
       <Route path="/options-section-demo" element={<OptionsSectionDemo />} />

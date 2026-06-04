@@ -40,6 +40,12 @@ npx tsc -p tsconfig.watch.json
 
 echo web-component/Module.ts | DEBUG=true node es.ts
 
+(
+  cd vite-project
+  
+  npm run build
+)
+
 /bin/bash links.sh
 
 if [[ -z "${ARG}" ]]; then
