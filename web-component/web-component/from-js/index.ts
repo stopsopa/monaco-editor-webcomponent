@@ -102,7 +102,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number) {
     { ctx: index, fireOnMount: true },
   );
 
-  const syncToUrl = (): void => {
+  const syncToUrl = () => {
     setParams({
       left: resizer.getAttribute("left") ?? config.left.default,
       center: resizer.getAttribute("center") ?? config.center.default,
@@ -115,7 +115,7 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
+function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string) {
   if (theme) {
     diffEl.setAttribute("theme", theme);
   } else {
@@ -123,15 +123,13 @@ function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string): void {
   }
 }
 
-function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string): void {
+function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string) {
   if (language) {
     diffEl.setAttribute("language", language);
   } else {
     diffEl.removeAttribute("language");
   }
 }
-
-await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
   wireResizerUrlSync(el as HTMLElement, index);
