@@ -106,7 +106,7 @@ export default function UrlSerialiser() {
       </a>
       <span style={{ padding: "0 10px" }}>|</span>
       <a
-        href="https://github.com/stopsopa/select-component/blob/main/vite-project/src/pages/UrlSerialiser.tsx"
+        href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/vite-project/src/pages/UrlSerialiser.tsx"
         className="gcp-css"
       >
         source

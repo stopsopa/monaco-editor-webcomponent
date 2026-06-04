@@ -150,7 +150,7 @@ export default function ParentComponent() {
       </a>
       <span style={{ padding: "0 10px" }}>|</span>
       <a
-        href="https://github.com/stopsopa/select-component/blob/main/vite-project/src/pages/params/ModURLSearchParamsComponent.tsx"
+        href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/vite-project/src/pages/params/ModURLSearchParamsComponent.tsx"
         className="gcp-css"
       >
         source
