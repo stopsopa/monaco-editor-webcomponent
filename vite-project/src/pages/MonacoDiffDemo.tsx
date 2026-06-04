@@ -54,7 +54,7 @@ const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
   (key, i?: number) => `${key}-${i}`,
 );
 
-export default function MonacoDiffDemoAttr() {
+export default function MonacoDiffDemo() {
   const location = useLocation();
   const navigate = useNavigate();
 
