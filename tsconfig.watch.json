@@ -13,6 +13,7 @@
   "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
+    "vite-project",
     "es.ts",
     "tsc.ignore.ts",
     "web-component/other-manager",
