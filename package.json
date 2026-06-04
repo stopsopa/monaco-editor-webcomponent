@@ -16,10 +16,9 @@
   ],
   "author": "Szymon Dzialowski",
   "license": "GPL-2.0-only",
-
   "repository": {
     "type": "git",
-    "url": "https://github.com/stopsopa/monaco-editor-webcomponent.git"
+    "url": "git+https://github.com/stopsopa/monaco-editor-webcomponent.git"
   },
   "bugs": {
     "url": "https://github.com/stopsopa/monaco-editor-webcomponent/issues"
