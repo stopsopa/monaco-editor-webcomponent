@@ -110,6 +110,8 @@ jobs:
         run: |
           mkdir -p gh-pages
           rsync -av --exclude='gh-pages' ./ gh-pages/
+          pwd
+          ls -la gh-pages/
 
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main'
