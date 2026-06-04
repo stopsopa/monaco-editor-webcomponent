@@ -1,4 +1,5 @@
 import modURLSearchParams from "../../urlchange/urlchange.js";
+
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../../urlchange/toolsURLSearchParams.js";
 
 import { isMonacoTheme, MonacoDiffElement } from "../../monaco-diff.js";
