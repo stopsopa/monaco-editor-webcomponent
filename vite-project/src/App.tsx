@@ -13,12 +13,12 @@ function Home() {
       <nav>
         <ul>
           <li>
-            <Link to="/monaco-diff" data-testid="monaco-diff-demo" className="gcp-css">
+            <Link to="/composite-monaco-diff" data-testid="composite-monaco-diff-demo" className="gcp-css">
               Monaco Diff Demo
             </Link>
           </li>
           <li>
-            <Link to="/monaco-diff-attr" data-testid="monaco-diff-demo-attr" className="gcp-css">
+            <Link to="/composite-monaco-diff-attr" data-testid="composite-monaco-diff-demo-attr" className="gcp-css">
               Monaco Diff Demo Attr
             </Link>
           </li>
@@ -32,8 +32,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/monaco-diff" element={<MonacoDiffDemo />} />
-      <Route path="/monaco-diff-attr" element={<MonacoDiffDemoAttr />} />
+      <Route path="/composite-monaco-diff" element={<MonacoDiffDemo />} />
+      <Route path="/composite-monaco-diff-attr" element={<MonacoDiffDemoAttr />} />
     </Routes>
   );
 }

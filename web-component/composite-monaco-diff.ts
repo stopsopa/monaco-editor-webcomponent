@@ -1,35 +1,35 @@
 /**
- * `<monaco-diff>` — declarative diff editor with optional embedded `<script>` sources.
+ * `<composite-monaco-diff>` — declarative diff editor with optional embedded `<script>` sources.
  *
  * Import this module to register the element (`customElements.define` at file bottom).
  * Before querying the DOM or calling instance APIs from other modules, wait until the
  * browser knows the tag (same pattern as other custom elements in this repo):
  *
- *   import { MonacoDiffElement } from "./monaco-diff.js";
+ *   import { MonacoDiffElement } from "./composite-monaco-diff.js";
  *
  *   await customElements.whenDefined(MonacoDiffElement.tagName);
  *
  *   const diff = document.querySelector(MonacoDiffElement.tagName);
- *   if (!(diff instanceof MonacoDiffElement)) throw new Error("Missing <monaco-diff>");
+ *   if (!(diff instanceof MonacoDiffElement)) throw new Error("Missing <composite-monaco-diff>");
  *   await diff.whenReady();
  *
  * @example HTML
  * ```html
- * <monaco-diff theme="vs-dark">
+ * <composite-monaco-diff theme="vs-dark">
  *   <script type="text/original" lang="javascript">
  *     const a = 1;
  *   </script>
  *   <script type="text/modified" lang="typescript">
  *     const a = 2;
  *   </script>
- * </monaco-diff>
+ * </composite-monaco-diff>
  * ```
  */
 
 import { hydrateCache, MonacoDiffManager } from "./MonacoDiffManager.js";
 
-/** Custom element tag name (`"monaco-diff"`). Pass to `customElements.whenDefined(tagName)`. */
-export const tagName = "monaco-diff" as const;
+/** Custom element tag name (`"composite-monaco-diff"`). Pass to `customElements.whenDefined(tagName)`. */
+export const tagName = "composite-monaco-diff" as const;
 
 export const MONACO_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"] as const;
 
@@ -110,14 +110,14 @@ export class MonacoDiffElement extends HTMLElement {
   /** Promise that resolves when the editor has finished loading and is safe to use. */
   whenReady(): Promise<void> {
     if (!this._manager) {
-      throw new Error("<monaco-diff>: not connected");
+      throw new Error("<composite-monaco-diff>: not connected");
     }
     return this._manager.whenReady();
   }
 
   getManager(): MonacoDiffManager {
     if (!this._manager) {
-      throw new Error("<monaco-diff>: not connected");
+      throw new Error("<composite-monaco-diff>: not connected");
     }
     return this._manager;
   }

@@ -109,8 +109,8 @@ app.use(
 app.listen(port, host, () => {
   console.log(
     `\n 🌎  Server is running\n` +
-      `    <monaco-diff> (scripts)  http://${host}:${port}/web-component/web-component/from-scripts/index.html\n` +
-      `    <monaco-diff> (JS API)   http://${host}:${port}/web-component/web-component/from-js/index.html\n` +
+      `    <composite-monaco-diff> (scripts)  http://${host}:${port}/web-component/web-component/from-scripts/index.html\n` +
+      `    <composite-monaco-diff> (JS API)   http://${host}:${port}/web-component/web-component/from-js/index.html\n` +
       `    MonacoDiffManager        http://${host}:${port}/web-component/manager/index.html\n`,
   );
 });

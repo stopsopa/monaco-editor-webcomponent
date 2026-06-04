@@ -13,7 +13,7 @@ web-component/MonacoDiffManager.js
 web-component/react.js
 web-component/CenterAndHeightResizer.js
 web-component/CenterResizer.js
-web-component/monaco-diff.js
+web-component/composite-monaco-diff.js
 web-component/trimLeft.js
 web-component/web-component/from-scripts/index.js
 web-component/web-component/from-js/index.js

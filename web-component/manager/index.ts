@@ -5,7 +5,7 @@ import { syncURLSearchParams, buildUrlWithSearchParams } from "../urlchange/tool
 
 import { MonacoDiffManager } from "../MonacoDiffManager.js";
 
-import { isMonacoTheme } from "../monaco-diff.js";
+import { isMonacoTheme } from "../composite-monaco-diff.js";
 
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 

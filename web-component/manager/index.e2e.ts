@@ -18,8 +18,8 @@ test("default", async ({ page }) => {
   await page.goto("/web-component/manager/index.html");
   // await page.getByRole("banner").getByRole("combobox").selectOption("vs");
 
-  // don't goto but just check if path and search is equal to /vite-project/dist/monaco-diff?theme=vs
-  // await expect(page).toHaveURL("/vite-project/dist/monaco-diff?theme=vs");
+  // don't goto but just check if path and search is equal to /vite-project/dist/composite-monaco-diff?theme=vs
+  // await expect(page).toHaveURL("/vite-project/dist/composite-monaco-diff?theme=vs");
 
   const style = await page.evaluate(
     async () => {
@@ -36,7 +36,7 @@ test("default", async ({ page }) => {
         await new Promise((r) => setTimeout(r, 200));
       }
 
-      throw new Error("Timeout waiting for monaco-diff style");
+      throw new Error("Timeout waiting for composite-monaco-diff style");
     },
     {
       timeout: 7000,
@@ -68,7 +68,7 @@ test("dark", async ({ page }) => {
         await new Promise((r) => setTimeout(r, 200));
       }
 
-      throw new Error("Timeout waiting for monaco-diff style");
+      throw new Error("Timeout waiting for composite-monaco-diff style");
     },
     {
       timeout: 7000,

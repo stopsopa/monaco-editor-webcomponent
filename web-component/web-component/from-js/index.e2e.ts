@@ -18,15 +18,15 @@ test("default", async ({ page }) => {
   await page.goto("/web-component/web-component/from-js/index.html");
   // await page.getByRole("banner").getByRole("combobox").selectOption("vs");
 
-  // don't goto but just check if path and search is equal to /vite-project/dist/monaco-diff?theme=vs
-  // await expect(page).toHaveURL("/vite-project/dist/monaco-diff?theme=vs");
+  // don't goto but just check if path and search is equal to /vite-project/dist/composite-monaco-diff?theme=vs
+  // await expect(page).toHaveURL("/vite-project/dist/composite-monaco-diff?theme=vs");
 
   const style = await page.evaluate(async () => {
     const timeout = 5000;
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
-      const el = document.querySelector("monaco-diff") as any;
+      const el = document.querySelector("composite-monaco-diff") as any;
 
       if (el?.shadowRoot) {
         await el.whenReady();
@@ -41,7 +41,7 @@ test("default", async ({ page }) => {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    throw new Error("Timeout waiting for monaco-diff style");
+    throw new Error("Timeout waiting for composite-monaco-diff style");
   });
 
   await expect(style).toEqual("rgb(255, 255, 254)");
@@ -59,7 +59,7 @@ test("dark", async ({ page }) => {
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
-      const el = document.querySelector("monaco-diff") as any;
+      const el = document.querySelector("composite-monaco-diff") as any;
 
       if (el?.shadowRoot) {
         await el.whenReady();
@@ -74,7 +74,7 @@ test("dark", async ({ page }) => {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    throw new Error("Timeout waiting for monaco-diff style");
+    throw new Error("Timeout waiting for composite-monaco-diff style");
   });
 
   await expect(style).toEqual("rgb(30, 30, 30)");

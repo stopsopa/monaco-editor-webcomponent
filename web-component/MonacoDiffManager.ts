@@ -200,7 +200,7 @@ export function readDeclarativeDiffScripts(host: HTMLElement): DeclarativeDiffCo
 
   if (scripts.length < 2) {
     throw new Error(
-      `<monaco-diff>: expected exactly at leasttwo <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
+      `<composite-monaco-diff>: expected exactly at leasttwo <script> elements (type="${SCRIPT_TYPE_ORIGINAL}" and type="${SCRIPT_TYPE_MODIFIED}"), found ${scripts.length}`,
     );
   }
 
@@ -212,24 +212,24 @@ export function readDeclarativeDiffScripts(host: HTMLElement): DeclarativeDiffCo
 
     if (type === SCRIPT_TYPE_ORIGINAL) {
       if (originalScript) {
-        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
+        throw new Error(`<composite-monaco-diff>: duplicate <script type="${SCRIPT_TYPE_ORIGINAL}">`);
       }
       originalScript = script;
     } else if (type === SCRIPT_TYPE_MODIFIED) {
       if (modifiedScript) {
-        throw new Error(`<monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
+        throw new Error(`<composite-monaco-diff>: duplicate <script type="${SCRIPT_TYPE_MODIFIED}">`);
       }
       modifiedScript = script;
     } else {
       throw new Error(
-        `<monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`,
+        `<composite-monaco-diff>: <script> must have type="${SCRIPT_TYPE_ORIGINAL}" or type="${SCRIPT_TYPE_MODIFIED}"`,
       );
     }
   }
 
   if (!originalScript || !modifiedScript) {
     const missing = !originalScript ? SCRIPT_TYPE_ORIGINAL : SCRIPT_TYPE_MODIFIED;
-    throw new Error(`<monaco-diff>: missing <script type="${missing}">`);
+    throw new Error(`<composite-monaco-diff>: missing <script type="${missing}">`);
   }
 
   let original = originalScript.textContent ?? "";
@@ -243,13 +243,13 @@ export function readDeclarativeDiffScripts(host: HTMLElement): DeclarativeDiffCo
 
   if (!(originalOffset > 0)) {
     throw new Error(
-      `<monaco-diff><script type='text/original'>: data-offset must be a positive integer >${originalOffset}<`,
+      `<composite-monaco-diff><script type='text/original'>: data-offset must be a positive integer >${originalOffset}<`,
     );
   }
 
   if (!(modifiedOffset > 0)) {
     throw new Error(
-      `<monaco-diff><script type='text/modified'>: data-offset must be a positive integer >${modifiedOffset}<`,
+      `<composite-monaco-diff><script type='text/modified'>: data-offset must be a positive integer >${modifiedOffset}<`,
     );
   }
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>&lt;monaco-diff&gt; demo — embedded scripts</title>
+    <title>&lt;composite-monaco-diff&gt; demo — embedded scripts</title>
     <style>
       html,
       body {
@@ -22,7 +22,7 @@
     </center-and-height-resizer>
     <br />
     <center-and-height-resizer left="100px" center="1200px" height="300px">
-      <monaco-diff>
+      <composite-monaco-diff>
         <script type="text/original" lang="javascript" data-offset="3">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
@@ -65,7 +65,7 @@
               document.head.appendChild(script);
             });
         </script>
-      </monaco-diff>
+      </composite-monaco-diff>
     </center-and-height-resizer>
     <p style="margin: 12px 100px">
       <label for="theme-select">Theme</label>

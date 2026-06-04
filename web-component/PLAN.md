@@ -30,7 +30,7 @@ The component should:
 # Primary HTML Design
 
 ```html
-<monaco-diff>
+<composite-monaco-diff>
   <script type="text/left" lang="javascript">
     function hello() {
       console.log("before");
@@ -42,7 +42,7 @@ The component should:
       console.log("after");
     }
   </script>
-</monaco-diff>
+</composite-monaco-diff>
 ```
 
 ---
@@ -91,7 +91,7 @@ The consumer owns:
 ## HTMLElement
 
 ```js
-const diff = document.querySelector("monaco-diff");
+const diff = document.querySelector("composite-monaco-diff");
 ```
 
 ---
@@ -162,7 +162,7 @@ Monaco instance may still be exposed as escape hatch.
 ## Component
 
 ```txt
-<monaco-diff>
+<composite-monaco-diff>
 ```
 
 Owns:
@@ -261,7 +261,7 @@ On component connection:
 Initial proposed attributes:
 
 ```html
-<monaco-diff theme="vs-dark" inline read-only></monaco-diff>
+<composite-monaco-diff theme="vs-dark" inline read-only></composite-monaco-diff>
 ```
 
 ---
@@ -459,7 +459,7 @@ Avoid initially:
 
 ```txt
 /src
-	monaco-diff.js
+	composite-monaco-diff.js
 	manager.js
 	side-controller.js
 	template.js
@@ -484,7 +484,7 @@ MonacoDiffElement
 Custom element:
 
 ```txt
-monaco-diff
+composite-monaco-diff
 ```
 
 Manager:
@@ -506,7 +506,7 @@ MonacoDiffSide
 ## Declarative
 
 ```html
-<monaco-diff theme="vs-dark">
+<composite-monaco-diff theme="vs-dark">
   <script type="text/left" lang="javascript">
     const a = 1;
   </script>
@@ -514,7 +514,7 @@ MonacoDiffSide
   <script type="text/right" lang="javascript">
     const a = 2;
   </script>
-</monaco-diff>
+</composite-monaco-diff>
 ```
 
 ---
@@ -522,7 +522,7 @@ MonacoDiffSide
 ## Imperative
 
 ```js
-const diff = document.querySelector("monaco-diff");
+const diff = document.querySelector("composite-monaco-diff");
 
 const manager = diff.getManager();
 

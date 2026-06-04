@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { NavigateFunction } from "react-router-dom";
 import modURLSearchParams from "./params/modURLSearchParams";
 import { MonacoDiff } from "../../../web-component/react";
-import type { MonacoTheme } from "../../../web-component/monaco-diff";
+import type { MonacoTheme } from "../../../web-component/composite-monaco-diff";
 
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 
@@ -117,7 +117,7 @@ export default function MonacoDiffDemoAttr() {
         <div>
           <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>Monaco Diff React Demo</h1>
           <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>
-            <a href="/monaco-diff-attr?theme=vs&orig-1=MYewdgzgLgBA5gGxAIwIYICoAsCmBbHABVQCdU8IYBeGPEAEwFUAlAGQGUdTgtiyKAFAG8AUDBhRcBAFwxR48fRwAzVAFcEUWQCIAbhAC09UgGttMVJRgBZcKlDZ8OADRiFcHFD7kdkp9tcFGBwwUCVZAV10NRwASmoAPhgohBjAhSUwnAjdeKok3QtKWzB7EEcCdIBfVyrYgG4gA&mod-1=MYewdgzgLgBA5gGxAIwIYICoAsCmBbHABVQCdU8IYBeGPEAEwFUAlAGQGUdTgtiyKAFAG8AUDBhRcBAFwxR48fRwAzVAFcEUWQCIAbhAC09UgGttMVJQCy4VKGz4cAGjEK4OKH3I7Jj7S4UYHDBQJVkBXXQ1HABKagA%2BGEiEaICFJVCccOTouKpEnJwLa1t7KWdXAF8XSpiAbiA&ew-1=76">snippet</a>
+            <a href="/composite-monaco-diff-attr?theme=vs&orig-1=MYewdgzgLgBA5gGxAIwIYICoAsCmBbHABVQCdU8IYBeGPEAEwFUAlAGQGUdTgtiyKAFAG8AUDBhRcBAFwxR48fRwAzVAFcEUWQCIAbhAC09UgGttMVJRgBZcKlDZ8OADRiFcHFD7kdkp9tcFGBwwUCVZAV10NRwASmoAPhgohBjAhSUwnAjdeKok3QtKWzB7EEcCdIBfVyrYgG4gA&mod-1=MYewdgzgLgBA5gGxAIwIYICoAsCmBbHABVQCdU8IYBeGPEAEwFUAlAGQGUdTgtiyKAFAG8AUDBhRcBAFwxR48fRwAzVAFcEUWQCIAbhAC09UgGttMVJQCy4VKGz4cAGjEK4OKH3I7Jj7S4UYHDBQJVkBXXQ1HABKagA%2BGEiEaICFJVCccOTouKpEnJwLa1t7KWdXAF8XSpiAbiA&ew-1=76">snippet</a>
           </p>
         </div>
         <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>

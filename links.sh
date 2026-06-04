@@ -61,9 +61,9 @@ EEE
 )
 }
 
-unpackzip "node_modules/monaco-diff"
+unpackzip "node_modules/composite-monaco-diff"
 
-unpackzip "vite-project/node_modules/monaco-diff"
+unpackzip "vite-project/node_modules/composite-monaco-diff"
 
 if [ "${1}" = "drop" ]; then
 
