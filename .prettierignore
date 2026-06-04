@@ -32,6 +32,7 @@ pnpm-lock.yaml
 !/vite-project/src/pages/createUseQueryParams.tsx
 !/vite-project/src/pages/params/
 /vite-project/src/pages/params/*
+!/vite-project/src/pages/MonacoDiffDemo.tsx
 !/vite-project/src/pages/params/ModURLSearchParamsComponent.tsx
 !/vite-project/src/pages/params/modURLSearchParams.ts
 !/vite-project/src/pages/params/toolsURLSearchParams.test.ts
