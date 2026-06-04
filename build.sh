@@ -4,6 +4,7 @@
 # /bin/bash build.sh esm
 # 
 set -e
+set -x
 
 export NODE_OPTIONS=""
 
@@ -44,7 +45,7 @@ echo web-component/Module.ts | DEBUG=true node es.ts
   cd vite-project
   
   npm run build
-  
+
   ls -la node_modules
 )
 
