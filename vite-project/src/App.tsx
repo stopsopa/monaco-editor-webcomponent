@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
+import MonacoDiffDemo from "./pages/MonacoDiffDemo";
 // import CompositeSelectDemo from "./pages/CompositeSelectDemo";
 // import CompositeSelectDemoAttr from "./pages/CompositeSelectDemoAttr";
 // import OptionsSectionDemo from "./pages/OptionsSectionDemo";
@@ -11,10 +12,17 @@ import "./App.css";
 function Home() {
   return (
     <div className="homepage" style={{ padding: "40px" }}>
-      <h1>Composite Select React Demos</h1>
-      <p>Welcome to the React demonstration of the composite-select component suite.</p>
+      <h1>Monaco Diff React Demos</h1>
       <nav>
         <ul>
+
+          <li>
+            <Link to="/monaco-diff" data-testid="monaco-diff-demo" className="gcp-css">
+              Monaco Diff Demo
+            </Link>
+          </li>
+
+
           <li>
             <Link to="/composite-select-demo" data-testid="composite-select-demo" className="gcp-css">
               CompositeSelect Manager Demo
@@ -35,16 +43,6 @@ function Home() {
               SelectedSection Section Demo
             </Link>
           </li>
-          <li>
-            <Link to="/url-serialiser" data-testid="url-serialiser" className="gcp-css">
-              UrlSerialiser Demo
-            </Link>
-          </li>
-          <li>
-            <Link to="/url-serialiser-mod" data-testid="url-serialiser-mod" className="gcp-css">
-              UrlSerialiser Mod Demo
-            </Link>
-          </li>
         </ul>
       </nav>
     </div>
@@ -55,8 +53,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      {/* <Route path="/composite-select-demo" element={<CompositeSelectDemo />} />
-      <Route path="/composite-select-demo-attr" element={<CompositeSelectDemoAttr />} />
+      <Route path="/monaco-diff" element={<MonacoDiffDemo />} />
+      {/* <Route path="/composite-select-demo-attr" element={<CompositeSelectDemoAttr />} />
       <Route path="/options-section-demo" element={<OptionsSectionDemo />} />
       <Route path="/selected-section-demo" element={<SelectedSectionDemo />} />
       <Route path="/url-serialiser" element={<UrlSerialiser />} />

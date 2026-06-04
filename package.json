@@ -34,12 +34,7 @@
       "require": "./dist/cjs/Module.cjs"
     },
     "./package.json": "./package.json",
-    "./*.css": "./*.css",
-    "./*.json": "./*.json",
-    "./*.png": "./*.png",
-    "./*.jpg": "./*.jpg",
-    "./*.svg": "./*.svg",
-    "./composition/*": "./composition/*",
+    "./web-component/*": "./web-component/*",
     "./*": {
       "types": "./dist/types/*.d.ts",
       "import": "./dist/esm/*.js",

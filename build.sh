@@ -34,13 +34,13 @@ EEE
 }
 
 echo "=== Linking ==="
-npx tsc -p tsconfig.watch.json
 npm run monaco:skip
+
+npx tsc -p tsconfig.watch.json
 
 echo web-component/Module.ts | DEBUG=true node es.ts
 
 /bin/bash links.sh
-
 
 if [[ -z "${ARG}" ]]; then
   echo "Running full build..."

@@ -29,13 +29,10 @@ console.log("💡 Run enableStrictMode() or disableStrictMode() in this console 
 
 const getBasename = () => {
   let path = window.location.pathname;
-  if (path.endsWith("/index.html")) {
-    path = path.slice(0, -11);
+  if (path.startsWith("/vite-project/dist")) {
+    return "/vite-project/dist";
   }
-  if (path.endsWith("/")) {
-    path = path.slice(0, -1);
-  }
-  return path;
+  return "/";
 };
 
 const AppTree = (
