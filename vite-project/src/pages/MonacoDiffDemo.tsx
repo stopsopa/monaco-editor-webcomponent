@@ -5,14 +5,29 @@ import modURLSearchParams from "./params/modURLSearchParams";
 import { MonacoDiff } from "../../../web-component/react";
 import type { MonacoTheme } from "../../../web-component/monaco-diff";
 
+import {compress, decompress} from 'lz-string';
+
+import {
+  compressToEncodedURIComponent,
+  decompressFromEncodedURIComponent,
+} from "lz-string";
+
+// Global Theme param config (no suffix function)
+const globalThemeParams = modURLSearchParams({
+  theme: {
+    default: "vs-dark" as MonacoTheme,
+    getParam: "theme",
+    encode: (value) => value,
+    decode: (value) => value as MonacoTheme,
+  },
+});
+
+
+
+
+// Indexed params config
 const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
   {
-    theme: {
-      default: "vs-dark" as MonacoTheme,
-      getParam: "theme",
-      encode: (value) => value,
-      decode: (value) => value as MonacoTheme,
-    },
     language: {
       default: "javascript",
       getParam: "lang",
@@ -22,14 +37,14 @@ const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
     original: {
       default: "// Original code\nconst a = 1;\nconsole.log(a);",
       getParam: "orig",
-      encode: (value) => value,
-      decode: (value) => value,
+      encode: (value) => compressToEncodedURIComponent(value),
+      decode: (value) => decompressFromEncodedURIComponent(value),
     },
     modified: {
       default: "// Modified code\nconst a = 2;\nconsole.log(a);",
       getParam: "mod",
-      encode: (value) => value,
-      decode: (value) => value,
+      encode: (value) => compressToEncodedURIComponent(value),
+      decode: (value) => decompressFromEncodedURIComponent(value),
     },
   },
   (key, i?: number) => `${key}-${i}`,
@@ -38,6 +53,13 @@ const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
 export default function MonacoDiffDemo() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Manage global theme parameter
+  const { params: globalParams, setParam: setGlobalParam } = globalThemeParams.useQueryParams(
+    location.search,
+    navigate,
+  );
+  const globalTheme = globalParams.theme;
 
   const instances = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -83,7 +105,16 @@ export default function MonacoDiffDemo() {
           <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>Monaco Diff React Demo</h1>
           <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>Interactive multi-instance demo with state sync in URL</p>
         </div>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "0.9rem", fontWeight: 600, color: "#495057" }}>Theme:</label>
+            <select value={globalTheme} onChange={(e) => setGlobalParam("theme", e.target.value as MonacoTheme)} style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid #ced4da", outline: "none", background: "#fff", fontWeight: 600 }}>
+              <option value="vs">vs (Light)</option>
+              <option value="vs-dark">vs-dark (Dark)</option>
+              <option value="hc-black">hc-black (High Contrast Dark)</option>
+              <option value="hc-light">hc-light (High Contrast Light)</option>
+            </select>
+          </div>
           <Link to="/" className="gcp-css" style={{ textDecoration: "none", color: "#495057", border: "1px solid #ced4da", padding: "8px 16px", borderRadius: "8px", background: "#fff", transition: "all 0.2s" }}>
             &larr; Home
           </Link>
@@ -99,7 +130,7 @@ export default function MonacoDiffDemo() {
       <main style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
         {instances.map((id) => {
           const search = separateIndexedSearchParams(location.search, id).toString();
-          return <DemoInstance key={id} id={id} search={search} navigate={navigate} onRemove={removeInstance} />;
+          return <DemoInstance key={id} id={id} search={search} navigate={navigate} onRemove={removeInstance} globalTheme={globalTheme} />;
         })}
       </main>
     </div>
@@ -111,14 +142,16 @@ const DemoInstance = memo(function DemoInstance({
   search,
   navigate,
   onRemove,
+  globalTheme,
 }: {
   id: number;
   search: string;
   navigate: NavigateFunction;
   onRemove: (id: number) => void;
+  globalTheme: MonacoTheme;
 }) {
   const { params, setParam } = useQueryParams(search, navigate, id);
-  const { theme, language, original, modified } = params;
+  const { language, original, modified } = params;
 
   return (
     <section style={{ background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.02)", padding: "24px", position: "relative" }}>
@@ -130,15 +163,6 @@ const DemoInstance = memo(function DemoInstance({
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "15px", marginBottom: "20px" }}>
-        <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#495057", marginBottom: "6px" }}>Theme</label>
-          <select value={theme} onChange={(e) => setParam("theme", e.target.value as MonacoTheme)} style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #ced4da", outline: "none" }}>
-            <option value="vs">vs (Light)</option>
-            <option value="vs-dark">vs-dark (Dark)</option>
-            <option value="hc-black">hc-black (High Contrast Dark)</option>
-            <option value="hc-light">hc-light (High Contrast Light)</option>
-          </select>
-        </div>
         <div>
           <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#495057", marginBottom: "6px" }}>Language</label>
           <select value={language} onChange={(e) => setParam("language", e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #ced4da", outline: "none" }}>
@@ -163,7 +187,7 @@ const DemoInstance = memo(function DemoInstance({
       </div>
 
       <div style={{ border: "1px solid #dee2e6", borderRadius: "8px", overflow: "hidden", height: "350px", background: "#f1f3f5" }}>
-        <MonacoDiff theme={theme} language={language} original={original} modified={modified} />
+        <MonacoDiff theme={globalTheme} language={language} original={original} modified={modified} />
       </div>
     </section>
   );

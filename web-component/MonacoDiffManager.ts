@@ -28,6 +28,7 @@ type MonacoWindow = Window & {
 
 let cachedMonaco: typeof Monaco | null = null;
 let cachedVsBase: string | null = null;
+let loadingPromise: Promise<typeof Monaco> | null = null;
 
 /** Monaco AMD injects editor CSS into `document`; shadow roots need their own copy. */
 const MONACO_VS_STYLESHEET = /\/vs\/(base|editor|platform)/;
@@ -147,24 +148,33 @@ function loadMonaco(vsBase: string): Promise<typeof Monaco> {
  * Loads Monaco once and keeps it in memory. Tries each configured URL until one works,
  * so the app still runs if a CDN is down.
  */
-export async function hydrateCache(generated: MonacoGenerated = MONACO_GENERATED): Promise<typeof Monaco> {
+export function hydrateCache(generated: MonacoGenerated = MONACO_GENERATED): Promise<typeof Monaco> {
   if (cachedMonaco) {
-    return cachedMonaco;
+    return Promise.resolve(cachedMonaco);
   }
 
-  const errors: Error[] = [];
+  if (loadingPromise) {
+    return loadingPromise;
+  }
 
-  for (const vsBase of generated.vs) {
-    try {
-      cachedMonaco = await loadMonaco(vsBase);
-      cachedVsBase = vsBase;
-      return cachedMonaco;
-    } catch (err) {
-      errors.push(err instanceof Error ? err : new Error(String(err)));
+  loadingPromise = (async () => {
+    const errors: Error[] = [];
+
+    for (const vsBase of generated.vs) {
+      try {
+        cachedMonaco = await loadMonaco(vsBase);
+        cachedVsBase = vsBase;
+        return cachedMonaco;
+      } catch (err) {
+        errors.push(err instanceof Error ? err : new Error(String(err)));
+      }
     }
-  }
 
-  throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
+    loadingPromise = null;
+    throw new AggregateError(errors, `Failed to load monaco-editor@${generated.version} from all sources`);
+  })();
+
+  return loadingPromise;
 }
 
 export const SCRIPT_TYPE_ORIGINAL = "text/original" as const;
@@ -372,10 +382,10 @@ export class MonacoDiffManager {
     }
 
     const model = this._editor?.getModel();
-    model?.original.dispose();
-    model?.modified.dispose();
     this._editor?.dispose();
     this._editor = null;
+    model?.original.dispose();
+    model?.modified.dispose();
   }
 
   /** Updates the language for both sides of the diff editor. Falls back to the default language when undefined. */
