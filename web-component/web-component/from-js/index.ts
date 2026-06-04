@@ -37,7 +37,7 @@ const original = `
         script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
         document.head.appendChild(script);
       });
-`.trim();
+`
 
 const modified = `
 const loadMonaco = (vsPath = VS_PATH) =>
@@ -59,7 +59,7 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`.trim();
+`
 
 function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   const config = {
