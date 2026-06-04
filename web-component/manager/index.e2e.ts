@@ -39,9 +39,41 @@ test("default", async ({ page }) => {
       throw new Error("Timeout waiting for monaco-diff style");
     },
     {
-      timeout: 20000,
+      timeout: 7000,
     },
   );
 
   await expect(style).toEqual("rgb(255, 255, 254)");
+});
+
+test("dark", async ({ page }) => {
+  await page.goto("/web-component/manager/index.html");
+
+  await page.getByLabel("Theme").selectOption("vs-dark");
+
+  await expect(page).toHaveURL("/web-component/manager/index.html?theme=vs-dark");
+
+  const style = await page.evaluate(
+    async () => {
+      const timeout = 5000;
+      const start = Date.now();
+
+      while (Date.now() - start < timeout) {
+        const target = document.querySelector(".original-in-monaco-diff-editor") as any;
+
+        if (target) {
+          return window.getComputedStyle(target).backgroundColor;
+        }
+
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      throw new Error("Timeout waiting for monaco-diff style");
+    },
+    {
+      timeout: 7000,
+    },
+  );
+
+  await expect(style).toEqual("rgb(30, 30, 30)");
 });
