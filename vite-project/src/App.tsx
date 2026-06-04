@@ -1,5 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
-import MonacoDiffDemo from "./pages/MonacoDiffDemo";
+import MonacoDiffDemoAttr from "./pages/MonacoDiffDemoAttr";
 // import CompositeSelectDemo from "./pages/CompositeSelectDemo";
 // import CompositeSelectDemoAttr from "./pages/CompositeSelectDemoAttr";
 // import OptionsSectionDemo from "./pages/OptionsSectionDemo";
@@ -15,13 +15,11 @@ function Home() {
       <h1>Monaco Diff React Demos</h1>
       <nav>
         <ul>
-
           <li>
             <Link to="/monaco-diff" data-testid="monaco-diff-demo" className="gcp-css">
               Monaco Diff Demo
             </Link>
           </li>
-
 
           <li>
             <Link to="/composite-select-demo" data-testid="composite-select-demo" className="gcp-css">
@@ -53,7 +51,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/monaco-diff" element={<MonacoDiffDemo />} />
+      <Route path="/monaco-diff" element={<MonacoDiffDemoAttr />} />
       {/* <Route path="/composite-select-demo-attr" element={<CompositeSelectDemoAttr />} />
       <Route path="/options-section-demo" element={<OptionsSectionDemo />} />
       <Route path="/selected-section-demo" element={<SelectedSectionDemo />} />
