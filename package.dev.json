@@ -9,11 +9,7 @@
     "monaco": "node --experimental-strip-types scripts/sync-monaco-version.ts",
     "monaco:skip": "node --experimental-strip-types scripts/sync-monaco-version.ts --skip"
   },
-  "keywords": [
-    "monaco",
-    "web-component",
-    "monaco-editor"
-  ],
+  "keywords": ["monaco", "web-component", "monaco-editor"],
   "author": "Szymon Dzialowski",
   "license": "GPL-2.0-only",
   "dependencies": {

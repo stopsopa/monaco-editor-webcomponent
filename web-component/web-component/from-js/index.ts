@@ -19,8 +19,17 @@ if (!(diffEl instanceof MonacoDiffElement)) {
 
 await diffEl.whenReady();
 
-let model;
-let mgr: MonacoDiffManager;
+const mgr = diffEl.getManager();
+
+const editor = mgr.getEditor();
+if (!editor) {
+  throw new Error("Diff editor not available");
+}
+
+const model = editor.getModel();
+if (!model) {
+  throw new Error("Diff editor has no model");
+}
 
 const original = `
     const loadMonaco = (vsPath = VS_PATH) =>
@@ -42,7 +51,7 @@ const original = `
         script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
         document.head.appendChild(script);
       });
-`
+`;
 
 const modified = `
 const loadMonaco = (vsPath = VS_PATH) =>
@@ -64,7 +73,7 @@ const loadMonaco = (vsPath = VS_PATH) =>
     script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
     document.head.appendChild(script);
   });
-`
+`;
 
 function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   const config = {
@@ -182,18 +191,6 @@ themeSelect.addEventListener("change", () => {
 languageSelect.addEventListener("change", () => {
   setParam("language", languageSelect.value);
 });
-
-mgr = diffEl.getManager();
-
-const editor = mgr.getEditor();
-if (!editor) {
-  throw new Error("Diff editor not available");
-}
-
-model = editor.getModel();
-if (!model) {
-  throw new Error("Diff editor has no model");
-}
 
 model.original.setValue(original);
 model.modified.setValue(modified);

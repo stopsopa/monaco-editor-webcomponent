@@ -18,12 +18,15 @@ release.config.js
 !/web-component/manager/
 /web-component/manager/*
 !/web-component/manager/index.e2e.ts
+!/web-component/manager/index.ts
 
 !/web-component/web-component/
 /web-component/web-component/*
 !/web-component/web-component/from-js/
 /web-component/web-component/from-js/*
 !/web-component/web-component/from-js/index.e2e.ts
+!/web-component/web-component/from-js/index.ts
+!/web-component/web-component/from-scripts/index.ts
 
 node_modules
 pnpm-lock.yaml
@@ -44,6 +47,7 @@ pnpm-lock.yaml
 !/vite-project/src/pages/params/
 /vite-project/src/pages/params/*
 !/vite-project/src/pages/MonacoDiffDemo.tsx
+!/vite-project/src/pages/MonacoDiffDemoAttr.tsx
 !/vite-project/src/pages/params/ModURLSearchParamsComponent.tsx
 !/vite-project/src/pages/params/modURLSearchParams.ts
 !/vite-project/src/pages/params/toolsURLSearchParams.test.ts

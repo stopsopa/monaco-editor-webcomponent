@@ -10,5 +10,4 @@
 [T](./node_modules/composite-monaco-diff/dist/types/composite-monaco-diff.d.ts)
 [P](./node_modules/composite-monaco-diff/package.json)
 
-
 [vite-project package](vite-project/package.json)

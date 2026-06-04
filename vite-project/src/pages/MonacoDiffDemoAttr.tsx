@@ -1,4 +1,4 @@
-import  {  useMemo, useCallback, memo } from "react";
+import { useMemo, useCallback, memo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { NavigateFunction } from "react-router-dom";
 import modURLSearchParams from "./params/modURLSearchParams";
@@ -115,7 +115,9 @@ export default function MonacoDiffDemoAttr() {
         }}
       >
         <div>
-          <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>Monaco Diff React Demo - Attr</h1>
+          <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>
+            Monaco Diff React Demo - Attr
+          </h1>
           <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>
             <a
               href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/vite-project/src/pages/MonacoDiffDemoAttr.tsx"

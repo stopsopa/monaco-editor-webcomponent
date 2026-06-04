@@ -115,7 +115,9 @@ export default function MonacoDiffDemo() {
         }}
       >
         <div>
-          <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>Monaco Diff React Demo - Js</h1>
+          <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#212529" }}>
+            Monaco Diff React Demo - Js
+          </h1>
           <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>
             <a
               href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/vite-project/src/pages/MonacoDiffDemo.tsx"
