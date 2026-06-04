@@ -37,7 +37,7 @@ EEE
 echo "=== Linking ==="
 npm run monaco:skip
 
-npx tsc -p tsconfig.watch.json
+./node_modules/.bin/tsc -p tsconfig.watch.json
 
 echo web-component/Module.ts | DEBUG=true node es.ts
 
