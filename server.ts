@@ -46,6 +46,10 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  res.send("\n  health: [ok]\n")
+})
+
 // app.get("/test", async (req: Request, res: Response, next: NextFunction) => {
 //   const tmp = "parent.dynamic.html";
 

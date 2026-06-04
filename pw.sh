@@ -20,7 +20,7 @@ trap cleanup EXIT
 
 npx tsc -p tsconfig.json
 
-node --env-file .env --watch server.ts --flag "${PROJECT_NAME}" & 
+node --env-file "${ENVFILE}" --watch server.ts --flag "${PROJECT_NAME}" & 
 
 # sleep 1
 
@@ -31,7 +31,7 @@ node --env-file .env --watch server.ts --flag "${PROJECT_NAME}" &
   npm run build
 )
 
+echo curl http://${HOST}:${PORT}/health
 curl http://${HOST}:${PORT}/health
-echo ""
 
 /bin/bash playwright.sh "$@"

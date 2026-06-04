@@ -123,7 +123,7 @@ _DOCKERDEFAULTS="./playwright-docker-defaults.sh"
 _GENDOCKERDEFAULTS="0"
 _GETPLAYWRIGHTVERSION="0"
 _GETPLAYWRIGHTIMAGE="0"
-ENVFILE=".env"
+ENVFILE="${ENVFILE:-.env}"
 
 PARAMS=""
 _EVAL=""
@@ -567,7 +567,7 @@ if [ "${_TARGET}" = "docker" ]; then
     PASS_NO_HOST="--nohost"
   fi
 
-  DOCKERDEFAULTS="$(/bin/bash "${_DOCKERDEFAULTS}" ${PASS_NO_HOST})"
+  DOCKER_DEFAULTS="$(/bin/bash "${_DOCKERDEFAULTS}" ${PASS_NO_HOST})"
 
   if [ "${?}" != "0" ]; then
 
@@ -601,7 +601,7 @@ _DISPLAY_ARGS=$(printf '"%s" ' "$@")
 
 CMD="$(cat <<EOF
 cat <<EEE | ${DOCKER_BIN} run -i --rm --ipc host --cap-add SYS_ADMIN --entrypoint="" $S
-${DOCKERDEFAULTS} $S
+${DOCKER_DEFAULTS} $S
 ${DOCKER_PARAMS_NOT_QUOTED} $S
 ${_HOSTHANDLER} $S
 ${IMAGE} $S
