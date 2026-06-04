@@ -1,5 +1,6 @@
 import { Routes, Route, Link } from "react-router-dom";
 import MonacoDiffDemoAttr from "./pages/MonacoDiffDemoAttr";
+import MonacoDiffDemo from "./pages/MonacoDiffDemo";
 // import CompositeSelectDemo from "./pages/CompositeSelectDemo";
 // import CompositeSelectDemoAttr from "./pages/CompositeSelectDemoAttr";
 // import OptionsSectionDemo from "./pages/OptionsSectionDemo";
@@ -20,8 +21,13 @@ function Home() {
               Monaco Diff Demo
             </Link>
           </li>
-
           <li>
+            <Link to="/monaco-diff-attr" data-testid="monaco-diff-demo-attr" className="gcp-css">
+              Monaco Diff Demo Attr
+            </Link>
+          </li>
+
+          {/* <li>
             <Link to="/composite-select-demo" data-testid="composite-select-demo" className="gcp-css">
               CompositeSelect Manager Demo
             </Link>
@@ -40,7 +46,7 @@ function Home() {
             <Link to="/selected-section-demo" data-testid="selected-section-demo" className="gcp-css">
               SelectedSection Section Demo
             </Link>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </div>
@@ -52,6 +58,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/monaco-diff" element={<MonacoDiffDemoAttr />} />
+      <Route path="/monaco-diff-attr" element={<MonacoDiffDemoAttr />} />
       {/* <Route path="/composite-select-demo-attr" element={<CompositeSelectDemoAttr />} />
       <Route path="/options-section-demo" element={<OptionsSectionDemo />} />
       <Route path="/selected-section-demo" element={<SelectedSectionDemo />} />
