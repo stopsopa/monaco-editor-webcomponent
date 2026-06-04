@@ -25,6 +25,7 @@
     "**/*.test.ts",
     "**/*.test.parallel.ts",
     "**/*.e2e.ts", 
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "web-component/Module.ts"
   ]
 }
