@@ -2,6 +2,8 @@ import modURLSearchParams from "../../urlchange/urlchange.js";
 
 import { syncURLSearchParams, buildUrlWithSearchParams } from "../../urlchange/toolsURLSearchParams.js";
 
+import { MonacoDiffManager } from "../../MonacoDiffManager.js";
+
 import { isMonacoTheme, MonacoDiffElement } from "../../monaco-diff.js";
 
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
@@ -16,6 +18,9 @@ if (!(diffEl instanceof MonacoDiffElement)) {
 }
 
 await diffEl.whenReady();
+
+let model;
+let mgr: MonacoDiffManager;
 
 const original = `
     const loadMonaco = (vsPath = VS_PATH) =>
@@ -115,20 +120,12 @@ function wireResizerUrlSync(resizer: HTMLElement, index: number) {
   resizer.addEventListener("onHeight", syncToUrl);
 }
 
-function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string) {
-  if (theme) {
-    diffEl.setAttribute("theme", theme);
-  } else {
-    diffEl.removeAttribute("theme");
-  }
+function applyThemeAttribute(mgr: MonacoDiffManager, theme: string) {
+  mgr.getMonaco()?.editor.setTheme(theme || "vs");
 }
 
-function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string) {
-  if (language) {
-    diffEl.setAttribute("language", language);
-  } else {
-    diffEl.removeAttribute("language");
-  }
+function applyLanguageAttribute(mgr: MonacoDiffManager, language: string) {
+  mgr.setLanguage(language || undefined);
 }
 
 document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
@@ -163,9 +160,9 @@ const { trackUrl: trackUrlNoIndex } = modURLSearchParams({
 const { setParam } = trackUrlNoIndex(
   (params, updatedURLSearchParams, governedKeys) => {
     themeSelect.value = params.theme;
-    applyThemeAttribute(diffEl, params.theme);
+    applyThemeAttribute(mgr, params.theme);
     languageSelect.value = params.language;
-    applyLanguageAttribute(diffEl, params.language);
+    applyLanguageAttribute(mgr, params.language);
 
     const current = new URLSearchParams(window.location.search);
     const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
@@ -186,12 +183,14 @@ languageSelect.addEventListener("change", () => {
   setParam("language", languageSelect.value);
 });
 
-const editor = diffEl.getManager().getEditor();
+mgr = diffEl.getManager();
+
+const editor = mgr.getEditor();
 if (!editor) {
   throw new Error("Diff editor not available");
 }
 
-const model = editor.getModel();
+model = editor.getModel();
 if (!model) {
   throw new Error("Diff editor has no model");
 }
