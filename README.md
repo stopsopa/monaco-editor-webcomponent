@@ -1,4 +1,4 @@
-![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)](https://www.npmjs.com/package/composite-monaco-diff)
 
 Web Component and React wrappers on top of [Monaco Editor](https://microsoft.github.io/monaco-editor/#:~:text=cellSize%3A%C2%A0number%3B-,Diff%20Editor,-Side%20by%20side)
 
