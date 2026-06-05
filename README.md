@@ -1,3 +1,5 @@
+![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)
+
 Web Component and React wrappers on top of [Monaco Editor](https://microsoft.github.io/monaco-editor/#:~:text=cellSize%3A%C2%A0number%3B-,Diff%20Editor,-Side%20by%20side)
 
 Main purpose of this formation of components is to give user simplest possible setup for using monaco to present diffs in the code.
