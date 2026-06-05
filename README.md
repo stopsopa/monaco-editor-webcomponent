@@ -4,7 +4,7 @@ Main purpose of this formation of components is to give user simplest possible s
 
 I find there is not many good quality tools for that and Monaco is one of the best but it would be tedios to try to use it.
 
-This repository is here to just simplify this process to allow usage from vanilla js, as a web component and in the react ecosystem too.
+This repository is here to just simplify this process to allow usage from vanilla js (including from CDN's), as a web component and in the react ecosystem too.
 
 https://www.npmjs.com/package/composite-monaco-diff
 
