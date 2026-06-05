@@ -8,44 +8,14 @@
       name="description"
       content="Complete API documentation for Monaco Diff Editor Web Component, MonacoDiffManager, and React wrapper."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
     <style>
-      :root {
-        --bg: #0b0f19;
-        --panel: rgba(17, 24, 39, 0.7);
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #f3f4f6;
-        --text-muted: #9ca3af;
-        --accent: #3b82f6;
-        --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        --row-hover: rgba(255, 255, 255, 0.02);
-        --badge-bg: rgba(59, 130, 246, 0.15);
-        --badge-color: #60a5fa;
-        --badge-event-bg: rgba(167, 139, 250, 0.15);
-        --badge-event-color: #c084fc;
-      }
-
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
       body {
-        background-color: var(--bg);
-        background-image:
-          radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
-          radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
-        background-attachment: fixed;
-        color: var(--text);
-        font-family: "Outfit", sans-serif;
-        line-height: 1.6;
-        padding: 2rem 1.5rem;
+        background: #ffffff;
+        color: #000000;
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+        padding: 2rem;
+        margin: 0;
       }
 
       .container {
@@ -53,188 +23,113 @@
         margin: 0 auto;
       }
 
-      header {
-        text-align: center;
-        margin-bottom: 3rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: rgba(11, 15, 25, 0.85);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        padding: 1.5rem 1rem;
-        border-bottom: 1px solid var(--border);
-        margin-left: -1.5rem;
-        margin-right: -1.5rem;
-        margin-top: -2rem;
-      }
 
       h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        background: var(--accent-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: 2rem;
         margin-bottom: 0.5rem;
-        letter-spacing: -0.02em;
+        color: #000000;
       }
 
       header p {
-        color: var(--text-muted);
-        font-size: 1.1rem;
+        color: #555555;
       }
 
       .card {
-        background: var(--panel);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        overflow-x: auto;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+        padding: 1.5rem;
         margin-bottom: 2rem;
+        overflow-x: auto;
       }
 
       h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        color: #60a5fa;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.5rem;
+        color: #000000;
       }
 
       table {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
       }
 
       th {
         font-weight: 600;
-        color: var(--text);
-        padding: 1rem;
-        border-bottom: 2px solid var(--border);
-        background: rgba(255, 255, 255, 0.02);
+        padding: 0.75rem;
+        border-bottom: 2px solid #cccccc;
+        background: #f5f5f5;
+        color: #000000;
       }
 
       td {
-        padding: 1.2rem 1rem;
-        border-bottom: 1px solid var(--border);
+        padding: 0.75rem;
+        border-bottom: 1px solid #eeeeee;
         vertical-align: top;
       }
 
       tr:hover {
-        background-color: var(--row-hover);
+        background-color: #fafafa;
       }
 
       code {
-        font-family: "Fira Code", monospace;
+        font-family: monospace;
         font-size: 0.85rem;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 0.2rem 0.4rem;
+        background: #f5f5f5;
+        padding: 0.1rem 0.3rem;
         border-radius: 4px;
-        color: #f472b6;
+        color: #c7254e;
       }
 
       .badge {
         display: inline-block;
-        padding: 0.15rem 0.4rem;
+        padding: 0.1rem 0.3rem;
         border-radius: 4px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
       }
 
       .badge-prop {
-        background: var(--badge-bg);
-        color: var(--badge-color);
+        background: #e0f2fe;
+        color: #0369a1;
       }
 
       .badge-event {
-        background: var(--badge-event-bg);
-        color: var(--badge-event-color);
+        background: #f3e8ff;
+        color: #6b21a8;
       }
 
       .description {
-        margin-top: 0.5rem;
-        color: var(--text-muted);
-        font-size: 0.88rem;
+        margin-top: 0.25rem;
+        color: #333333;
+        font-size: 0.85rem;
       }
 
       .return-info {
-        margin-top: 0.3rem;
-        font-size: 0.82rem;
-        color: #34d399;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: #15803d;
       }
 
       .arg-info {
-        margin-top: 0.3rem;
-        font-size: 0.82rem;
-        color: #fb7185;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: #b91c1c;
       }
 
-      /* Tabs Styling */
-      .tabs {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 1.5rem;
+      a {
+        color: #0369a1;
+        text-decoration: none;
       }
 
-      .tab-btn {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        padding: 0.8rem 1.5rem;
-        border-radius: 8px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 1rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-      }
-
-      .tab-btn:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: var(--text);
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      .tab-btn.active {
-        background: var(--accent-gradient);
-        color: #fff;
-        border-color: transparent;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-      }
-
-      .tab-content {
-        display: none;
-      }
-
-      .tab-content.active {
-        display: block;
-        animation: fadeIn 0.35s ease-out;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
@@ -245,13 +140,8 @@
         <p>Unified API map connecting MonacoDiffManager, Web Component, and React Wrapper.</p>
       </header>
 
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="api">API Reference</button>
-        <button class="tab-btn" data-tab="guide">Guide &amp; Setup</button>
-      </div>
-
       <!-- SECTION: API REFERENCE -->
-      <div class="tab-content active" id="api">
+      <div>
         <div class="card">
           <h2>
             Monaco Diff Editor Mapping
@@ -260,12 +150,11 @@
               target="_blank"
               style="
                 font-size: 0.75rem;
-                color: #60a5fa;
                 font-weight: 400;
                 margin-left: auto;
                 text-decoration: none;
                 opacity: 0.8;
-                border: 1px solid rgba(96, 165, 250, 0.3);
+                border: 1px solid #0369a1;
                 padding: 0.15rem 0.5rem;
                 border-radius: 4px;
               "
@@ -279,7 +168,7 @@
                   MonacoDiffManager API / Properties / Events<br /><a
                     href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/web-component/MonacoDiffManager.ts"
                     target="_blank"
-                    style="font-size: 0.7rem; font-weight: 400; color: #60a5fa; opacity: 0.75; text-decoration: none"
+                    style="font-size: 0.7rem; font-weight: 400; opacity: 0.75; text-decoration: none"
                     >&#8599; MonacoDiffManager.ts</a
                   >
                 </th>
@@ -287,7 +176,7 @@
                   Web Component Attributes / Methods<br /><a
                     href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/web-component/composite-monaco-diff.ts"
                     target="_blank"
-                    style="font-size: 0.7rem; font-weight: 400; color: #60a5fa; opacity: 0.75; text-decoration: none"
+                    style="font-size: 0.7rem; font-weight: 400; opacity: 0.75; text-decoration: none"
                     >&#8599; composite-monaco-diff.ts</a
                   >
                 </th>
@@ -295,7 +184,7 @@
                   React Wrapper Props<br /><a
                     href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/web-component/react.ts"
                     target="_blank"
-                    style="font-size: 0.7rem; font-weight: 400; color: #60a5fa; opacity: 0.75; text-decoration: none"
+                    style="font-size: 0.7rem; font-weight: 400; opacity: 0.75; text-decoration: none"
                     >&#8599; react.ts</a
                   >
                 </th>
@@ -487,140 +376,57 @@
       <!-- end #api -->
 
       <!-- SECTION: GUIDE & SETUP SECTION -->
-      <div class="tab-content" id="guide">
-        <div
-          class="card"
-          style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2); padding: 2rem"
-        >
-          <h2
-            style="
-              color: #60a5fa;
-              border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-              padding-bottom: 0.5rem;
-              margin-bottom: 1.5rem;
-            "
-          >
-            Guide &amp; Setup
-          </h2>
+      <div>
+        <div class="card">
+          <h2>Guide &amp; Setup</h2>
 
-          <h3 style="color: #34d399; margin-bottom: 0.5rem; font-size: 1.2rem">1. Declarative HTML Setup</h3>
-          <p style="margin-bottom: 1rem; color: var(--text-muted)">
-            To use the web component directly in HTML, place original and modified source codes inside child
-            <code>&lt;script&gt;</code> tags.
-          </p>
-          <pre
-            style="
-              background: rgba(0, 0, 0, 0.4);
-              padding: 1rem;
-              border-radius: 8px;
-              border: 1px solid var(--border);
-              overflow-x: auto;
-              font-family: &quot;Fira Code&quot;, monospace;
-              font-size: 0.88rem;
-              color: #a7f3d0;
-              margin-bottom: 2rem;
-            "
-          ><span style="color: #60a5fa;">&lt;!-- Import module to register custom element --&gt;</span>
-&lt;script type="module" src="./web-component/composite-monaco-diff.js"&gt;&lt;/script&gt;
+          <ace-editor lang="javascript">
+            <script type="ace">
 
-&lt;composite-monaco-diff theme="vs-dark" language="javascript" style="height: 400px;"&gt;
-  &lt;script type="text/original" lang="javascript" data-offset="4"&gt;
-    const value = 1;
-  &lt;/script&gt;
-  &lt;script type="text/modified" lang="javascript" data-offset="4"&gt;
-    const value = 2;
-  &lt;/script&gt;
-&lt;/composite-monaco-diff&gt;</pre>
+            </script>
+          </ace-editor>
+        </div>
 
-          <h3 style="color: #34d399; margin-bottom: 0.5rem; font-size: 1.2rem">2. React Setup</h3>
-          <p style="margin-bottom: 1rem; color: var(--text-muted)">
-            Import the React wrapper component. Ensure parent layout has proper sizing or pass custom inline styles.
-          </p>
-          <pre
-            style="
-              background: rgba(0, 0, 0, 0.4);
-              padding: 1rem;
-              border-radius: 8px;
-              border: 1px solid var(--border);
-              overflow-x: auto;
-              font-family: &quot;Fira Code&quot;, monospace;
-              font-size: 0.88rem;
-              color: #a7f3d0;
-              margin-bottom: 2rem;
-            "
-          >
-import MonacoDiff from "./web-component/react";
+        <div class="card">
+          <h2 id="examples">Examples:</h2>
 
-export default function App() {
-  return (
-    &lt;MonacoDiff
-      theme="vs-dark"
-      language="javascript"
-      original="const a = 1;"
-      modified="const a = 2;"
-      style={{ height: "400px" }}
-    /&gt;
-  );
-}</pre
-          >
-
-          <h3 style="color: #34d399; margin-bottom: 0.5rem; font-size: 1.2rem">
-            3. Imperative Access via Refs in React
-          </h3>
-          <p style="margin-bottom: 1rem; color: var(--text-muted)">
-            Access the underlying manager to control/read Monaco elements programmatically.
-          </p>
-          <pre
-            style="
-              background: rgba(0, 0, 0, 0.4);
-              padding: 1rem;
-              border-radius: 8px;
-              border: 1px solid var(--border);
-              overflow-x: auto;
-              font-family: &quot;Fira Code&quot;, monospace;
-              font-size: 0.88rem;
-              color: #a7f3d0;
-            "
-          >
-import React, { useRef, useEffect } from "react";
-import MonacoDiff from "./web-component/react";
-import { MonacoDiffElement } from "./web-component/composite-monaco-diff";
-
-export default function ManagerExample() {
-  const ref = useRef&lt;MonacoDiffElement&gt;(null);
-
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.whenReady().then(() => {
-        const mgr = ref.current.getManager();
-        const editor = mgr.getEditor();
-        console.log("Monaco instance:", editor);
-      });
-    }
-  }, []);
-
-  return &lt;MonacoDiff ref={ref} original="left code" modified="right code" style={{ height: "400px" }} /&gt;;
-}</pre
-          >
+          <ul>
+            <li>
+              <a href="example1.html">Web component - simples</a>
+            </li>
+            <li>
+              <a href="example2.html">Web component - simple with resizable parent</a>
+            </li>
+            <li>
+              <a href="example3.html">Web component - dark theme</a>
+            </li>
+            <li>
+              <a href=""></a>
+            </li>
+            <li>
+              <a href=""></a>
+            </li>
+            <li>
+              <a href=""></a>
+            </li>
+            <li>
+              <a href=""></a>
+            </li>
+            <li>
+              <a href=""></a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <script>
-      const tabs = document.querySelectorAll(".tab-btn");
-      const contents = document.querySelectorAll(".tab-content");
 
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-          tabs.forEach((t) => t.classList.remove("active"));
-          contents.forEach((c) => c.classList.remove("active"));
 
-          tab.classList.add("active");
-          const target = tab.getAttribute("data-tab");
-          document.getElementById(target).classList.add("active");
-        });
-      });
-    </script>
+    <script
+      type="module"
+      src="https://stopsopa.github.io/ace-editor-webcomponent/ace-web-component.js"
+      data-main-ace="https://cdnjs.cloudflare.com/ajax/libs/ace/1.43.3/ace.min.js"
+    ></script>
 
     <script
       src="https://cdn.jsdelivr.net/gh/MarketingPipeline/GitHub-Ribbon-Web-Component/dist/github-ribbon-wc.min.js"

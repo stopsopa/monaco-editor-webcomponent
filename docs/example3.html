@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <center-and-height-resizer left="50px" center="1200px" height="400px" style="padding: 12px">
+      <composite-monaco-diff theme="vs-dark">
+        <script type="text/original" lang="javascript" data-offset="3">
+          const loadMonaco = (vsPath = VS_PATH) =>
+            new Promise((resolve, reject) => {
+              const win = window;
+
+              const finish = () => {
+                win.require.config({ paths: { vs: vsPath } });
+                win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+              };
+
+              if (win.require && win.monaco) return resolve(win.monaco);
+              if (win.require) return finish();
+
+              const script = document.createElement("script");
+              script.src = `${vsPath}/loader.js`;
+              script.async = true;
+              script.onload = () => finish();
+              script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
+              document.head.appendChild(script);
+            });
+        </script>
+        <script type="text/modified" lang="javascript" data-offset="3">
+          const loadMonaco = (vsPath = VS_PATH) =>
+            new Promise((resolve, reject) => {
+              const win = window;
+
+              const finish = () => {
+                win.require.config({ paths: { vs: vsPath } });
+                win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+              };
+
+              if (win.require && win.moneco) return resolve(win.monaco);
+
+              const script = document.createElement("script");
+              script.src = `${vsPath}/loader.js`;
+              script.async = true;
+              script.onload = () => finish();
+              script.added = "stuff";
+              script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
+              document.head.appendChild(script);
+            });
+        </script>
+      </composite-monaco-diff>
+    </center-and-height-resizer>
+
+    <script
+      type="module"
+      src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
+    ></script>
+
+    <script type="module" src="http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js"></script>
+  </body>
+</html>
