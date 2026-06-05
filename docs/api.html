@@ -380,8 +380,49 @@
         <div class="card">
           <h2>Guide &amp; Setup</h2>
 
-          <ace-editor lang="javascript">
+          <ace-editor lang="python">
             <script type="ace">
+&lt;script
+  type="module"
+  src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
+>&lt;/script>
+
+// then you can use
+
+<composite-monaco-diff>
+  &lt;script type="text/original" lang="javascript" data-offset="3">
+    ...
+  &lt;/script>
+  &lt;script type="text/modified" lang="javascript" data-offset="3">
+    ...
+  &lt;/script>  
+</composite-monaco-diff>
+
+&lt;script type="module">
+
+  import {
+    isMonacoTheme,
+    MonacoDiffElement,
+  } from "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
+
+  import { CenterAndHeightResizer } from "http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js";
+
+  await customElements.whenDefined(MonacoDiffElement.tagName);
+
+  const el = document.querySelector(MonacoDiffElement.tagName);
+
+  await el.whenReady();
+
+  const mgr = el.getManager();
+
+  const editor = mgr.getEditor();
+
+  const model = editor.getModel();
+
+  model.original.setValue(original);
+  model.modified.setValue(modified);
+
+&lt;/script>
 
             </script>
           </ace-editor>
@@ -401,19 +442,13 @@
               <a href="example3.html">Web component - dark theme</a>
             </li>
             <li>
-              <a href=""></a>
+              <a href="example4.html">Web component - single &lt;script&gt; block with imports</a>
             </li>
             <li>
-              <a href=""></a>
+              <a href="example5.html">Web component - set content via js</a>
             </li>
             <li>
-              <a href=""></a>
-            </li>
-            <li>
-              <a href=""></a>
-            </li>
-            <li>
-              <a href=""></a>
+              <a href="../index.html">... more examples</a>
             </li>
           </ul>
         </div>

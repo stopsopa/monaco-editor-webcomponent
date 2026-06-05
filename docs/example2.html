@@ -6,9 +6,9 @@
     <title>Document</title>
   </head>
   <body>
-    <center-and-height-resizer left="50px" center="1200px" height="400px" style="padding: 12px">
+    <center-and-height-resizer left="50px" center="1200px" height="600px" style="padding: 12px">
       <composite-monaco-diff>
-        <script type="text/original" lang="javascript" data-offset="3">
+        <script type="text/original" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
               const win = window;
@@ -29,7 +29,7 @@
               document.head.appendChild(script);
             });
         </script>
-        <script type="text/modified" lang="javascript" data-offset="3">
+        <script type="text/modified" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
               const win = window;

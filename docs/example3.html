@@ -6,9 +6,9 @@
     <title>Document</title>
   </head>
   <body>
-    <center-and-height-resizer left="50px" center="1200px" height="400px" style="padding: 12px">
+    <center-and-height-resizer left="50px" center="1200px" height="600px" style="padding: 12px">
       <composite-monaco-diff theme="vs-dark">
-        <script type="text/original" lang="javascript" data-offset="3">
+        <script type="text/original" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
               const win = window;
@@ -28,8 +28,13 @@
               script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
               document.head.appendChild(script);
             });
+            // standard options:
+              // vs
+              // vs-dark
+              // hc-black
+              // hc-light
         </script>
-        <script type="text/modified" lang="javascript" data-offset="3">
+        <script type="text/modified" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
             new Promise((resolve, reject) => {
               const win = window;
@@ -39,16 +44,23 @@
                 win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
               };
 
-              if (win.require && win.moneco) return resolve(win.monaco);
+              if (win.require && win.monaco) return resolve(win.monaco);
+              if (win.require) return finish();
 
               const script = document.createElement("script");
               script.src = `${vsPath}/loader.js`;
               script.async = true;
               script.onload = () => finish();
-              script.added = "stuff";
               script.onerror = () => reject(new Error(`Failed to load Monaco loader from ${vsPath}`));
               document.head.appendChild(script);
             });
+            /*
+              standard options:
+                vs
+                vs-dark
+                hc-black
+                hc-light
+            */
         </script>
       </composite-monaco-diff>
     </center-and-height-resizer>

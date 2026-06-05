@@ -4,18 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <style>
-      .parent {
-        border: 1px solid gray;
-        padding: 10px;
-        height: 400px;
-        width: 1200px;
-        margin: auto;
-      }
-    </style>
   </head>
   <body>
-    <div class="parent">
+    <center-and-height-resizer left="50px" center="1200px" height="600px" style="padding: 12px">
       <composite-monaco-diff>
         <script type="text/original" lang="javascript">
           const loadMonaco = (vsPath = VS_PATH) =>
@@ -60,11 +51,11 @@
             });
         </script>
       </composite-monaco-diff>
-    </div>
+    </center-and-height-resizer>
 
-    <script
-      type="module"
-      src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
-    ></script>
+    <script type="module">
+      import "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
+      import "http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js";
+    </script>
   </body>
 </html>

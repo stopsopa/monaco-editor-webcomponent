@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <center-and-height-resizer left="50px" center="1200px" height="600px" style="padding: 12px">
+      <composite-monaco-diff></composite-monaco-diff>
+    </center-and-height-resizer>
+
+    <script type="module">
+      import {
+        isMonacoTheme,
+        MonacoDiffElement,
+      } from "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
+      import { CenterAndHeightResizer } from "http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js";
+
+      await customElements.whenDefined(MonacoDiffElement.tagName);
+
+      await customElements.whenDefined(CenterAndHeightResizer.tagName);
+
+      const diffEl = document.querySelector(MonacoDiffElement.tagName);
+      if (!(diffEl instanceof MonacoDiffElement)) {
+        throw new Error("Missing <composite-monaco-diff> element");
+      }
+
+      await diffEl.whenReady();
+
+      const mgr = diffEl.getManager();
+
+      const editor = mgr.getEditor();
+      if (!editor) {
+        throw new Error("Diff editor not available");
+      }
+
+      const model = editor.getModel();
+      if (!model) {
+        throw new Error("Diff editor has no model");
+      }
+
+      const original = `
+    const loadMonaco = (vsPath = VS_PATH) =>
+      new Promise((resolve, reject) => {
+        const win = window;
+
+        const finish = () => {
+          win.require.config({ paths: { vs: vsPath } });
+          win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+        };
+
+        if (win.require && win.monaco) return resolve(win.monaco);
+        if (win.require) return finish();
+
+        const script = document.createElement("script");
+        script.src = \`\${vsPath}/loader.js\`;
+        script.async = true;
+        script.onload = () => finish();
+        script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+        document.head.appendChild(script);
+      });
+`;
+
+      const modified = `
+const loadMonaco = (vsPath = VS_PATH) =>
+  new Promise((resolve, reject) => {
+    const win = window;
+
+    const finish = () => {
+      win.require.config({ paths: { vs: vsPath } });
+      win.require(["vs/editor/editor.main"], () => resolve(win.monaco));
+    };
+
+    if (win.require && win.moneco) return resolve(win.monaco);
+
+    const script = document.createElement("script");
+    script.src = \`\${vsPath}/loader.js\`;
+    script.async = true;
+    script.onload = () => finish();
+    script.added = 'stuff'
+    script.onerror = () => reject(new Error(\`Failed to load Monaco loader from \${vsPath}\`));
+    document.head.appendChild(script);
+  });
+`;
+
+      model.original.setValue(original);
+      model.modified.setValue(modified);
+    </script>
+  </body>
+</html>
