@@ -31,15 +31,22 @@ const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
       default: defaultRadioOption as RadioOptionType,
       getParam: "r",
       encode: (value) => value,
-      decode: (value) => value as RadioOptionType,
+      // the URL is user input: an unknown value falls back to the default instead of being cast
+      decode: (value): RadioOptionType =>
+        (radioOptions as readonly string[]).includes(value) ? (value as RadioOptionType) : defaultRadioOption,
     },
     multiSelect: {
       default: [] as MultiSelectOptionsArray,
       getParam: "m",
       encode: (value) => JSON.stringify(value),
-      decode: (value) => {
+      decode: (value): MultiSelectOptionsArray => {
         try {
-          return JSON.parse(value);
+          const parsed: unknown = JSON.parse(value);
+          if (!Array.isArray(parsed)) return [];
+          // keep only known options (the URL is user input)
+          return parsed.filter((item): item is SingleOptionType =>
+            (selectOptions as readonly string[]).includes(item as string),
+          );
         } catch {
           return [];
         }

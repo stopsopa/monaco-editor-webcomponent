@@ -5,7 +5,7 @@
  * to public/monaco/vs.
  *
  *   pnpm run monaco / npm run monaco — probe + print block; do not patch; exit 1
- *   pnpm run monaco --skip / npm run monaco --skip — patch only if exactly one source fails; exit 0
+ *   pnpm run monaco --skip / npm run monaco --skip — patch when at most one source fails (all OK included); exit 0
  *   npm run monaco -- --skip — same (--skip on argv; npm also accepts npm run monaco --skip via npm_config_skip)
  *   pnpm run monaco:skip / npm run monaco:skip — always passes --skip to the script
  */
@@ -155,9 +155,13 @@ function printFailedProbes(failedProbes: ProbeResult[], version: string, inspect
   console.error("\nFix: bump/downgrade monaco-editor, run pnpm install, then pnpm run monaco -- --skip.\n");
 }
 
-/** With --skip: patch + exit 0 only when exactly one probe failed and at least one succeeded. */
+/**
+ * With --skip: patch + exit 0 when at most one probe failed and at least one succeeded.
+ * "All sources OK" has to pass too - otherwise the build breaks on the day a CDN that used to miss
+ * this Monaco version starts to serve it.
+ */
 function skipModeAllowsPatch(workingCount: number, failedCount: number): boolean {
-  return failedCount === 1 && workingCount > 0;
+  return failedCount <= 1 && workingCount > 0;
 }
 
 async function main(): Promise<void> {
@@ -220,19 +224,15 @@ async function main(): Promise<void> {
 
   if (!skip) {
     console.log(
-      `Not patching ${MANAGER_REL} (re-run with --skip when exactly one source fails: pnpm run monaco --skip, npm run monaco --skip, or npm run monaco:skip).\n`,
+      `Not patching ${MANAGER_REL} (re-run with --skip when at most one source fails: pnpm run monaco --skip, npm run monaco --skip, or npm run monaco:skip).\n`,
     );
     process.exit(1);
   }
 
   if (!skipModeAllowsPatch(workingCount, failedCount)) {
-    if (failedCount === 0) {
+    if (failedCount > 1) {
       console.error(
-        `Not patching ${MANAGER_REL}: --skip applies only when exactly one source fails (all ${workingCount} OK).\n`,
-      );
-    } else if (failedCount > 1) {
-      console.error(
-        `Not patching ${MANAGER_REL}: --skip requires exactly one rejected source (${failedCount} failed, ${workingCount} OK).\n`,
+        `Not patching ${MANAGER_REL}: --skip tolerates at most one rejected source (${failedCount} failed, ${workingCount} OK).\n`,
       );
     } else {
       console.error(`Not patching ${MANAGER_REL}: no working sources.\n`);

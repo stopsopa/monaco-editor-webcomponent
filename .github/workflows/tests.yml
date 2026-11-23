@@ -7,19 +7,17 @@ on:
     branches:
       - "**"
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: write # https://github.com/semantic-release/semantic-release/issues/2469#issuecomment-1158013884
-  pages: write
-  id-token: write
+# Least privilege: every job declares only what it needs (see "permissions:" in each job).
+# Secrets are NOT set at workflow level: NPM_TOKEN is passed only to the single step that publishes,
+# so no other step (tests, builds, third party actions) can read it.
+permissions: {}
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided automatically by github itself https://docs.github.com/en/actions/security-guides/automatic-token-authentication
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # search in keepassx
 jobs:
   test:
     runs-on: ubuntu-24.04 # https://github.com/actions/runner-images#available-images
     timeout-minutes: 4
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -34,11 +32,13 @@ jobs:
 
       # https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads#push
       # https://docs.github.com/en/actions/learn-github-actions/contexts
+      # WARNING: never put ${{ ... }} of event data directly into "run:". The expression is pasted into the
+      # shell script before it runs, so a commit message / branch name / PR title containing a quote
+      # becomes shell code. Hand the value over through an environment variable instead.
       - name: Debug github.event
-        run: echo '${{ toJson(github.event) }}'
-
-      - name: Debug github
-        run: echo '${{ toJson(github) }}'
+        env:
+          EVENT_JSON: ${{ toJson(github.event) }}
+        run: printf '%s\n' "${EVENT_JSON}"
 
       - name: test before bringing cache
         run: |
@@ -73,8 +73,24 @@ jobs:
           cd vite-project
           npm ci
 
+      - name: no local dev server urls in published pages
+        run: |
+          if grep -rnE "0\.0\.0\.0|localhost|127\.0\.0\.1" docs/*.html index.html; then
+            echo "${0} error: docs/ or index.html reference a local dev server (see matches above)"
+            exit 1
+          fi
+
       - name: build
         run: /bin/bash build.sh
+
+      # after the build: the tests import compiled .js files of their siblings
+      - name: unit tests
+        run: node --test "web-component/**/*.test.ts"
+        env:
+          CONCURRENCY: 10 # required by lib/utils.ts for *.parallel.test.ts
+
+      - name: package.json consistency + tarball whitelist
+        run: node scripts/check-package.ts
 
       - name: link
         run: /bin/bash links.sh
@@ -103,6 +119,7 @@ jobs:
       #
 
       - name: Clean before artifact
+        if: github.ref == 'refs/heads/main'
         run: /bin/bash .github/clean_before_github_pages.sh
 
       - name: Prepare Pages artifact
@@ -129,6 +146,10 @@ jobs:
 
     runs-on: ubuntu-24.04
 
+    permissions:
+      pages: write
+      id-token: write
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -140,6 +161,12 @@ jobs:
 
     runs-on: ubuntu-24.04
     timeout-minutes: 4
+
+    permissions:
+      contents: write # https://github.com/semantic-release/semantic-release/issues/2469#issuecomment-1158013884
+      issues: write # semantic-release comments on released issues / pull requests
+      pull-requests: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -175,7 +202,14 @@ jobs:
         run: npm pack
 
       # https://github.com/semantic-release/semantic-release/blob/master/docs/recipes/ci-configurations/github-actions.md
+      - name: package.json consistency + tarball whitelist
+        run: node scripts/check-package.ts
+
+      # the only step that sees the publish token
       - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided automatically by github itself https://docs.github.com/en/actions/security-guides/automatic-token-authentication
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # search in keepassx
         run: |
           set -x
           node node_modules/.bin/semantic-release --debug

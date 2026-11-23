@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../../../test/lib.ts";
+import { expectEditorBackground, getDiffState } from "../../../test/lib.ts";
 
 /**
  * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh web-component/web-component/from-js/index.e2e.ts
@@ -16,35 +16,8 @@ import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../.
  */
 test("default", async ({ page }) => {
   await page.goto("/web-component/web-component/from-js/index.html");
-  // await page.getByRole("banner").getByRole("combobox").selectOption("vs");
 
-  // don't goto but just check if path and search is equal to /vite-project/dist/composite-monaco-diff?theme=vs
-  // await expect(page).toHaveURL("/vite-project/dist/composite-monaco-diff?theme=vs");
-
-  const style = await page.evaluate(async () => {
-    const timeout = 5000;
-    const start = Date.now();
-
-    while (Date.now() - start < timeout) {
-      const el = document.querySelector("composite-monaco-diff") as any;
-
-      if (el?.shadowRoot) {
-        await el.whenReady();
-
-        const target = el.shadowRoot.querySelector(".original-in-monaco-diff-editor");
-
-        if (target) {
-          return window.getComputedStyle(target).backgroundColor;
-        }
-      }
-
-      await new Promise((r) => setTimeout(r, 200));
-    }
-
-    throw new Error("Timeout waiting for composite-monaco-diff style");
-  });
-
-  await expect(style).toEqual("rgb(255, 255, 254)");
+  await expectEditorBackground(page, "rgb(255, 255, 254)");
 });
 
 test("dark", async ({ page }) => {
@@ -54,28 +27,28 @@ test("dark", async ({ page }) => {
 
   await expect(page).toHaveURL("/web-component/web-component/from-js/index.html?theme=vs-dark");
 
-  const style = await page.evaluate(async () => {
-    const timeout = 5000;
-    const start = Date.now();
+  await expectEditorBackground(page, "rgb(30, 30, 30)");
+});
 
-    while (Date.now() - start < timeout) {
-      const el = document.querySelector("composite-monaco-diff") as any;
+test("content set through el.original / el.modified reaches the editor", async ({ page }) => {
+  await page.goto("/web-component/web-component/from-js/index.html");
 
-      if (el?.shadowRoot) {
-        await el.whenReady();
+  const state = await getDiffState(page);
 
-        const target = el.shadowRoot.querySelector(".original-in-monaco-diff-editor");
+  expect(state.original).toContain("if (win.require && win.monaco) return resolve(win.monaco);");
+  expect(state.modified).toContain("script.added = 'stuff'");
+  expect(state.editors).toBe(1);
+});
 
-        if (target) {
-          return window.getComputedStyle(target).backgroundColor;
-        }
-      }
+test("the language select changes both sides and lands in the URL", async ({ page }) => {
+  await page.goto("/web-component/web-component/from-js/index.html");
 
-      await new Promise((r) => setTimeout(r, 200));
-    }
+  await getDiffState(page);
 
-    throw new Error("Timeout waiting for composite-monaco-diff style");
-  });
+  await page.getByLabel("Language").selectOption("typescript");
 
-  await expect(style).toEqual("rgb(30, 30, 30)");
+  await expect(page).toHaveURL("/web-component/web-component/from-js/index.html?lang=typescript");
+
+  await expect.poll(async () => (await getDiffState(page)).originalLanguage).toBe("typescript");
+  expect((await getDiffState(page)).modifiedLanguage).toBe("typescript");
 });

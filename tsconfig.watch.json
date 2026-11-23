@@ -13,6 +13,7 @@
   "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
+    "dist",
     "vite-project",
     "es.ts",
     "tsc.ignore.ts",
@@ -23,6 +24,7 @@
     "server.ts",
     "lib/utils.js",
     "scripts/sync-monaco-version.ts",
+    "scripts/check-package.ts",
     "**/*.test.ts",
     "**/*.test.parallel.ts",
     "**/*.e2e.ts",

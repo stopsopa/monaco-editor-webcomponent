@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>composite-monaco-diff - example 1</title>
     <style>
       .parent {
         border: 1px solid gray;
@@ -63,9 +63,11 @@
       </composite-monaco-diff>
     </div>
 
-    <script
-      type="module"
-      src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
-    ></script>
+    <!--
+      This page loads the component from this repository (relative url), so it always matches the code next to it.
+      On your own site use:
+      https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js
+    -->
+    <script type="module" src="../web-component/composite-monaco-diff.js"></script>
   </body>
 </html>

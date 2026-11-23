@@ -26,3 +26,13 @@ web-component/manager/index.js
 
 /playwright-report/
 /test-results/
+web-component/urlchange/demoWiring.js
+web-component/urlchange/instanceIds.js
+
+# compiled next to their .ts source by: tsc -p tsconfig.watch.json (build.sh / xx transpile)
+lib/cacheTemplate.js
+lib/template.js
+lib/utils.js
+test/lib.js
+test/lib.d.ts
+produceRender.js

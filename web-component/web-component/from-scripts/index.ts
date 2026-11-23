@@ -1,143 +1,41 @@
-import modURLSearchParams from "../../urlchange/urlchange.js";
+/**
+ * Demo: <composite-monaco-diff> with content in <script type="text/original|text/modified"> children,
+ * driven only through attributes.
+ * Open web-component/web-component/from-scripts/index.html through the dev server (`npm start`).
+ *
+ * Resizer sizes, theme and language are kept in the URL - see ../../urlchange/demoWiring.ts.
+ *
+ * The scripts in index.html deliberately have no `lang` attribute: a per-script language always wins
+ * over the element's `language` attribute, and here the language <select> has to control both sides.
+ */
+import { getSelect, wireResizerUrlSync, wireThemeLanguageUrlSync } from "../../urlchange/demoWiring.js";
 
-import { syncURLSearchParams, buildUrlWithSearchParams } from "../../urlchange/toolsURLSearchParams.js";
-
-import { isMonacoTheme, MonacoDiffElement } from "../../composite-monaco-diff.js";
+import { MonacoDiffElement } from "../../composite-monaco-diff.js";
 
 import { CenterAndHeightResizer } from "../../CenterAndHeightResizer.js";
+
+const th = (msg: string) => new Error(`web-component/web-component/from-scripts/index.ts error: ${msg}`);
 
 await customElements.whenDefined(MonacoDiffElement.tagName);
 
 await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
-const diffEl = document.querySelector(MonacoDiffElement.tagName);
-if (!(diffEl instanceof MonacoDiffElement)) {
-  throw new Error("Missing <composite-monaco-diff> element");
+const diffEl = document.querySelector<MonacoDiffElement>(MonacoDiffElement.tagName);
+if (!diffEl) {
+  throw th("Missing <composite-monaco-diff> element");
 }
 
 await diffEl.whenReady();
 
-function wireResizerUrlSync(resizer: HTMLElement, index: number) {
-  const config = {
-    left: {
-      default: resizer.getAttribute("left") ?? "100px",
-      getParam: "l",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-    center: {
-      default: resizer.getAttribute("center") ?? "1200px",
-      getParam: "c",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-    height: {
-      default: resizer.getAttribute("height") ?? "100px",
-      getParam: "h",
-      encode: (value: string) => value,
-      decode: (value: string) => value,
-    },
-  };
-
-  const { trackUrl } = modURLSearchParams(config, (key: string, i?: number): string => `${key}-${i}`);
-
-  const { setParams } = trackUrl(
-    (params, updatedURLSearchParams, governedKeys) => {
-      resizer.setAttribute("left", params.left);
-      resizer.setAttribute("center", params.center);
-      resizer.setAttribute("height", params.height);
-
-      const current = new URLSearchParams(window.location.search);
-      const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
-
-      if (next.toString() !== current.toString()) {
-        const url = buildUrlWithSearchParams(window.location.href, next);
-        history.replaceState(history.state, "", url);
-      }
-    },
-    { ctx: index, fireOnMount: true },
-  );
-
-  const syncToUrl = () => {
-    setParams({
-      left: resizer.getAttribute("left") ?? config.left.default,
-      center: resizer.getAttribute("center") ?? config.center.default,
-      height: resizer.getAttribute("height") ?? config.height.default,
-    });
-  };
-
-  resizer.addEventListener("onLeft", syncToUrl);
-  resizer.addEventListener("onCenter", syncToUrl);
-  resizer.addEventListener("onHeight", syncToUrl);
-}
-
-function applyThemeAttribute(diffEl: MonacoDiffElement, theme: string) {
-  if (theme) {
-    diffEl.setAttribute("theme", theme);
-  } else {
-    diffEl.removeAttribute("theme");
-  }
-}
-
-function applyLanguageAttribute(diffEl: MonacoDiffElement, language: string) {
-  if (language) {
-    diffEl.setAttribute("language", language);
-  } else {
-    diffEl.removeAttribute("language");
-  }
-}
-
-document.querySelectorAll(CenterAndHeightResizer.tagName).forEach((el, index) => {
-  wireResizerUrlSync(el as HTMLElement, index);
+document.querySelectorAll<HTMLElement>(CenterAndHeightResizer.tagName).forEach((resizer, index) => {
+  wireResizerUrlSync(resizer, index);
 });
 
-const themeSelect = document.getElementById("theme-select");
-if (!(themeSelect instanceof HTMLSelectElement)) {
-  throw new Error("Missing #theme-select element");
-}
-
-const languageSelect = document.getElementById("language-select");
-if (!(languageSelect instanceof HTMLSelectElement)) {
-  throw new Error("Missing #language-select element");
-}
-
-const { trackUrl: trackUrlNoIndex } = modURLSearchParams({
-  theme: {
-    default: "",
-    getParam: "theme",
-    encode: (value: string) => value,
-    decode: (value: string) => (isMonacoTheme(value) ? value : ""),
-  },
-  language: {
-    default: "javascript",
-    getParam: "lang",
-    encode: (value: string) => value,
-    decode: (value: string) => value,
-  },
-});
-
-const { setParam } = trackUrlNoIndex(
-  (params, updatedURLSearchParams, governedKeys) => {
-    themeSelect.value = params.theme;
-    applyThemeAttribute(diffEl, params.theme);
-    languageSelect.value = params.language;
-    applyLanguageAttribute(diffEl, params.language);
-
-    const current = new URLSearchParams(window.location.search);
-    const next = syncURLSearchParams(current, governedKeys, updatedURLSearchParams);
-
-    if (next.toString() !== current.toString()) {
-      const url = buildUrlWithSearchParams(window.location.href, next);
-      history.replaceState(history.state, "", url);
-    }
-  },
-  { fireOnMount: true },
-);
-
-themeSelect.addEventListener("change", () => {
-  setParam("theme", themeSelect.value);
-});
-
-languageSelect.addEventListener("change", () => {
-  setParam("language", languageSelect.value);
+wireThemeLanguageUrlSync({
+  themeSelect: getSelect("theme-select"),
+  languageSelect: getSelect("language-select"),
+  // "" = "(Monaco default)": show Monaco's default light theme. The theme attribute is only a way to
+  // call Monaco's global setTheme, so removing it would not switch back to light.
+  applyTheme: (theme) => diffEl.setAttribute("theme", theme || "vs"),
+  applyLanguage: (language) => diffEl.setAttribute("language", language),
 });

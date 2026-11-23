@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>composite-monaco-diff - example 3</title>
   </head>
   <body>
     <a href="https://github.com/stopsopa/monaco-editor-webcomponent/tree/main/docs">source</a>
@@ -66,11 +66,16 @@
       </composite-monaco-diff>
     </center-and-height-resizer>
 
+    <!--
+      This page loads the component from this repository (relative url), so it always matches the code next to it.
+      On your own site use:
+      https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js
+    -->
     <script
       type="module"
-      src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
+      src="../web-component/composite-monaco-diff.js"
     ></script>
 
-    <script type="module" src="http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js"></script>
+    <script type="module" src="../web-component/CenterAndHeightResizer.js"></script>
   </body>
 </html>

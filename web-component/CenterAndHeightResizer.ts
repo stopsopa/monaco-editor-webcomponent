@@ -27,7 +27,12 @@
  * resizer.addEventListener("onLeft", (e) => console.log(e.detail.width));
  * resizer.addEventListener("onCenter", (e) => console.log(e.detail.width));
  * resizer.addEventListener("onHeight", (e) => console.log(e.detail.height));
+ * // fired once when a drag gesture ends - the right moment to persist the size (URL, storage, ...)
+ * resizer.addEventListener("onResizeEnd", (e) => console.log(e.detail)); // { left, center, height }
  * ```
+ *
+ * The handles use pointer events (mouse, touch, pen) with pointer capture, so a drag cannot get "stuck"
+ * when the pointer is released outside the window.
  */
 const SKIP_ATTRIBUTES = ["id", "class", "left", "center", "height", "style"];
 
@@ -44,6 +49,11 @@ export class CenterAndHeightResizer extends HTMLElement {
   private _isReady = false;
   private readonly _readyPromise: Promise<void>;
   private _resolveReady!: () => void;
+  /** Handles get their listeners exactly once, no matter how often the element is re-attached. */
+  private _initialised = false;
+  private _forwardingObserver: MutationObserver | null = null;
+  /** Attribute names currently mirrored onto the inner panel, so removed ones can be removed there too. */
+  private _forwardedAttributes = new Set<string>();
 
   constructor() {
     super();
@@ -91,6 +101,7 @@ export class CenterAndHeightResizer extends HTMLElement {
           flex-shrink: 0;
           transition: background 0.2s;
           user-select: none;
+          touch-action: none;
           position: relative;
         }
         .resizer.horizontal {
@@ -143,14 +154,14 @@ export class CenterAndHeightResizer extends HTMLElement {
       </style>
       <div class="flex">
         <div class="side-div" id="left-div"></div>
-        <div class="resizer horizontal" id="resizer-left"></div>
+        <div class="resizer horizontal" id="resizer-left" role="separator" aria-orientation="vertical"></div>
         <div class="center-column">
           <div class="center-div" id="center-div">
             <slot></slot>
           </div>
-          <div class="resizer vertical" id="resizer-bottom"></div>
+          <div class="resizer vertical" id="resizer-bottom" role="separator" aria-orientation="horizontal"></div>
         </div>
-        <div class="resizer horizontal" id="resizer-right"></div>
+        <div class="resizer horizontal" id="resizer-right" role="separator" aria-orientation="vertical"></div>
         <div class="side-div" id="right-div"></div>
       </div>
     `;
@@ -160,34 +171,45 @@ export class CenterAndHeightResizer extends HTMLElement {
     return SKIP_ATTRIBUTES.filter((attr) => !["id", "class"].includes(attr));
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
     if (!this.leftDiv) return; // Not connected yet
 
+    // A removed attribute (null) clears the inline size.
+    const value = newValue ?? "";
+
     switch (name) {
       case "left":
-        this.leftDiv.style.width = newValue;
+        this.leftDiv.style.width = value;
         break;
       case "center":
-        this.centerDiv.style.width = newValue;
+        this.centerDiv.style.width = value;
         break;
       case "height":
-        this.centerDiv.style.height = newValue;
+        this.centerDiv.style.height = value;
         break;
       case "style":
-        this.centerDiv.style.cssText = newValue;
+        this.centerDiv.style.cssText = value;
         this._applyInternalStylesToCenterDiv();
         break;
     }
   }
 
   connectedCallback() {
-    this.leftDiv = this.shadowRoot!.getElementById("left-div") as HTMLElement;
-    this.rightDiv = this.shadowRoot!.getElementById("right-div") as HTMLElement;
-    this.centerDiv = this.shadowRoot!.getElementById("center-div") as HTMLElement;
-    this.resizerLeft = this.shadowRoot!.getElementById("resizer-left") as HTMLElement;
-    this.resizerRight = this.shadowRoot!.getElementById("resizer-right") as HTMLElement;
-    this.resizerBottom = this.shadowRoot!.getElementById("resizer-bottom") as HTMLElement;
+    if (!this._initialised) {
+      this._initialised = true;
+
+      this.leftDiv = this.shadowRoot!.getElementById("left-div") as HTMLElement;
+      this.rightDiv = this.shadowRoot!.getElementById("right-div") as HTMLElement;
+      this.centerDiv = this.shadowRoot!.getElementById("center-div") as HTMLElement;
+      this.resizerLeft = this.shadowRoot!.getElementById("resizer-left") as HTMLElement;
+      this.resizerRight = this.shadowRoot!.getElementById("resizer-right") as HTMLElement;
+      this.resizerBottom = this.shadowRoot!.getElementById("resizer-bottom") as HTMLElement;
+
+      this.setupResizer(this.resizerLeft, this.leftDiv, "left", false);
+      this.setupResizer(this.resizerRight, this.centerDiv, "center", false);
+      this.setupHeightResizer(this.resizerBottom, this.centerDiv);
+    }
 
     const attrLeft = this.getAttribute("left");
     const attrCenter = this.getAttribute("center");
@@ -205,13 +227,15 @@ export class CenterAndHeightResizer extends HTMLElement {
       this.centerDiv.style.height = attrHeight;
     }
 
-    this.setupResizer(this.resizerLeft, this.leftDiv, "left", false);
-    this.setupResizer(this.resizerRight, this.centerDiv, "center", false);
-    this.setupHeightResizer(this.resizerBottom, this.centerDiv);
     this._initForwarding();
 
     this._isReady = true;
     this._resolveReady();
+  }
+
+  disconnectedCallback() {
+    this._forwardingObserver?.disconnect();
+    this._forwardingObserver = null;
   }
 
   /** Resolves after the first `connectedCallback` (attributes applied to the layout panel). */
@@ -258,6 +282,8 @@ export class CenterAndHeightResizer extends HTMLElement {
   }
 
   _initForwarding() {
+    this._forwardingObserver?.disconnect();
+
     const observer = new MutationObserver((mutations) => {
       let syncNeeded = false;
       for (const mutation of mutations) {
@@ -271,14 +297,25 @@ export class CenterAndHeightResizer extends HTMLElement {
       if (syncNeeded) this._syncAttributes();
     });
     observer.observe(this, { attributes: true });
+    this._forwardingObserver = observer;
     this._syncAttributes();
   }
 
   _syncAttributes() {
+    const present = new Set<string>();
+
     for (const attr of Array.from(this.attributes)) {
       if (SKIP_ATTRIBUTES.includes(attr.name)) continue;
+      present.add(attr.name);
       this.centerDiv.setAttribute(attr.name, attr.value);
     }
+
+    // mirror removals: what was forwarded before and is gone from the host goes from the panel too
+    for (const name of this._forwardedAttributes) {
+      if (!present.has(name)) this.centerDiv.removeAttribute(name);
+    }
+    this._forwardedAttributes = present;
+
     if (this.hasAttribute("style")) {
       this.centerDiv.style.cssText = this.getAttribute("style") || "";
       this._applyInternalStylesToCenterDiv();
@@ -289,14 +326,52 @@ export class CenterAndHeightResizer extends HTMLElement {
     return this.centerDiv || (this.shadowRoot!.getElementById("center-div") as HTMLElement);
   }
 
-  setupResizer(handle: HTMLElement, target: HTMLElement, attrName: string, invert: boolean) {
-    handle.addEventListener("mousedown", (e: MouseEvent) => {
+  /**
+   * Shared drag handling for all three handles. Pointer events + pointer capture: works with mouse,
+   * touch and pen, and `pointerup` / `pointercancel` always arrive at the handle - also when the pointer
+   * was released outside the window.
+   */
+  private _setupDrag(handle: HTMLElement, onStart: (e: PointerEvent) => (moveEvent: PointerEvent) => void) {
+    handle.addEventListener("pointerdown", (e: PointerEvent) => {
+      if (e.button !== 0) return;
       e.preventDefault();
       handle.classList.add("active");
+      handle.setPointerCapture(e.pointerId);
+
+      const onMove = onStart(e);
+
+      const onEnd = () => {
+        handle.classList.remove("active");
+        handle.removeEventListener("pointermove", onMove);
+        handle.removeEventListener("pointerup", onEnd);
+        handle.removeEventListener("pointercancel", onEnd);
+        if (handle.hasPointerCapture(e.pointerId)) {
+          handle.releasePointerCapture(e.pointerId);
+        }
+
+        this.dispatchEvent(
+          new CustomEvent("onResizeEnd", {
+            detail: {
+              left: this.getAttribute("left"),
+              center: this.getAttribute("center"),
+              height: this.getAttribute("height"),
+            },
+          }),
+        );
+      };
+
+      handle.addEventListener("pointermove", onMove);
+      handle.addEventListener("pointerup", onEnd);
+      handle.addEventListener("pointercancel", onEnd);
+    });
+  }
+
+  setupResizer(handle: HTMLElement, target: HTMLElement, attrName: string, invert: boolean) {
+    this._setupDrag(handle, (e) => {
       const startX = e.clientX;
       const startWidth = target.offsetWidth;
 
-      const onMouseMove = (moveEvent: MouseEvent) => {
+      return (moveEvent) => {
         let diff = moveEvent.clientX - startX;
         if (invert) diff = -diff;
         let newWidth = startWidth + diff;
@@ -307,26 +382,15 @@ export class CenterAndHeightResizer extends HTMLElement {
         const eventName = attrName === "left" ? "onLeft" : "onCenter";
         this.dispatchEvent(new CustomEvent(eventName, { detail: { width: newWidth } }));
       };
-
-      const onMouseUp = () => {
-        handle.classList.remove("active");
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-      };
-
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
     });
   }
 
   setupHeightResizer(handle: HTMLElement, target: HTMLElement) {
-    handle.addEventListener("mousedown", (e: MouseEvent) => {
-      e.preventDefault();
-      handle.classList.add("active");
+    this._setupDrag(handle, (e) => {
       const startY = e.clientY;
       const startHeight = target.offsetHeight;
 
-      const onMouseMove = (moveEvent: MouseEvent) => {
+      return (moveEvent) => {
         const diff = moveEvent.clientY - startY;
         let newHeight = startHeight + diff;
         newHeight = Math.max(0, newHeight);
@@ -335,17 +399,11 @@ export class CenterAndHeightResizer extends HTMLElement {
         this.setAttribute("height", newHeight + "px");
         this.dispatchEvent(new CustomEvent("onHeight", { detail: { height: newHeight } }));
       };
-
-      const onMouseUp = () => {
-        handle.classList.remove("active");
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-      };
-
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
     });
   }
 }
 
-customElements.define(CenterAndHeightResizer.tagName, CenterAndHeightResizer);
+// Several builds of this file can end up on one page; defining the same tag twice would throw.
+if (!customElements.get(CenterAndHeightResizer.tagName)) {
+  customElements.define(CenterAndHeightResizer.tagName, CenterAndHeightResizer);
+}

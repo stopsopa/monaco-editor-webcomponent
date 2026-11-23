@@ -36,8 +36,10 @@
     "rootDir": "web-component" /* Specify the root folder within your source files. */,
     "moduleResolution": "bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
     "baseUrl": "web-component" /* Specify the base directory to resolve non-relative module names. */,
+    // react is an optional peer dependency used only by web-component/react.ts; its types are
+    // installed for the vite-project (npm ci in vite-project/ has to run before a build / typecheck)
     "paths": {
-      "react": ["../node_modules/react", "../node_modules/@types/react"]
+      "react": ["../node_modules/@types/react", "../vite-project/node_modules/@types/react"]
     },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

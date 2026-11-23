@@ -223,21 +223,29 @@
               <!-- 2. theme -->
               <tr>
                 <td>
-                  <span class="badge badge-prop">Option (inside editorOptions)</span><br />
-                  <code>options.editorOptions.theme</code>
-                  <div class="description">Initial editor color theme choice.</div>
+                  <span class="badge badge-prop">Method &amp; Option</span><br />
+                  <code>mgr.setTheme(theme)</code><br />
+                  <code>options.editorOptions.theme</code><br />
+                  <code>setMonacoTheme(theme)</code>
+                  <div class="description">
+                    Editor color theme. <strong>Global in Monaco:</strong> it changes every Monaco editor on the
+                    page, not only this one. The last value set wins for all of them.
+                  </div>
                 </td>
                 <td>
                   Attribute:<br />
                   <code>theme</code>
                   <div class="description">
-                    Supports: <code>vs</code>, <code>vs-dark</code>, <code>hc-black</code>, <code>hc-light</code>.
+                    Built-in: <code>vs</code>, <code>vs-dark</code>, <code>hc-black</code>, <code>hc-light</code>.
+                    Any other name is passed to Monaco as is (themes registered with
+                    <code>monaco.editor.defineTheme()</code>); an unknown name logs one warning and Monaco shows
+                    <code>vs</code>. Removing the attribute changes nothing. Global, see the first column.
                   </div>
                 </td>
                 <td>
                   Prop:<br />
                   <code>theme</code>
-                  <div class="description">Accepts <code>MonacoTheme</code> values.</div>
+                  <div class="description">String, same values as the attribute. Global, see the first column.</div>
                 </td>
               </tr>
 
@@ -247,31 +255,45 @@
                   <span class="badge badge-prop">Method &amp; Options</span><br />
                   <code>mgr.setLanguage(lang)</code><br />
                   <code>options.language</code>
-                  <div class="description">Set syntax highlighting language for both editors.</div>
+                  <div class="description">
+                    Shared language. It applies to a side only when that side has no language of its own (next
+                    row). Default: <code>javascript</code>. Safe to call before <code>whenReady()</code>.
+                  </div>
                 </td>
                 <td>
                   Attribute:<br />
                   <code>language</code>
-                  <div class="description">Sets shared highlight language on attribute change.</div>
+                  <div class="description">
+                    Shared language. A side with <code>&lt;script lang&gt;</code> or a per-side property keeps its
+                    own language.
+                  </div>
                 </td>
                 <td>
                   Prop:<br />
                   <code>language</code>
-                  <div class="description">String language prop.</div>
+                  <div class="description">String language prop (shared).</div>
                 </td>
               </tr>
 
               <!-- 4. originalLanguage & modifiedLanguage -->
               <tr>
                 <td>
-                  <span class="badge badge-prop">Options</span><br />
+                  <span class="badge badge-prop">Methods &amp; Options</span><br />
+                  <code>mgr.setOriginalLanguage(lang)</code><br />
+                  <code>mgr.setModifiedLanguage(lang)</code><br />
                   <code>options.originalLanguage</code><br />
                   <code>options.modifiedLanguage</code>
-                  <div class="description">Specify differing languages for each side of the diff.</div>
+                  <div class="description">
+                    Per-side language. <strong>Always wins over the shared language</strong>, at creation and on
+                    every later change. Pass <code>undefined</code> to hand the side back to the shared language.
+                  </div>
                 </td>
                 <td>
                   Via declarative scripts:<br />
-                  <code>&lt;script lang="..."&gt;</code>
+                  <code>&lt;script lang="..."&gt;</code><br />
+                  Properties:<br />
+                  <code>el.originalLanguage</code><br />
+                  <code>el.modifiedLanguage</code>
                 </td>
                 <td>
                   Props:<br />
@@ -283,15 +305,28 @@
               <!-- 5. original & modified content -->
               <tr>
                 <td>
-                  <span class="badge badge-prop">Options</span><br />
+                  <span class="badge badge-prop">Methods &amp; Options</span><br />
+                  <code>mgr.setOriginal(text)</code> / <code>mgr.getOriginal()</code><br />
+                  <code>mgr.setModified(text)</code> / <code>mgr.getModified()</code><br />
                   <code>options.original</code><br />
                   <code>options.modified</code>
-                  <div class="description">Source texts to calculate diff for.</div>
+                  <div class="description">
+                    Source texts to calculate diff for. Options and setters win over the declarative scripts.
+                    Setters are safe before <code>whenReady()</code> (the value is used when the editor is
+                    created).
+                  </div>
                 </td>
                 <td>
                   Via declarative scripts:<br />
                   <code>&lt;script type="text/original"&gt;</code><br />
-                  <code>&lt;script type="text/modified"&gt;</code>
+                  <code>&lt;script type="text/modified"&gt;</code><br />
+                  Properties:<br />
+                  <code>el.original</code><br />
+                  <code>el.modified</code>
+                  <div class="description">
+                    The scripts stay in the DOM. Other <code>&lt;script&gt;</code> children are ignored. The text
+                    cannot contain <code>&lt;/script&gt;</code> - use the properties for such content.
+                  </div>
                 </td>
                 <td>
                   Props:<br />
@@ -300,22 +335,83 @@
                 </td>
               </tr>
 
+              <!-- 5a. data-offset -->
+              <tr>
+                <td>-</td>
+                <td>
+                  Attribute of the scripts:<br />
+                  <code>&lt;script ... data-offset="3"&gt;</code>
+                  <div class="description">
+                    Optional, default <code>0</code>. The common indentation of the script content is removed
+                    (so the HTML can be indented freely), then every non-empty line is indented by this many
+                    spaces. Must be a non-negative integer. The line break after the opening tag and the
+                    whitespace before the closing tag are not part of the content.
+                  </div>
+                </td>
+                <td>-</td>
+              </tr>
+
+              <!-- 5b. editable / change -->
+              <tr>
+                <td>
+                  <span class="badge badge-prop">Methods &amp; Option</span><br />
+                  <code>mgr.setReadOnly(bool)</code><br />
+                  <code>mgr.onChange(listener)</code><br />
+                  <code>options.editorOptions.readOnly</code>
+                  <div class="description">
+                    The editor is a <strong>read-only viewer by default</strong>. With
+                    <code>readOnly: false</code> the modified side can be typed in; <code>onChange</code> reports
+                    edits made by the user (not programmatic <code>setOriginal/setModified</code>) with
+                    <code>{ original, modified }</code> and returns an unsubscribe function.
+                  </div>
+                </td>
+                <td>
+                  Attribute:<br />
+                  <code>editable</code><br />
+                  Event:<br />
+                  <code>change</code>
+                  <div class="description">
+                    Boolean attribute. <code>el.addEventListener("change", e =&gt; e.detail)</code> gives
+                    <code>{ original, modified }</code>.
+                  </div>
+                </td>
+                <td>
+                  Props:<br />
+                  <code>editable</code><br />
+                  <code>onChange</code>
+                  <div class="description"><code>onChange({ original, modified })</code></div>
+                </td>
+              </tr>
+
               <!-- 6. whenReady -->
               <tr>
                 <td>
                   <span class="badge badge-prop">Method</span><br />
                   <code>mgr.whenReady()</code>
-                  <div class="description">Returns promise resolving when editor hydrates and mounts.</div>
-                  <div class="return-info">Returns: <code>Promise&lt;void&gt;</code></div>
+                  <div class="description">
+                    Resolves when the editor is mounted. Rejects when the declarative markup is wrong, Monaco
+                    could not be loaded, or the manager was destroyed (<code>MonacoDiffDestroyedError</code>).
+                  </div>
+                  <div class="return-info">
+                    Returns: <code>Promise&lt;{ monaco, editor, original, modified }&gt;</code> (the two last are
+                    the text models)
+                  </div>
                 </td>
                 <td>
                   Method:<br />
-                  <code>el.whenReady()</code>
-                  <div class="description">Proxies directly to manager's promise.</div>
+                  <code>el.whenReady()</code><br />
+                  Event:<br />
+                  <code>error</code>
+                  <div class="description">
+                    Always returns a promise: on an element that is not connected yet it stays pending until the
+                    element is connected and ready. A failed initialisation is also logged and dispatched as an
+                    <code>error</code> event (<code>e.detail.error</code>).
+                  </div>
                 </td>
                 <td>
                   Access via forwarded ref:<br />
                   <code>ref.current.whenReady()</code>
+                  <div class="description">The ref is typed as <code>MonacoDiffElement</code>.</div>
                 </td>
               </tr>
 
@@ -325,7 +421,9 @@
                 <td>
                   Method:<br />
                   <code>el.getManager()</code>
-                  <div class="description">Returns underlying MonacoDiffManager instance.</div>
+                  <div class="description">
+                    Returns underlying MonacoDiffManager instance. Throws while the element is not connected.
+                  </div>
                   <div class="return-info">Returns: <code>MonacoDiffManager</code></div>
                 </td>
                 <td>
@@ -340,7 +438,10 @@
                   <span class="badge badge-prop">Methods</span><br />
                   <code>mgr.getEditor()</code><br />
                   <code>mgr.getMonaco()</code>
-                  <div class="description">Get Monaco editor instance and global Monaco API.</div>
+                  <div class="description">
+                    Get Monaco editor instance and global Monaco API (<code>null</code> before ready - prefer the
+                    value <code>whenReady()</code> resolves with).
+                  </div>
                 </td>
                 <td>
                   Access via manager:<br />
@@ -357,16 +458,44 @@
                 <td>
                   <span class="badge badge-prop">Method</span><br />
                   <code>mgr.destroy()</code>
-                  <div class="description">Cleans up observers, disposes editor models, frees memory.</div>
+                  <div class="description">
+                    Cleans up observers, disposes editor models, frees memory. Safe at any moment (also while
+                    Monaco is still loading) and more than once.
+                  </div>
                 </td>
                 <td>
                   Lifecycle:<br />
                   <code>disconnectedCallback()</code>
-                  <div class="description">Automatically calls destroy on manager.</div>
+                  <div class="description">
+                    Moving the element inside the document keeps the editor. Removing it destroys the editor;
+                    text and per-side languages are remembered and restored when it is attached again.
+                  </div>
                 </td>
                 <td>
                   Lifecycle:<br />
                   Automatically handles component unmount cleanup.
+                </td>
+              </tr>
+
+              <!-- 10. configureMonaco -->
+              <tr>
+                <td>
+                  <span class="badge badge-prop">Function</span><br />
+                  <code>configureMonaco({ vs, timeoutMs })</code>
+                  <div class="description">
+                    Where Monaco is loaded from: one url or a list of <code>.../min/vs</code> base urls tried in
+                    order (self-hosting, pinning a version). Call it before the first editor is created. By
+                    default public CDNs (jsDelivr, unpkg, cdnjs) are tried in order, each with a 15 s timeout. Monaco is loaded through its AMD loader,
+                    which defines global <code>require</code> / <code>define</code>; a Monaco that is already on
+                    the page (<code>window.monaco</code>) is reused.
+                  </div>
+                </td>
+                <td>
+                  Same function, exported by the module:<br />
+                  <code>import { configureMonaco } from ".../Module.js"</code>
+                </td>
+                <td>
+                  <code>import { configureMonaco } from "composite-monaco-diff"</code>
                 </td>
               </tr>
             </tbody>
@@ -380,52 +509,58 @@
         <div class="card">
           <h2>Guide &amp; Setup</h2>
 
-          <ace-editor lang="python">
+          <ace-editor lang="html">
             <script type="ace">
+&lt;!-- 1. load the component (one file, no build step) -->
 &lt;script
   type="module"
   src="https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js"
 >&lt;/script>
 
-// then you can use
+&lt;!-- 2. use it - the parent decides the size -->
+&lt;div style="height: 400px">
+  &lt;composite-monaco-diff theme="vs-dark" language="javascript">
+    &lt;script type="text/original">
+      const a = 1;
+    &lt;/script>
+    &lt;script type="text/modified">
+      const a = 2;
+    &lt;/script>
+  &lt;/composite-monaco-diff>
+&lt;/div>
 
-<composite-monaco-diff>
-  &lt;script type="text/original" lang="javascript" data-offset="3">
-    ...
-  &lt;/script>
-  &lt;script type="text/modified" lang="javascript" data-offset="3">
-    ...
-  &lt;/script>  
-</composite-monaco-diff>
-
+&lt;!-- 3. optional: drive it from JavaScript -->
 &lt;script type="module">
-
-  import {
-    isMonacoTheme,
-    MonacoDiffElement,
-  } from "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
-
-  import { CenterAndHeightResizer } from "http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js";
+  import { MonacoDiffElement } from "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
 
   await customElements.whenDefined(MonacoDiffElement.tagName);
 
   const el = document.querySelector(MonacoDiffElement.tagName);
 
-  await el.whenReady();
+  // properties work at any time, also before the editor is ready
+  el.original = "const a = 1;";
+  el.modified = "const a = 3;";
 
-  const mgr = el.getManager();
+  // full Monaco access
+  const { monaco, editor, original, modified } = await el.whenReady();
 
-  const editor = mgr.getEditor();
-
-  const model = editor.getModel();
-
-  model.original.setValue(original);
-  model.modified.setValue(modified);
-
+  console.log(modified.getValue());
 &lt;/script>
 
+&lt;!-- npm: npm install composite-monaco-diff -->
+&lt;!--   import "composite-monaco-diff";                          registers the element -->
+&lt;!--   import { MonacoDiff } from "composite-monaco-diff/react"; React wrapper -->
             </script>
           </ace-editor>
+          <p class="description">
+            The examples below use <code>&lt;center-and-height-resizer&gt;</code> (<a
+              href="https://github.com/stopsopa/monaco-editor-webcomponent/blob/main/web-component/CenterAndHeightResizer.ts"
+              >CenterAndHeightResizer.ts</a
+            >) to give the editor a resizable parent. It is a helper of the demos, not part of the npm package.
+            Attributes: <code>left</code>, <code>center</code>, <code>height</code>. Events:
+            <code>onLeft</code>, <code>onCenter</code>, <code>onHeight</code> (while dragging) and
+            <code>onResizeEnd</code> (once per drag).
+          </p>
         </div>
 
         <div class="card">

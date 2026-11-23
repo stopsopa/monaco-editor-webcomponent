@@ -37,3 +37,26 @@ xx playwright
 # for more sophisticated ways to run tests
 
 ```
+
+# unit tests
+
+```
+# after a build (or `xx transpile`) - the tests import compiled .js siblings
+CONCURRENCY=10 node --test "web-component/**/*.test.ts"
+```
+
+# checks before publishing
+
+```
+/bin/bash build.sh
+node scripts/check-package.ts
+# package.json vs package.dev.json shared fields, exports targets exist (wildcard: .js and .d.ts sets match), tarball whitelist
+```
+
+# what is published to npm
+
+Only what `tsconfig.build.json` compiles (`dist/esm`, `dist/types`) plus `web-component/Module.js` (the bundle for CDN use).
+`package.json` "exports" uses a wildcard (`"./*"` → `dist/esm/*.js` + `dist/types/*.d.ts`), so every file in `dist` is
+importable as `composite-monaco-diff/<path>` and is public API. What lands in `dist` is decided by "include" in
+`tsconfig.build.json` - add a file there to publish it, nothing to change in `package.json`. Demo pages are never published.
+The package is ESM only.

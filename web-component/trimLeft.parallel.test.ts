@@ -75,3 +75,9 @@ it("offset negative", () => {
     assert.strictEqual(String(e), "Error: offset must be a non-negative number, -2");
   }
 });
+
+it("offset does not pad empty lines", () => {
+  const result = trimLeft(["  a", "", "    b", ""].join("\n"), 3);
+
+  assert.strictEqual(result, ["   a", "", "     b", ""].join("\n"));
+});

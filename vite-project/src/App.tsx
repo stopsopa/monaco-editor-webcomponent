@@ -2,8 +2,6 @@ import { Routes, Route, Link } from "react-router-dom";
 import MonacoDiffDemoAttr from "./pages/MonacoDiffDemoAttr";
 import MonacoDiffDemo from "./pages/MonacoDiffDemo";
 
-// import "composite-select/floating-label-pattern.css";
-
 import "./App.css";
 
 function Home() {

@@ -2,7 +2,7 @@
   "name": "composite-monaco-diff",
   "version": "0.0.1",
   "type": "module",
-  "description": "Web component wrapper on top of monaco editor",
+  "description": "Web component and React wrapper for the Monaco diff editor",
   "scripts": {
     "start": "node --env-file=.env server.ts",
     "dev": "node --env-file=.env server.ts",
@@ -19,26 +19,43 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stopsopa/monaco-editor-webcomponent.git"
-  },  
+  },
   "bugs": {
     "url": "https://github.com/stopsopa/monaco-editor-webcomponent/issues"
   },
   "main": "./dist/esm/Module.js",
   "types": "./dist/types/Module.d.ts",
   "module": "./dist/esm/Module.js",
+  "sideEffects": true,
+  "files": [
+    "dist",
+    "web-component/Module.js",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/types/Module.d.ts",
       "import": "./dist/esm/Module.js",
-      "require": "./dist/cjs/Module.cjs"
+      "default": "./dist/esm/Module.js"
     },
     "./package.json": "./package.json",
-    "./web-component/*": "./web-component/*",
+    "./web-component/Module.js": "./web-component/Module.js",
     "./*": {
       "types": "./dist/types/*.d.ts",
-      "import": "./dist/esm/*.js",
-      "require": "./dist/cjs/*.js",
-      "default": "./*"
+      "import": "./dist/esm/*.js"
+    }
+  },
+  "peerDependencies": {
+    "monaco-editor": ">=0.50.0",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "monaco-editor": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
     }
   }
 }

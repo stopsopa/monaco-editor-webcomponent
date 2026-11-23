@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>composite-monaco-diff - example 5</title>
   </head>
   <body>
     <a href="https://github.com/stopsopa/monaco-editor-webcomponent/tree/main/docs">source</a>
@@ -11,34 +11,22 @@
       <composite-monaco-diff></composite-monaco-diff>
     </center-and-height-resizer>
 
+    <!--
+      This page loads the component from this repository (relative url), so it always matches the code next to it.
+      On your own site use:
+      https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js
+    -->
     <script type="module">
-      import {
-        isMonacoTheme,
-        MonacoDiffElement,
-      } from "https://stopsopa.github.io/monaco-editor-webcomponent/web-component/composite-monaco-diff.js";
-      import { CenterAndHeightResizer } from "http://0.0.0.0:8089/web-component/CenterAndHeightResizer.js";
+      import { MonacoDiffElement } from "../web-component/composite-monaco-diff.js";
+      import { CenterAndHeightResizer } from "../web-component/CenterAndHeightResizer.js";
 
       await customElements.whenDefined(MonacoDiffElement.tagName);
 
       await customElements.whenDefined(CenterAndHeightResizer.tagName);
 
       const diffEl = document.querySelector(MonacoDiffElement.tagName);
-      if (!(diffEl instanceof MonacoDiffElement)) {
-        throw new Error("Missing <composite-monaco-diff> element");
-      }
-
-      await diffEl.whenReady();
-
-      const mgr = diffEl.getManager();
-
-      const editor = mgr.getEditor();
-      if (!editor) {
-        throw new Error("Diff editor not available");
-      }
-
-      const model = editor.getModel();
-      if (!model) {
-        throw new Error("Diff editor has no model");
+      if (!diffEl) {
+        throw new Error("docs/example5.html error: Missing <composite-monaco-diff> element");
       }
 
       const original = `
@@ -85,8 +73,13 @@ const loadMonaco = (vsPath = VS_PATH) =>
   });
 `;
 
-      model.original.setValue(original);
-      model.modified.setValue(modified);
+      // The properties can be set at any time - before the editor is ready the values are kept.
+      diffEl.original = original;
+      diffEl.modified = modified;
+
+      // Full access to Monaco when needed:
+      const ready = await diffEl.whenReady();
+      console.log("modified side has", ready.modified.getLineCount(), "lines");
     </script>
   </body>
 </html>

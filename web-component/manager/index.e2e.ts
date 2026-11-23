@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../../test/lib.ts";
+import { expectEditorBackground } from "../../test/lib.ts";
 
 /**
  * NODE_API_PROTOCOL=http NODE_API_HOST=0.0.0.0 NODE_API_PORT=8089 /bin/bash playwright.sh web-component/manager/index.e2e.ts
@@ -16,34 +16,8 @@ import { softNavigate, clickSelector, prepare, compareSelectedItems } from "../.
  */
 test("default", async ({ page }) => {
   await page.goto("/web-component/manager/index.html");
-  // await page.getByRole("banner").getByRole("combobox").selectOption("vs");
 
-  // don't goto but just check if path and search is equal to /vite-project/dist/composite-monaco-diff?theme=vs
-  // await expect(page).toHaveURL("/vite-project/dist/composite-monaco-diff?theme=vs");
-
-  const style = await page.evaluate(
-    async () => {
-      const timeout = 5000;
-      const start = Date.now();
-
-      while (Date.now() - start < timeout) {
-        const target = document.querySelector(".original-in-monaco-diff-editor") as any;
-
-        if (target) {
-          return window.getComputedStyle(target).backgroundColor;
-        }
-
-        await new Promise((r) => setTimeout(r, 200));
-      }
-
-      throw new Error("Timeout waiting for composite-monaco-diff style");
-    },
-    {
-      timeout: 7000,
-    },
-  );
-
-  await expect(style).toEqual("rgb(255, 255, 254)");
+  await expectEditorBackground(page, "rgb(255, 255, 254)");
 });
 
 test("dark", async ({ page }) => {
@@ -53,27 +27,30 @@ test("dark", async ({ page }) => {
 
   await expect(page).toHaveURL("/web-component/manager/index.html?theme=vs-dark");
 
-  const style = await page.evaluate(
-    async () => {
-      const timeout = 5000;
-      const start = Date.now();
+  await expectEditorBackground(page, "rgb(30, 30, 30)");
+});
 
-      while (Date.now() - start < timeout) {
-        const target = document.querySelector(".original-in-monaco-diff-editor") as any;
+test("the size declared in the HTML is the default (300px editor is not shrunk by the URL sync)", async ({ page }) => {
+  await page.goto("/web-component/manager/index.html");
 
-        if (target) {
-          return window.getComputedStyle(target).backgroundColor;
-        }
+  await expectEditorBackground(page, "rgb(255, 255, 254)");
 
-        await new Promise((r) => setTimeout(r, 200));
-      }
+  const resizer = page.locator("center-and-height-resizer").nth(1);
 
-      throw new Error("Timeout waiting for composite-monaco-diff style");
-    },
-    {
-      timeout: 7000,
-    },
-  );
+  await expect(resizer).toHaveAttribute("height", "300px");
 
-  await expect(style).toEqual("rgb(30, 30, 30)");
+  // defaults are not written to the URL
+  await expect(page).toHaveURL("/web-component/manager/index.html");
+});
+
+test("invalid values in the URL fall back to the defaults and are removed from the URL", async ({ page }) => {
+  await page.goto("/web-component/manager/index.html?lang=bogus&theme=nope&h-1=450px");
+
+  await expectEditorBackground(page, "rgb(255, 255, 254)");
+
+  await expect(page.getByLabel("Language")).toHaveValue("javascript");
+  await expect(page.getByLabel("Theme")).toHaveValue("");
+  await expect(page.locator("center-and-height-resizer").nth(1)).toHaveAttribute("height", "450px");
+
+  await expect(page).toHaveURL("/web-component/manager/index.html?h-1=450px");
 });

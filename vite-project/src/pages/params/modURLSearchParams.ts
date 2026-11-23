@@ -1,6 +1,22 @@
+/**
+ * React counterpart of web-component/urlchange/urlchange.ts: describe URL params once
+ * (default, url key, encode, decode) and get a `useQueryParams(search, navigate, ctx?)` hook with
+ * typed `params` plus `setParam` / `setParams` that navigate (replace) themselves.
+ *
+ *   const { useQueryParams, separateIndexedSearchParams } = modURLSearchParams(
+ *     { text: { default: "", getParam: "t", encode: (v) => v, decode: (v) => v } },
+ *     (key, i?: number) => `${key}-${i}`,   // optional: indexed instances -> t-1, t-2 ...
+ *   );
+ *   const { params, setParam } = useQueryParams(location.search, navigate, 1);
+ *
+ * - A value equal to its default is removed from the URL (default elision), so never derive "which
+ *   instances exist" from the presence of these keys - keep such a list in its own key.
+ * - Values from the URL are user input: decoders must validate and return the default for bad input.
+ * - The URLSearchParams helpers are shared with the vanilla module (single copy, single test file).
+ */
 import { useCallback, useMemo } from "react";
 
-import { mergeURLSearchParams } from "./toolsURLSearchParams.js";
+import { mergeURLSearchParams } from "../../../../web-component/urlchange/toolsURLSearchParams";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

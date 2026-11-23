@@ -6,6 +6,11 @@
     "module": "esnext",
     "types": ["vite/client", "node"],
     "skipLibCheck": true,
+    // ../web-component/*.ts is compiled as part of this project too; "react" imported from there
+    // has to resolve to this project's copy (the repository root has no react installed)
+    "paths": {
+      "react": ["./node_modules/@types/react"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

@@ -1,0 +1,29 @@
+// What gets published to npm (dist/esm + dist/types). Used by build.sh.
+//
+// Only the entry points listed in "include" (and whatever they import) are compiled - the demo pages
+// under web-component/ (manager/, web-component/, urlchange/index.ts, ...) run DOM code on import and
+// must never end up in the package.
+//
+// package.json "exports" has a wildcard ("./*" -> dist/esm/*.js + dist/types/*.d.ts), so EVERYTHING this
+// config emits is importable as composite-monaco-diff/<path> and therefore public API - including files
+// that are only pulled in through an import of an entry point. "include" below is what decides it.
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist/esm",
+    "target": "esnext",
+    "module": "esnext",
+    "declaration": true,
+    "declarationDir": "./dist/types"
+  },
+  "include": [
+    "web-component/Module.ts",
+    "web-component/react.ts",
+    "web-component/CenterAndHeightResizer.ts",
+    "web-component/CenterResizer.ts",
+    "web-component/urlchange/urlchange.ts",
+    "web-component/urlchange/toolsURLSearchParams.ts",
+    "web-component/urlchange/instanceIds.ts"
+  ],
+  "exclude": ["node_modules", "dist", "**/*.e2e.ts", "**/*.test.ts"]
+}
